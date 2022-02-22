@@ -1,0 +1,6 @@
+[submodule "ET_framework/ET"]
+	path = ET_framework/ET
+	url = https://github.com/egametang/ET.git
+[submodule "ET_framework/ET-EUI"]
+	path = ET_framework/ET-EUI
+	url = https://github.com/zzjfengqing/ET-EUI.git
