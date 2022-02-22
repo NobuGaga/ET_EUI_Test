@@ -1,3 +1,8 @@
+@Echo off
+
+cd ..
+
+@Echo on
 
 git submodule update --remote
 
