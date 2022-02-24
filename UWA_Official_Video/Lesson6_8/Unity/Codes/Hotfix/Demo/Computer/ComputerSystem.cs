@@ -31,6 +31,10 @@
             Log.Debug("Computer Start!!!!!!!");
             self.GetComponent<PCCaseComponent>().StartPower();
             self.GetComponent<MonitorsComponent>().Display();
+
+            self.ZoneScene();
+            self.DomainScene();
+            var domain = self.Domain;
         }
     }
 }

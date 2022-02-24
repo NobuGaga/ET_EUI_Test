@@ -41,16 +41,17 @@ set UnityScenePath=%UnityHotfixPath%\%ScenePath%
 set UILoginPath=%UnityHotfixView%\Demo\UI\UILogin
 
 @REM 新增测试逻辑代码路径
-set LessonCodePath=Demo\Computer
+set LessonComputerPath=Demo\Computer
+set LessonUnitConfigPartialPath=%UnityModelPath%\Generate\ConfigPartial
 
 @REM ====================================================================================
 @REM 测试代码原路径跟备份路径组装
 
-set UnityHotfixLessonCodePath=%UnityHotfixPath%\%LessonCodePath%
-set UnityModelLessonCodePath=%UnityModelPath%\%LessonCodePath%
+set UnityHotfixLessonCodePath=%UnityHotfixPath%\%LessonComputerPath%
+set UnityModelLessonCodePath=%UnityModelPath%\%LessonComputerPath%
 
-set ServerHotfixLessonCodePath=%ServerHotfixPath%\%LessonCodePath%
-set ServerModelLessonCodePath=%ServerModelPath%\%LessonCodePath%
+set ServerHotfixLessonCodePath=%ServerHotfixPath%\%LessonComputerPath%
+set ServerModelLessonCodePath=%ServerModelPath%\%LessonComputerPath%
 
 set ETUnityHotfixLessonCodePath=%ETFrameworkPath%\%UnityHotfixLessonCodePath%
 set ETUnityModelLessonCodePath=%ETFrameworkPath%\%UnityModelLessonCodePath%
@@ -79,12 +80,14 @@ xcopy %CurrentPath%\%ServerModelLessonCodePath% %ETServerModelLessonCodePath% /E
 @REM 配置表
 
 echo A | xcopy %CurrentExcelPath%\StartSceneConfig.xlsx %ETExcelPath%\StartSceneConfig.xlsx /E /F /I
+echo A | xcopy %CurrentExcelPath%\UnitConfig.xlsx %ETExcelPath%\UnitConfig.xlsx /E /F /I
 
 @REM 客户端
 
 echo A | xcopy %CurrentPath%\%UnityEntityPath%\SceneType.cs %ETFrameworkPath%\%UnityEntityPath%\SceneType.cs /E /F /I
 echo A | xcopy %CurrentPath%\%UnityModelUnitPath%\Unit.cs %ETFrameworkPath%\%UnityModelUnitPath%\Unit.cs /E /F /I
 echo A | xcopy %CurrentPath%\%UnityModelUnitPath%\UnitType.cs %ETFrameworkPath%\%UnityModelUnitPath%\UnitType.cs /E /F /I
+echo A | xcopy %CurrentPath%\%LessonUnitConfigPartialPath%\UnitConfigPartial.cs %ETFrameworkPath%\%LessonUnitConfigPartialPath%\UnitConfigPartial.cs /E /F /I
 
 echo A | xcopy %CurrentPath%\%UnityHotfixUnitPath%\UnitFactory.cs %ETFrameworkPath%\%UnityHotfixUnitPath%\UnitFactory.cs /E /F /I
 

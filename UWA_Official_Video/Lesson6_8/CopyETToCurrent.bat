@@ -41,16 +41,17 @@ set UnityScenePath=%UnityHotfixPath%\%ScenePath%
 set UILoginPath=%UnityHotfixView%\Demo\UI\UILogin
 
 @REM 新增测试逻辑代码路径
-set LessonCodePath=Demo\Computer
+set LessonComputerPath=Demo\Computer
+set LessonUnitConfigPartialPath=%UnityModelPath%\Generate\ConfigPartial
 
 @REM ====================================================================================
 @REM 测试代码原路径跟备份路径组装
 
-set UnityHotfixLessonCodePath=%UnityHotfixPath%\%LessonCodePath%
-set UnityModelLessonCodePath=%UnityModelPath%\%LessonCodePath%
+set UnityHotfixLessonCodePath=%UnityHotfixPath%\%LessonComputerPath%
+set UnityModelLessonCodePath=%UnityModelPath%\%LessonComputerPath%
 
-set ServerHotfixLessonCodePath=%ServerHotfixPath%\%LessonCodePath%
-set ServerModelLessonCodePath=%ServerModelPath%\%LessonCodePath%
+set ServerHotfixLessonCodePath=%ServerHotfixPath%\%LessonComputerPath%
+set ServerModelLessonCodePath=%ServerModelPath%\%LessonComputerPath%
 
 set ETUnityHotfixLessonCodePath=%ETFrameworkPath%\%UnityHotfixLessonCodePath%
 set ETUnityModelLessonCodePath=%ETFrameworkPath%\%UnityModelLessonCodePath%
@@ -85,12 +86,14 @@ rd /S /Q %ETServerModelLessonCodePath%
 @REM 配置表
 
 echo A | xcopy %ETExcelPath%\StartSceneConfig.xlsx %CurrentExcelPath%\StartSceneConfig.xlsx /E /F /I
+echo A | xcopy %ETExcelPath%\UnitConfig.xlsx %CurrentExcelPath%\UnitConfig.xlsx /E /F /I
 
 @REM 客户端
 
 echo A | xcopy %ETFrameworkPath%\%UnityEntityPath%\SceneType.cs %CurrentPath%\%UnityEntityPath%\SceneType.cs /E /F /I
 echo A | xcopy %ETFrameworkPath%\%UnityModelUnitPath%\Unit.cs %CurrentPath%\%UnityModelUnitPath%\Unit.cs /E /F /I
 echo A | xcopy %ETFrameworkPath%\%UnityModelUnitPath%\UnitType.cs %CurrentPath%\%UnityModelUnitPath%\UnitType.cs /E /F /I
+echo A | xcopy %ETFrameworkPath%\%LessonUnitConfigPartialPath%\UnitConfigPartial.cs %CurrentPath%\%LessonUnitConfigPartialPath%\UnitConfigPartial.cs /E /F /I
 
 echo A | xcopy %ETFrameworkPath%\%UnityHotfixUnitPath%\UnitFactory.cs %CurrentPath%\%UnityHotfixUnitPath%\UnitFactory.cs /E /F /I
 
