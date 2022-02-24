@@ -17,6 +17,9 @@ namespace ET
 
 			computer.Start();
 
+			await TimerComponent.Instance.WaitAsync(3000);
+
+			computer.Dispose();
 		}
 	}
 }
