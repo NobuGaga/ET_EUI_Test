@@ -1,13 +1,18 @@
 ﻿@Echo off
 
 @REM 当前脚本所在文件夹路径
-set CurrentPath=C:\GitHub\ET_EUI_Test\UWA_Official_Video\Lesson6_7
+set CurrentPath=C:\GitHub\ET_EUI_Test\UWA_Official_Video\Lesson6_8
 
 @REM ET_EUI_Test 目录所在路径
 set ETEUITestPath=C:\GitHub\ET_EUI_Test
 
-@REM 需要操作的相对路径
+@REM submodule 路径
 set ETFrameworkPath=%ETEUITestPath%\ET_framework\ET
+
+@REM 配置表路径
+set ExcelPath=Excel
+set ETExcelPath=%ETFrameworkPath%\%ExcelPath%
+set CurrentExcelPath=%CurrentPath%\%ExcelPath%
 
 @REM 客户端数据方法相对路径
 set UnityModelPath=Unity\Codes\Model
@@ -22,13 +27,17 @@ set ServerHotfixPath=Server\Hotfix
 
 @REM ====================================================================================
 @REM 修改原有框架代码路径
+set EntityPath=Core\Entity
 set UnitPath=Demo\Unit
+set ScenePath=Demo\Scene
 
 @REM 客户端代码路径
+set UnityEntityPath=%UnityModelPath%\%EntityPath%
 set UnityModelUnitPath=%UnityModelPath%\%UnitPath%
 set UnityHotfixUnitPath=%UnityHotfixPath%\%UnitPath%
 
 set HotfixViewUnitPath=%UnityHotfixView%\%UnitPath%
+set UnityScenePath=%UnityHotfixPath%\%ScenePath%
 set UILoginPath=%UnityHotfixView%\Demo\UI\UILogin
 
 @REM 新增测试逻辑代码路径
@@ -73,17 +82,24 @@ rd /S /Q %ETServerModelLessonCodePath%
 @REM ====================================================================================
 @REM 脚本文件操作
 
+@REM 配置表
+
+echo A | xcopy %ETExcelPath%\StartSceneConfig.xlsx %CurrentExcelPath%\StartSceneConfig.xlsx /E /F /I
+
 @REM 客户端
 
-echo F | xcopy %ETFrameworkPath%\%UnityModelUnitPath%\Unit.cs %CurrentPath%\%UnityModelUnitPath%\Unit.cs /E /F /I
-echo F | xcopy %ETFrameworkPath%\%UnityModelUnitPath%\UnitType.cs %CurrentPath%\%UnityModelUnitPath%\UnitType.cs /E /F /I
+echo A | xcopy %ETFrameworkPath%\%UnityEntityPath%\SceneType.cs %CurrentPath%\%UnityEntityPath%\SceneType.cs /E /F /I
+echo A | xcopy %ETFrameworkPath%\%UnityModelUnitPath%\Unit.cs %CurrentPath%\%UnityModelUnitPath%\Unit.cs /E /F /I
+echo A | xcopy %ETFrameworkPath%\%UnityModelUnitPath%\UnitType.cs %CurrentPath%\%UnityModelUnitPath%\UnitType.cs /E /F /I
 
-echo F | xcopy %ETFrameworkPath%\%UnityHotfixUnitPath%\UnitFactory.cs %CurrentPath%\%UnityHotfixUnitPath%\UnitFactory.cs /E /F /I
+echo A | xcopy %ETFrameworkPath%\%UnityHotfixUnitPath%\UnitFactory.cs %CurrentPath%\%UnityHotfixUnitPath%\UnitFactory.cs /E /F /I
 
-echo F | xcopy %ETFrameworkPath%\%HotfixViewUnitPath%\AfterUnitCreate_CreateUnitView.cs %CurrentPath%\%HotfixViewUnitPath%\AfterUnitCreate_CreateUnitView.cs /E /F /I
+echo A | xcopy %ETFrameworkPath%\%HotfixViewUnitPath%\AfterUnitCreate_CreateUnitView.cs %CurrentPath%\%HotfixViewUnitPath%\AfterUnitCreate_CreateUnitView.cs /E /F /I
+echo A | xcopy %ETFrameworkPath%\%UnityScenePath%\SceneFactory.cs %CurrentPath%\%UnityScenePath%\SceneFactory.cs /E /F /I
 echo A | xcopy %ETFrameworkPath%\%UILoginPath%\AppStartInitFinish_CreateLoginUI.cs %CurrentPath%\%UILoginPath%\AppStartInitFinish_CreateLoginUI.cs /E /F /I
 
 @REM 服务端
+
 echo A | xcopy %ETFrameworkPath%\%ServerHotfixPath%\AppStart_Init.cs %CurrentPath%\%ServerHotfixPath%\AppStart_Init.cs /E /F /I
 
 @REM TODO 还原修改文件的操作, 并清理工程引用
