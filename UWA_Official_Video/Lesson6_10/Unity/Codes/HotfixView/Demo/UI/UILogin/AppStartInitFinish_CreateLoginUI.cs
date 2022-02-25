@@ -8,46 +8,74 @@ namespace ET
 		{
 			await UIHelper.Create(args.ZoneScene, UIType.UILogin, UILayer.Mid);
 
-			Computer computer = args.ZoneScene.AddChild<Computer>();
+			//Computer computer = args.ZoneScene.AddChild<Computer>();
 
 			//Game.EventSystem.Publish(new EventType.InstallComputer(){Computer =  computer});
 
-            Log.Debug("Before Publish TimeHelper.ClientNow() = " + TimeHelper.ClientNow());
+			//Log.Debug("Before Publish TimeHelper.ClientNow() = " + TimeHelper.ClientNow());
 			// 旧版 Coroutine 不会等待? 需要使用 await 关键字才会打到异步效果
 			// 新版 直接使用 Coroutine 有异步效果?
-			Game.EventSystem.PublishAsync(new EventType.InstallComputer(){Computer =  computer}).Coroutine();
+			//Game.EventSystem.PublishAsync(new EventType.InstallComputer() { Computer = computer }).Coroutine();
 			//await Game.EventSystem.PublishAsync(new EventType.InstallComputer(){Computer =  computer});
-            Log.Debug("After Publish TimeHelper.ClientNow() = " + TimeHelper.ClientNow());
-			computer.Start();
-            Log.Debug("After Start TimeHelper.ClientNow() = " + TimeHelper.ClientNow());
+			//Log.Debug("After Publish TimeHelper.ClientNow() = " + TimeHelper.ClientNow());
+			//computer.Start();
+			//Log.Debug("After Start TimeHelper.ClientNow() = " + TimeHelper.ClientNow());
 
-            //computer.AddComponent<PCCaseComponent>();
-            //computer.AddComponent<MonitorsComponent>();
-            //computer.AddComponent<KeyBoardComponent>();
-            //computer.AddComponent<MouseComponent>();
+			//computer.AddComponent<PCCaseComponent>();
+   //         computer.AddComponent<MonitorsComponent>();
+   //         computer.AddComponent<KeyBoardComponent>();
+   //         computer.AddComponent<MouseComponent>();
 
-            //computer.Start();
+   //         computer.Start();
 
-            //await TimerComponent.Instance.WaitAsync(3000);
+   //         await TimerComponent.Instance.WaitAsync(3000);
 
-            //computer.Dispose();
+   //         computer.Dispose();
 
-            //UnitConfig config = UnitConfigCategory.Instance.Get(1001);
+   //         UnitConfig config = UnitConfigCategory.Instance.Get(1001);
 
-            //Log.Debug(config.Name);
+   //         Log.Debug(config.Name);
 
-            //var allUnitConfig = UnitConfigCategory.Instance.GetAll();
+   //         var allUnitConfig = UnitConfigCategory.Instance.GetAll();
 
-            //foreach (var unitConfig in allUnitConfig.Values)
-            //         {
-            //	Log.Debug(unitConfig.Name);
-            //	Log.Debug(unitConfig.TestValue.ToString());
-            //         }
+			//foreach (var unitConfig in allUnitConfig.Values)
+   //         {
+   //             Log.Debug(unitConfig.Name);
+   //             Log.Debug(unitConfig.TestValue.ToString());
+   //         }
+   //         UnitConfig heightConfig = UnitConfigCategory.Instance.GetUnitConfigByHeight(178);
 
-            //UnitConfig heightConfig = UnitConfigCategory.Instance.GetUnitConfigByHeight(178);
+			//Log.Debug(heightConfig.Name);
 
-            //Log.Debug(heightConfig.Name);
+            Log.Debug("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+			// 使用 Coroutine 直接返回
+			this.TestAsync().Coroutine();
+            // 使用 await 等待返回
+            //await this.TestAsync();
+            // 有返回结果的必须使用 await 需要等待返回结果
+            //int result = await this.TestResultAsync();
 
-        }
+            //Log.Debug(result.ToString());
+
+            Log.Debug("bbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+		}
+
+		public async ETTask TestAsync()
+        {
+			Log.Debug("1111111111111111111111111111");
+			await TimerComponent.Instance.WaitAsync(2000);
+			Log.Debug("2222222222222222222222222222");
+			// ETTask.CompletedTask 变为同步
+			//await ETTask.CompletedTask;
+		}
+
+		public async ETTask<int> TestResultAsync()
+		{
+			Log.Debug("1111111111111111111111111111");
+			await TimerComponent.Instance.WaitAsync(2000);
+			Log.Debug("2222222222222222222222222222");
+
+			return 10;
+		}
 	}
 }
