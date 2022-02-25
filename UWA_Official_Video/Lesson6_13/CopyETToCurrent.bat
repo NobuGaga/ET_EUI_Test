@@ -1,7 +1,7 @@
 ﻿@Echo off
 
 @REM 当前脚本所在文件夹路径
-set CurrentPath=C:\GitHub\ET_EUI_Test\UWA_Official_Video\Lesson6_11
+set CurrentPath=C:\GitHub\ET_EUI_Test\UWA_Official_Video\Lesson6_13
 
 @REM ET_EUI_Test 目录所在路径
 set ETEUITestPath=C:\GitHub\ET_EUI_Test
@@ -96,13 +96,13 @@ xcopy %ETServerModelLessonCodePath% %CurrentPath%\%ServerModelLessonCodePath% /E
 
 xcopy %ETServerHotfixDemoLoginPath% %CurrentPath%\%ServerDemoLoginPaht% /E /F /I
 
-@REM rd /S /Q %ETUnityHotfixLessonCodePath%
-@REM rd /S /Q %ETUnityModelLessonCodePath%
+rd /S /Q %ETUnityHotfixLessonCodePath%
+rd /S /Q %ETUnityModelLessonCodePath%
 
-@REM rd /S /Q %ETServerHotfixLessonCodePath%
-@REM rd /S /Q %ETServerModelLessonCodePath%
+rd /S /Q %ETServerHotfixLessonCodePath%
+rd /S /Q %ETServerModelLessonCodePath%
 
-@REM rd /S /Q %ETServerHotfixDemoLoginPath%
+rd /S /Q %ETServerHotfixDemoLoginPath%
 
 @REM ====================================================================================
 @REM 脚本文件操作

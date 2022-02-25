@@ -1,7 +1,7 @@
 ﻿@Echo off
 
 @REM 当前脚本所在文件夹路径
-set CurrentPath=C:\GitHub\ET_EUI_Test\UWA_Official_Video\Lesson6_11
+set CurrentPath=C:\GitHub\ET_EUI_Test\UWA_Official_Video\Lesson6_13
 
 @REM ET_EUI_Test 目录所在路径
 set ETEUITestPath=C:\GitHub\ET_EUI_Test
