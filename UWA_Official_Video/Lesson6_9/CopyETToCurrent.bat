@@ -28,20 +28,23 @@ set ServerHotfixPath=Server\Hotfix
 @REM ====================================================================================
 @REM 修改原有框架代码路径
 set EntityPath=Core\Entity
-set UnitPath=Demo\Unit
-set ScenePath=Demo\Scene
+set DemoPath=Demo
+set UnitPath=%DemoPath%\Unit
+set ScenePath=%DemoPath%\Scene
 
 @REM 客户端代码路径
 set UnityEntityPath=%UnityModelPath%\%EntityPath%
+set UnityModelDemoPath=%UnityModelPath%\%DemoPath%
 set UnityModelUnitPath=%UnityModelPath%\%UnitPath%
 set UnityHotfixUnitPath=%UnityHotfixPath%\%UnitPath%
 
+set HotfixViewDemoPath=%UnityHotfixView%\%DemoPath%
 set HotfixViewUnitPath=%UnityHotfixView%\%UnitPath%
 set UnityScenePath=%UnityHotfixPath%\%ScenePath%
-set UILoginPath=%UnityHotfixView%\Demo\UI\UILogin
+set UILoginPath=%UnityHotfixView%\%DemoPath%\UI\UILogin
 
 @REM 新增测试逻辑代码路径
-set LessonComputerPath=Demo\Computer
+set LessonComputerPath=%DemoPath%\Computer
 set LessonUnitConfigPartialPath=%UnityModelPath%\Generate\ConfigPartial
 
 @REM ====================================================================================
@@ -91,15 +94,18 @@ echo A | xcopy %ETExcelPath%\UnitConfig.xlsx %CurrentExcelPath%\UnitConfig.xlsx 
 @REM 客户端
 
 echo A | xcopy %ETFrameworkPath%\%UnityEntityPath%\SceneType.cs %CurrentPath%\%UnityEntityPath%\SceneType.cs /E /F /I
+echo A | xcopy %ETFrameworkPath%\%UnityModelDemoPath%\EventType.cs %CurrentPath%\%UnityModelDemoPath%\EventType.cs /E /F /I
 echo A | xcopy %ETFrameworkPath%\%UnityModelUnitPath%\Unit.cs %CurrentPath%\%UnityModelUnitPath%\Unit.cs /E /F /I
 echo A | xcopy %ETFrameworkPath%\%UnityModelUnitPath%\UnitType.cs %CurrentPath%\%UnityModelUnitPath%\UnitType.cs /E /F /I
 echo A | xcopy %ETFrameworkPath%\%LessonUnitConfigPartialPath%\UnitConfigPartial.cs %CurrentPath%\%LessonUnitConfigPartialPath%\UnitConfigPartial.cs /E /F /I
 
 echo A | xcopy %ETFrameworkPath%\%UnityHotfixUnitPath%\UnitFactory.cs %CurrentPath%\%UnityHotfixUnitPath%\UnitFactory.cs /E /F /I
 
+echo A | xcopy %ETFrameworkPath%\%HotfixViewDemoPath%\EventType.cs %CurrentPath%\%HotfixViewDemoPath%\EventType.cs /E /F /I
 echo A | xcopy %ETFrameworkPath%\%HotfixViewUnitPath%\AfterUnitCreate_CreateUnitView.cs %CurrentPath%\%HotfixViewUnitPath%\AfterUnitCreate_CreateUnitView.cs /E /F /I
 echo A | xcopy %ETFrameworkPath%\%UnityScenePath%\SceneFactory.cs %CurrentPath%\%UnityScenePath%\SceneFactory.cs /E /F /I
 echo A | xcopy %ETFrameworkPath%\%UILoginPath%\AppStartInitFinish_CreateLoginUI.cs %CurrentPath%\%UILoginPath%\AppStartInitFinish_CreateLoginUI.cs /E /F /I
+
 
 @REM 服务端
 

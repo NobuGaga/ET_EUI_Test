@@ -10,33 +10,44 @@ namespace ET
 
 			Computer computer = args.ZoneScene.AddChild<Computer>();
 
-            computer.AddComponent<PCCaseComponent>();
-            computer.AddComponent<MonitorsComponent>();
-            computer.AddComponent<KeyBoardComponent>();
-            computer.AddComponent<MouseComponent>();
+			//Game.EventSystem.Publish(new EventType.InstallComputer(){Computer =  computer});
 
+            Log.Debug("Before Publish TimeHelper.ClientNow() = " + TimeHelper.ClientNow());
+			// 旧版 Coroutine 不会等待? 需要使用 await 关键字才会打到异步效果
+			// 新版 直接使用 Coroutine 有异步效果?
+			Game.EventSystem.PublishAsync(new EventType.InstallComputer(){Computer =  computer}).Coroutine();
+			//await Game.EventSystem.PublishAsync(new EventType.InstallComputer(){Computer =  computer});
+            Log.Debug("After Publish TimeHelper.ClientNow() = " + TimeHelper.ClientNow());
 			computer.Start();
+            Log.Debug("After Start TimeHelper.ClientNow() = " + TimeHelper.ClientNow());
 
-			await TimerComponent.Instance.WaitAsync(3000);
+            //computer.AddComponent<PCCaseComponent>();
+            //computer.AddComponent<MonitorsComponent>();
+            //computer.AddComponent<KeyBoardComponent>();
+            //computer.AddComponent<MouseComponent>();
 
-			computer.Dispose();
+            //computer.Start();
 
-			UnitConfig config = UnitConfigCategory.Instance.Get(1001);
+            //await TimerComponent.Instance.WaitAsync(3000);
 
-			Log.Debug(config.Name);
+            //computer.Dispose();
 
-			var allUnitConfig = UnitConfigCategory.Instance.GetAll();
+            //UnitConfig config = UnitConfigCategory.Instance.Get(1001);
 
-			foreach (var unitConfig in allUnitConfig.Values)
-            {
-				Log.Debug(unitConfig.Name);
-				Log.Debug(unitConfig.TestValue.ToString());
-            }
+            //Log.Debug(config.Name);
 
-			UnitConfig heightConfig = UnitConfigCategory.Instance.GetUnitConfigByHeight(178);
+            //var allUnitConfig = UnitConfigCategory.Instance.GetAll();
 
-			Log.Debug(heightConfig.Name);
+            //foreach (var unitConfig in allUnitConfig.Values)
+            //         {
+            //	Log.Debug(unitConfig.Name);
+            //	Log.Debug(unitConfig.TestValue.ToString());
+            //         }
 
-		}
+            //UnitConfig heightConfig = UnitConfigCategory.Instance.GetUnitConfigByHeight(178);
+
+            //Log.Debug(heightConfig.Name);
+
+        }
 	}
 }

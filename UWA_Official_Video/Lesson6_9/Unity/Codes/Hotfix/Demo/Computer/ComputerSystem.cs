@@ -12,7 +12,7 @@
     {
         public override void Update(Computer self)
         {
-            Log.Debug("Computer update!!!!");
+            //Log.Debug("Computer update!!!!");
         }
     }
 
