@@ -110,7 +110,7 @@ echo A | xcopy %CurrentPath%\%LessonUnitConfigPartialPath%\UnitConfigPartial.cs 
 
 echo A | xcopy %CurrentPath%\%UnityHotfixUnitPath%\UnitFactory.cs %ETFrameworkPath%\%UnityHotfixUnitPath%\UnitFactory.cs /E /F /I
 
-echo F | xcopy %CurrentPath%\%HotfixViewDemoPath%\EventType.cs %ETFrameworkPath%\%HotfixViewDemoPath%\EventType.cs /E /F /I
+echo A | xcopy %CurrentPath%\%HotfixViewDemoPath%\EventType.cs %ETFrameworkPath%\%HotfixViewDemoPath%\EventType.cs /E /F /I
 echo A | xcopy %CurrentPath%\%HotfixViewUnitPath%\AfterUnitCreate_CreateUnitView.cs %ETFrameworkPath%\%HotfixViewUnitPath%\AfterUnitCreate_CreateUnitView.cs /E /F /I
 echo A | xcopy %CurrentPath%\%UnityScenePath%\SceneFactory.cs %ETFrameworkPath%\%UnityScenePath%\SceneFactory.cs /E /F /I
 echo A | xcopy %CurrentPath%\%UILoginPath%\AppStartInitFinish_CreateLoginUI.cs %ETFrameworkPath%\%UILoginPath%\AppStartInitFinish_CreateLoginUI.cs /E /F /I
