@@ -1,4 +1,4 @@
-﻿
+﻿using System.Numerics;
 
 namespace ET
 {
@@ -49,15 +49,18 @@ namespace ET
 
             Log.Debug("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 			// 使用 Coroutine 直接返回
-			this.TestAsync().Coroutine();
-            // 使用 await 等待返回
-            //await this.TestAsync();
-            // 有返回结果的必须使用 await 需要等待返回结果
-            //int result = await this.TestResultAsync();
+			//this.TestAsync().Coroutine();
+			// 使用 await 等待返回
+			//await this.TestAsync();
+			// 有返回结果的必须使用 await 需要等待返回结果
+			//int result = await this.TestResultAsync();
 
-            //Log.Debug(result.ToString());
+			//Log.Debug(result.ToString());
 
+			ETCancellationToken cancellationToken = new ETCancellationToken();
+			MoveToAsync(Vector3.Zero, cancellationToken).Coroutine();
             Log.Debug("bbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+			cancellationToken.Cancel();
 		}
 
 		public async ETTask TestAsync()
@@ -76,6 +79,23 @@ namespace ET
 			Log.Debug("2222222222222222222222222222");
 
 			return 10;
+		}
+
+		public async ETTask MoveToAsync(Vector3 pos, ETCancellationToken cancellationToken)
+        {
+			Log.Debug("Move Start!!!");
+			bool ret = await TimerComponent.Instance.WaitAsync(3000, cancellationToken);
+		
+			if (ret)
+            {
+				Log.Debug("Move Over!!!");
+
+			}
+			else
+            {
+				Log.Debug("Move Stop!!!");
+			}
+
 		}
 	}
 }

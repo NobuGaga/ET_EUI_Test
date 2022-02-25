@@ -14,6 +14,11 @@ set ExcelPath=Excel
 set ETExcelPath=%ETFrameworkPath%\%ExcelPath%
 set CurrentExcelPath=%CurrentPath%\%ExcelPath%
 
+@REM Proto 路径
+set ProtoPath=Proto
+set ETProtoPath=%ETFrameworkPath%\%ProtoPath%
+set CurrentProtoPath=%CurrentPath%\%ProtoPath%
+
 @REM 客户端数据方法相对路径
 set UnityModelPath=Unity\Codes\Model
 set UnityHotfixPath=Unity\Codes\Hotfix
@@ -29,19 +34,27 @@ set ServerHotfixPath=Server\Hotfix
 @REM 修改原有框架代码路径
 set EntityPath=Core\Entity
 set DemoPath=Demo
+set DemoLoginPath=%DemoPath%\Login
 set UnitPath=%DemoPath%\Unit
 set ScenePath=%DemoPath%\Scene
 
 @REM 客户端代码路径
 set UnityEntityPath=%UnityModelPath%\%EntityPath%
+
 set UnityModelDemoPath=%UnityModelPath%\%DemoPath%
 set UnityModelUnitPath=%UnityModelPath%\%UnitPath%
+
+set UnityHotfixLoginPath=%UnityHotfixPath%\%DemoLoginPath%
 set UnityHotfixUnitPath=%UnityHotfixPath%\%UnitPath%
 
 set HotfixViewDemoPath=%UnityHotfixView%\%DemoPath%
 set HotfixViewUnitPath=%UnityHotfixView%\%UnitPath%
+
 set UnityScenePath=%UnityHotfixPath%\%ScenePath%
 set UILoginPath=%UnityHotfixView%\%DemoPath%\UI\UILogin
+
+@REM 服务器代码路径
+set ServerDemoLoginPaht=%ServerHotfixPath%\%DemoLoginPath%
 
 @REM 新增测试逻辑代码路径
 set LessonComputerPath=%DemoPath%\Computer
@@ -62,6 +75,8 @@ set ETUnityModelLessonCodePath=%ETFrameworkPath%\%UnityModelLessonCodePath%
 set ETServerHotfixLessonCodePath=%ETFrameworkPath%\%ServerHotfixLessonCodePath%
 set ETServerModelLessonCodePath=%ETFrameworkPath%\%ServerModelLessonCodePath%
 
+set ETServerHotfixDemoLoginPath=%ETFrameworkPath%\%ServerDemoLoginPaht%
+
 @REM ====================================================================================
 @REM 脚本文件夹操作
 
@@ -71,17 +86,23 @@ rd /S /Q %CurrentPath%\%UnityModelLessonCodePath%
 rd /S /Q %CurrentPath%\%ServerHotfixLessonCodePath%
 rd /S /Q %CurrentPath%\%ServerModelLessonCodePath%
 
+rd /S /Q %CurrentPath%\%ServerDemoLoginPaht%
+
 xcopy %ETUnityHotfixLessonCodePath% %CurrentPath%\%UnityHotfixLessonCodePath% /E /F /I
 xcopy %ETUnityModelLessonCodePath% %CurrentPath%\%UnityModelLessonCodePath% /E /F /I
 
 xcopy %ETServerHotfixLessonCodePath% %CurrentPath%\%ServerHotfixLessonCodePath% /E /F /I
 xcopy %ETServerModelLessonCodePath% %CurrentPath%\%ServerModelLessonCodePath% /E /F /I
 
-rd /S /Q %ETUnityHotfixLessonCodePath%
-rd /S /Q %ETUnityModelLessonCodePath%
+xcopy %ETServerHotfixDemoLoginPath% %CurrentPath%\%ServerDemoLoginPaht% /E /F /I
 
-rd /S /Q %ETServerHotfixLessonCodePath%
-rd /S /Q %ETServerModelLessonCodePath%
+@REM rd /S /Q %ETUnityHotfixLessonCodePath%
+@REM rd /S /Q %ETUnityModelLessonCodePath%
+
+@REM rd /S /Q %ETServerHotfixLessonCodePath%
+@REM rd /S /Q %ETServerModelLessonCodePath%
+
+@REM rd /S /Q %ETServerHotfixDemoLoginPath%
 
 @REM ====================================================================================
 @REM 脚本文件操作
@@ -91,6 +112,10 @@ rd /S /Q %ETServerModelLessonCodePath%
 echo A | xcopy %ETExcelPath%\StartSceneConfig.xlsx %CurrentExcelPath%\StartSceneConfig.xlsx /E /F /I
 echo A | xcopy %ETExcelPath%\UnitConfig.xlsx %CurrentExcelPath%\UnitConfig.xlsx /E /F /I
 
+@REM Proto
+
+echo A | xcopy %ETProtoPath%\OuterMessage.proto %CurrentProtoPath%\OuterMessage.proto /E /F /I
+
 @REM 客户端
 
 echo A | xcopy %ETFrameworkPath%\%UnityEntityPath%\SceneType.cs %CurrentPath%\%UnityEntityPath%\SceneType.cs /E /F /I
@@ -99,12 +124,15 @@ echo A | xcopy %ETFrameworkPath%\%UnityModelUnitPath%\Unit.cs %CurrentPath%\%Uni
 echo A | xcopy %ETFrameworkPath%\%UnityModelUnitPath%\UnitType.cs %CurrentPath%\%UnityModelUnitPath%\UnitType.cs /E /F /I
 echo A | xcopy %ETFrameworkPath%\%LessonUnitConfigPartialPath%\UnitConfigPartial.cs %CurrentPath%\%LessonUnitConfigPartialPath%\UnitConfigPartial.cs /E /F /I
 
+echo A | xcopy %ETFrameworkPath%\%UnityHotfixLoginPath%\LoginHelper.cs %CurrentPath%\%UnityHotfixLoginPath%\LoginHelper.cs /E /F /I
+echo A | xcopy %ETFrameworkPath%\%UnityHotfixLoginPath%\R2C_SayGoodByeHandler.cs %CurrentPath%\%UnityHotfixLoginPath%\R2C_SayGoodByeHandler.cs /E /F /I
 echo A | xcopy %ETFrameworkPath%\%UnityHotfixUnitPath%\UnitFactory.cs %CurrentPath%\%UnityHotfixUnitPath%\UnitFactory.cs /E /F /I
 
 echo A | xcopy %ETFrameworkPath%\%HotfixViewDemoPath%\EventType.cs %CurrentPath%\%HotfixViewDemoPath%\EventType.cs /E /F /I
 echo A | xcopy %ETFrameworkPath%\%HotfixViewUnitPath%\AfterUnitCreate_CreateUnitView.cs %CurrentPath%\%HotfixViewUnitPath%\AfterUnitCreate_CreateUnitView.cs /E /F /I
 echo A | xcopy %ETFrameworkPath%\%UnityScenePath%\SceneFactory.cs %CurrentPath%\%UnityScenePath%\SceneFactory.cs /E /F /I
 echo A | xcopy %ETFrameworkPath%\%UILoginPath%\AppStartInitFinish_CreateLoginUI.cs %CurrentPath%\%UILoginPath%\AppStartInitFinish_CreateLoginUI.cs /E /F /I
+echo A | xcopy %ETFrameworkPath%\%UILoginPath%\UILoginComponentSystem.cs %CurrentPath%\%UILoginPath%\UILoginComponentSystem.cs /E /F /I
 
 
 @REM 服务端
