@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
-using MultiLanguage;
 
 namespace ET
 {
@@ -35,7 +34,7 @@ namespace ET
         {
             string abName = $"code{Define.ABSuffix}";
             //(AssetBundle assetsBundle, Dictionary<string, Object> assetsBundlDic) = AssetsBundleHelper.LoadBundle(abName);
-            Dictionary<string, UnityEngine.Object> assetsBundlDic = AssetsBundleHelper.LoadBundle($"code{Define.ABSuffix}", out AssetBundle assetsBundle);
+            Dictionary<string, Object> assetsBundlDic = AssetsBundleHelper.LoadBundle(abName, out AssetBundle assetsBundle);
             TextAsset codeTextAsset = assetsBundlDic["Code.dll"] as TextAsset;
             byte[] assBytes = codeTextAsset.bytes;
             codeTextAsset = assetsBundlDic["Code.pdb"] as TextAsset;
