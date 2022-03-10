@@ -1,7 +1,11 @@
 using System.Collections.Generic;
 using UnityEditor;
 
+#if MultiLanguage_ET
+namespace ET
+#else
 namespace MultiLanguage
+#endif
 {
 #if UNITY_EDITOR
  
@@ -16,6 +20,9 @@ namespace MultiLanguage
 
     public static class LanguageHelper
     {
+        // 当前使用的语言标识(具体语言对应关系根据框架类型不同而设置)
+        private static ushort currentLanguage = 1;
+
 #if UNITY_EDITOR
         // 设置使用的框架类型
         private const FrameworkType FRAMEWORK_TYPE = FrameworkType.ET;
@@ -30,9 +37,6 @@ namespace MultiLanguage
             { FrameworkType.uLua, "MultiLanguage_uLua" },
         };
         private static string m_languageSymbol = FrameworkSymbolDic[FRAMEWORK_TYPE];
-
-        // 当前使用的语言标识(具体语言对应关系根据框架类型不同而设置)
-        private static ushort currentLanguage = 1;
 
         // 编辑器使用到组件时设置宏定义
         static LanguageHelper() => SetBuildLanguageSymbol();
@@ -64,7 +68,7 @@ namespace MultiLanguage
         public static string GetText(string key)
         {
 #if MultiLanguage_ET
-            return ET.TextConfigHelper.GetText(key);
+            return TextConfigHelper.GetText(key);
 #elif MultiLanguage_xLua
             return string.Format("{0}_xLua_value", key);
 #elif MultiLanguage_uLua

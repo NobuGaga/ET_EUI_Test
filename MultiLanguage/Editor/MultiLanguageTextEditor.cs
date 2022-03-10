@@ -1,13 +1,14 @@
 using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using MultiLanguage;
+using ET;
 
-namespace UnityEditor.UI
+namespace MultiLanguage
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(MultiLanguageText), true)]
-    public sealed class MultiLanguageTextEditor : TextEditor
+    public sealed class MultiLanguageTextEditor : UnityEditor.UI.TextEditor
     {
         // 节点名前缀
         const string TextObjNameFormat = "text_{0}";

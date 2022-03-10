@@ -1,6 +1,12 @@
-using MultiLanguage;
+using UnityEngine;
+using UnityEngine.UI;
 
-namespace UnityEngine.UI
+#if MultiLanguage_ET
+
+namespace ET
+#else
+namespace MultiLanguage
+#endif
 {
     [RequireComponent(typeof(CanvasRenderer))]
     // 设置菜单位置在 Text 后面 10
