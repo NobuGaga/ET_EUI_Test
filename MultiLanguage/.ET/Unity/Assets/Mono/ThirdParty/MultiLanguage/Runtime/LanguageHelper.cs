@@ -1,11 +1,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 
-#if MultiLanguage_ET
-namespace ET
-#else
 namespace MultiLanguage
-#endif
 {
 #if UNITY_EDITOR
  

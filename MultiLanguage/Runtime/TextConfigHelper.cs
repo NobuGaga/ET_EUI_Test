@@ -1,12 +1,9 @@
 using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
+using ET;
 
-#if MultiLanguage_ET
-namespace ET
-#else
 namespace MultiLanguage
-#endif
 {
     public static class TextConfigHelper
     {
