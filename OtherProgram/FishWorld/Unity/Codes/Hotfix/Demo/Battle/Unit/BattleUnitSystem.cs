@@ -1,9 +1,7 @@
-using System.Collections.Generic;
-
-namespace ET.Battle
+    namespace ET.Battle
 {
     [ObjectSystem]
-    public class BattleUnitSystemAwakeSystem : AwakeSystem<BattleUnit, UnitInfo>
+    public class BattleUnitAwakeSystem : AwakeSystem<BattleUnit, UnitInfo>
     {
         // 添加通用数据或者组件
         public override void Awake(BattleUnit self, UnitInfo unitInfo)
@@ -14,11 +12,12 @@ namespace ET.Battle
         private void InitAttrData(BattleUnit self, UnitInfo unitInfo)
         {
             NumericComponent numericComponent = self.AddComponent<NumericComponent>();
-            List<int> numericTypes = unitInfo.Ks;
-            List<long> numericValues = unitInfo.Vs;
+            // 改用 var 以免 UnitInfo 改变后要修改别的地方代码
+            var numericTypes = unitInfo.Ks;
+            var numericValues = unitInfo.Vs;
 
-            if (unitInfo.Ks == null || unitInfo.Vs == null || unitInfo.Ks.Count <= 0 ||
-                unitInfo.Vs.Count <= 0)
+            if (unitInfo.Ks == null || unitInfo.Vs == null ||
+                unitInfo.Ks.Count <= 0 || unitInfo.Vs.Count <= 0)
                 return;
             
             for (int i = 0; i < numericTypes.Count; ++i)
@@ -27,7 +26,7 @@ namespace ET.Battle
     }
 
     [ObjectSystem]
-    public class BattleUnitSystemDestroySystem : DestroySystem<BattleUnit>
+    public class BattleUnitDestroySystem : DestroySystem<BattleUnit>
     {
         public override void Destroy(BattleUnit self)
         {
