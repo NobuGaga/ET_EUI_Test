@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ET.Battle
+namespace ET
 {
     // 战斗用常量代码配置
     public static class ReferenceHelper

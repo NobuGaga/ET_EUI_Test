@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ET.Battle
+namespace ET
 {
     internal static class BattleDebug
     {

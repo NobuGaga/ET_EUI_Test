@@ -1,6 +1,6 @@
 using ET.EventType;
 
-namespace ET.Battle
+namespace ET
 {
     // 先按 ZoneScene 的生命周期走, 后面看设计合理性是挂在 Current 还是 Zone
     // Event 的执行不依赖顺序

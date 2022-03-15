@@ -1,13 +1,37 @@
-namespace ET.Battle
+namespace ET
 {
-	[ObjectSystem]
-	public class BattleUnitComponentAwakeSystem : AwakeSystem<BattleUnitComponent>
+    /// <summary>
+    /// 原来自带代码实现了 IAwake<int> 用来复制表 Id
+    /// 因为并不是每个战斗实体都有表 Id 所以这里不作赋值跟保存
+    /// 转到具体的鱼组件去赋值
+    /// 现通过增加组件的方式拓展
+    /// </summary>
+    [ObjectSystem]
+	public class BattleUnitComponentAwakeSystem : AwakeSystem<BattleUnitComponent, UnitInfo>
 	{
-		public override void Awake(BattleUnitComponent self)
-		{
+        // 添加通用数据或者组件
+        // 在 AddChild 的时候根据传入参数调用相应的 IAake 方法
+        // 在 UnitFactory 进行类型判断对应的使用 AddChild 传入参数
+        public override void Awake(BattleUnitComponent self, UnitInfo unitInfo)
+        {
+            InitAttrData(self, unitInfo);
+        }
 
-		}
-	}
+        private void InitAttrData(BattleUnitComponent self, UnitInfo unitInfo)
+        {
+            NumericComponent numericComponent = self.AddComponent<NumericComponent>();
+            // 改用 var 以免 UnitInfo 改变后要修改别的地方代码
+            var numericTypes = unitInfo.Ks;
+            var numericValues = unitInfo.Vs;
+
+            if (unitInfo.Ks == null || unitInfo.Vs == null ||
+                unitInfo.Ks.Count <= 0 || unitInfo.Vs.Count <= 0)
+                return;
+
+            for (int i = 0; i < numericTypes.Count; i++)
+                numericComponent.Set(numericTypes[i], numericValues[i]);
+        }
+    }
 	
 	[ObjectSystem]
 	public class BattleUnitComponentDestroySystem : DestroySystem<BattleUnitComponent>
@@ -20,49 +44,6 @@ namespace ET.Battle
 	
 	public static class BattleUnitComponentSystem
 	{
-		//public static void Add(this BattleUnitComponent self, Unit unit)
-		//{
-		//	Log.Debug("add unit: {0}", unit.Id);
-		//	self.TypeUnits.Add((int) unit.UnitType, unit);
-		//}
-
-		//public static Unit Get(this BattleUnitComponent self, long id)
-		//{
-		//	Unit unit = self.GetChild<Unit>(id);
-		//	return unit;
-		//}
-
-		//public static async ETTask Remove(this BattleUnitComponent self, long id)
-		//{
-  //          await Game.EventSystem.PublishAsync(new EventType.RemoveUnit() { UnitId = id, CurrentScene = self.DomainScene()});
-            
-		//	Unit unit = self.GetChild<Unit>(id);
-		//	self.TypeUnits.Remove((int) unit.UnitType, unit);
-		//	unit?.Dispose();
-		//}
-		
-		//public static HashSet<Unit> GetTypeUnits(this BattleUnitComponent self, UnitType unitType)
-		//{
-		//	return self.TypeUnits[(int) unitType];
-		//}
-
-		//public static Unit GetPlayUnitBySeatId(this BattleUnitComponent self, int seatId)
-		//{
-		//	HashSet<Unit>  units = self.TypeUnits[(int) UnitType.Player ];
-		//	Unit playUnit  = null;
-		//	for(int i = 0; i < units.Count; i++)
-		//	{
-		//		Unit unit = units.ElementAt(i);
-		//		int pos = unit.GetComponent<NumericComponent>().GetAsInt(NumericType.Pos);
-		//		if (pos == seatId)
-		//		{
-		//			playUnit = unit;
-		//			break;
-		//		}
-		//	}
-		//	return playUnit;
-		//}
-		
 
 	}
 }

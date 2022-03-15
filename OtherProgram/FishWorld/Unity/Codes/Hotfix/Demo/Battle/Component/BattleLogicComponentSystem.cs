@@ -1,6 +1,6 @@
 using ET.EventType;
 
-namespace ET.Battle
+namespace ET
 {
     // 先按 ZoneScene 的生命周期走, 后面看设计合理性是挂在 Current 还是 Zone
     // Event 的执行不依赖顺序
@@ -30,21 +30,15 @@ namespace ET.Battle
     {
         public override void Awake(BattleLogicComponent self)
         {
-            self.AddComponent<BattleUnitComponent>();
+        
         }
     }
 
     public static class BattleLogicComponentSystem
     {
-        public static BattleUnit CreateBattleUnit(this BattleLogicComponent self, UnitInfo unitInfo)
+        public static void Test(this BattleLogicComponent self)
         {
-            BattleUnitComponent battleUnitCom = self.GetComponent<BattleUnitComponent>();
-
-            // isFromPool 参数为加入对象池, 对象池是单层结构, Entity 加入池中时只会加自身加入池中
-            // 不会把其下的子组件或者子孩子加入池中
-            // 暂时使用标记来设置是否使用对象池
-            bool isFromPool = BattleTestConfig.IsUseModelPool;
-            return battleUnitCom.AddChildWithId<BattleUnit, UnitInfo>(unitInfo.UnitId, unitInfo, isFromPool);
+        
         }
     }
 }

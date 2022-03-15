@@ -1,4 +1,4 @@
-namespace ET.Battle
+namespace ET
 {
 	/// <summary>
 	/// 战斗测试参数代码配置数据

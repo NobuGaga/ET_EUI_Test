@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace ET.Battle
+namespace ET
 {
     [CustomEditor(typeof(GizmosCaller))]
     public sealed class GizmosCallerEditor : Editor

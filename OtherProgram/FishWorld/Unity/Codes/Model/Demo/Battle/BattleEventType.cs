@@ -1,10 +1,10 @@
-namespace ET.Battle
+namespace ET
 {
 	namespace BattleEventType
     {
-        public struct AfterBattleUnitCreate
+        public struct TestAfterUnitCreate
         {
-            public BattleUnit BattleUnit;
+            public Unit BattleUnit;
         }
     }
 }

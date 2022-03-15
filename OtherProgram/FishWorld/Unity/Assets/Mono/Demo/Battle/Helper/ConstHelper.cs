@@ -1,4 +1,4 @@
-namespace ET.Battle
+namespace ET
 {
     // 战斗用常量代码配置
     internal static class ConstHelper

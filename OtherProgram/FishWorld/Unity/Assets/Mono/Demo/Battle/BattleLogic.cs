@@ -1,5 +1,4 @@
 using UnityEngine;
-using ET.Battle;
 
 namespace ET
 {

@@ -2,7 +2,7 @@
 
 using UnityEngine;
 
-namespace ET.Battle
+namespace ET
 {
     public class GizmosCaller : MonoBehaviour
     {
