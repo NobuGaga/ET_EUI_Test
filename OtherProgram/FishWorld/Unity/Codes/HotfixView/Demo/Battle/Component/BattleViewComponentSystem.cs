@@ -32,6 +32,9 @@ namespace ET
         {
             // Mono 层方法只能在 View 层调用
             BattleLogic.Init();
+            // 战斗用另外一个对象池组件, 生命周期跟战斗视图组件
+            // 只用来管理鱼跟子弹
+            self.AddComponent<ObjectPoolComponent>();
         }
     }
 

@@ -21,6 +21,13 @@ namespace ET
 	/// </summary>
 	public class BattleViewComponent : Entity, IAwake
 	{
+		public static BattleViewComponent Instance;
 
+		public BattleViewComponent() => Instance = this;
+
+		~BattleViewComponent()
+		{
+			Instance = null;
+		}
 	}
 }

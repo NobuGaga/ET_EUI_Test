@@ -7,6 +7,9 @@ namespace ET
     /// </summary>
     public static class UnitViewSystem
     {
+        public static BattleUnitViewComponent BattleUnitViewComponent(this Unit self)
+                                => self.GetComponent<BattleUnitViewComponent>();
+
         /// <summary>
         /// 加载战斗用预设模型
         /// 原逻辑先走 AssetBundle 加载, 再调用对象池获取, 正常逻辑, 对象池没有走加载流程
@@ -30,7 +33,6 @@ namespace ET
             catch (System.Exception exception)
             {
                 Log.Error($"private Unit.LoadModelPrefab() exception msg = { exception.Message }");
-                //Debug.LogErrorFormat($"private Unit.LoadModelPrefab() exception msg = { exception.Message }");
             }
             return null;
         }
@@ -50,19 +52,21 @@ namespace ET
         /// <returns></returns>
         public static async ETTask InitModel(this Unit self, Scene currentScene, string assetBundlePath, string assetBundleName)
         {
-            // TODO delete
+            // TODO Battle Delete
             if (currentScene.Name == "scene_home")
                 return;
 
-            // TODO delete
+            // TODO Battle Delete
             if (self.UnitType != UnitType.Fish && self.UnitType != UnitType.Bullet)
                 return;
 
-            // Warning 原逻辑将 Asset Bundle Name 加进 ObjectPool 里作为 Key, 而不是使用加载的 Asset Name
+            // 同步增加 BattleUnitViewComponent, 在创建完 Unit 后
+            self.AddComponent<BattleUnitViewComponent>();
+            // Battle Warning 原逻辑将 Asset Bundle Name 加进 ObjectPool 里作为 Key, 而不是使用加载的 Asset Name
             // 如果是同一个 AssetBundle 里有不同的预设资源则会有问题, 目前模型资源是一个 AssetBundle 里一个预设
             // UI 资源可能多个预设在同一个 AssetBundle 里, ObjectPoolComponent 则不可使用
             // 使用 Asset Bundle Name 拼接 Asset Name 或者是别的方法
-            ObjectPoolComponent objectPoolComponent = currentScene.GetComponent<ObjectPoolComponent>();
+            ObjectPoolComponent objectPoolComponent = BattleViewComponent.Instance.GetComponent<ObjectPoolComponent>();
             GameObject gameObject = objectPoolComponent?.PopObject(assetBundlePath);
 
             if (gameObject == null)
@@ -71,13 +75,13 @@ namespace ET
             if (gameObject == null)
             {
                 string errorMsg = $"Unit.InitModel error assetBundlePath = { assetBundlePath }, assetBundleName = { assetBundleName }";
-                //Log.Error(errorMsg);
                 throw new System.Exception(errorMsg);
             }
 
-            Transform parent = GlobalComponent.Instance.FishRoot;
             Transform node = gameObject.transform;
-            self.AddComponent<GameObjectComponent, string, Transform, Transform>(assetBundlePath, parent, node);
+            bool isUseModelPool = BattleTestConfig.IsUseModelPool;
+            self.AddComponent<GameObjectComponent, string, Transform>(assetBundlePath, node, isUseModelPool);
+            Game.EventSystem.Publish(new EventType.AfterBattleGameObjectCreate() { Unit = self });
         }
     }
 }

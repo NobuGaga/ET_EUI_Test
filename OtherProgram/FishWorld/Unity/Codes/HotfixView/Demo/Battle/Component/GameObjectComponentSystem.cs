@@ -2,15 +2,21 @@ using UnityEngine;
 
 namespace ET
 {
+    /// <summary>
+    /// GameObjectComponent 生命周期跟随 ObjectPoolComponent(如果有使用的话)
+    /// </summary>
     [ObjectSystem]
-    public class GameObjectComponentAwakeSystem : AwakeSystem<GameObjectComponent, string, Transform, Transform>
+    public class GameObjectComponentAwakeSystem : AwakeSystem<GameObjectComponent, string, Transform>
     {
-        public override void Awake(GameObjectComponent self, string AssetName, Transform parent, Transform node)
+        public override void Awake(GameObjectComponent self, string AssetName, Transform node)
         {
+            Unit unit = self.Parent as Unit;
             self.AssetName = AssetName;
             self.Transform = node;
-            node.parent = parent;
-            node.localPosition = Vector3.zero;
+
+            BattleUnitViewComponent battleUnitViewComponent = unit.BattleUnitViewComponent();
+            if (battleUnitViewComponent == null)
+                node.localPosition = Vector3.zero;
         }
     }
 }
