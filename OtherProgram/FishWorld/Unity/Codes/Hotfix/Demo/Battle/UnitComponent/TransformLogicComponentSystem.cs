@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace ET
 {
+    [ObjectSystem]
     public class TransformComponentAwakeSystem : AwakeSystem<TransformComponent>
     {
         public override void Awake(TransformComponent self)
@@ -11,14 +12,26 @@ namespace ET
         }
     }
 
+    [ObjectSystem]
+    public class TransformComponentDestroySystem : DestroySystem<TransformComponent>
+    {
+        public override void Destroy(TransformComponent self)
+        {
+            // Battle TODO
+        }
+    }
+
     /// <summary>
     /// 拓展 TransformComponent Setter 方法, Getter 直接访问成员变量
     /// 使用 Setter 方法赋值主要为了修改脏标记
     /// 原来通过接口约束变换组件跟实体的行为, 使他们保持一致
     /// 现在不作约束, 直接定义实现方法
     /// </summary>
-    public static class TransformComponentSystem
+    public static class TransformLogicComponentSystem
     {
+        public static BattleUnitLogicComponent BattleUnitComponent(this TransformComponent self)
+                                                => self.Parent as BattleUnitLogicComponent;
+
         public static void SetPos(this TransformComponent self, Vector3 Pos)
         {
             self.LogicPos = Pos;

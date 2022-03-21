@@ -6,14 +6,13 @@ namespace ET
     /// 变换组件, 只跑数据逻辑, 真正的设置在 GameObjectComponent 里
     /// 这里存放逻辑相关成员变量
     /// </summary>
-	public partial class TransformComponent : Entity, IAwake, ILateUpdate, IUpdate
+	public class TransformComponent : Entity, IAwake, IDestroy
     {
         public Vector3 LogicPos;
         public Vector3 LogicLocalPos;
         public Quaternion LogicRotation;
         public Quaternion LogicLocalRotation;
         public Vector3 LogicScale;
-
         public Vector3 LogicForward;
 
         /// <summary>

@@ -13,7 +13,7 @@ namespace ET
         internal static GizmosCaller GizmosCaller;
 #endif
 
-        internal static void Init()
+        public static void Init()
         {
             fishRootNode = GameObject.Find(ConstHelper.FishRootNodeName);
 #if UNITY_EDITOR

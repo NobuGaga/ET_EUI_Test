@@ -1,7 +1,11 @@
+using System.Linq;
 using ET.EventType;
+using System.Collections.Generic;
 
 namespace ET
 {
+    #region Event
+
     // 先按 ZoneScene 的生命周期走, 后面看设计合理性是挂在 Current 还是 Zone
     // Event 的执行不依赖顺序
     // 目前订阅了 AfterCreateZoneScene 事件的处理只有 AfterCreateZoneScene_AddComponent
@@ -26,6 +30,11 @@ namespace ET
         }
     }
 
+    #endregion
+
+    #region Life Circle
+
+    [ObjectSystem]
     public sealed class BattleViewComponentAwakeSystem : AwakeSystem<BattleViewComponent>
     {
         public override void Awake(BattleViewComponent self)
@@ -38,11 +47,46 @@ namespace ET
         }
     }
 
-    public static class BattleViewComponentSystem
+    [ObjectSystem]
+    public sealed class BattleViewComponentUpdateSystem : UpdateSystem<BattleViewComponent>
     {
-        public static void Test(this BattleViewComponent self)
-        {
+        public override void Update(BattleViewComponent self) => self.Update();
+    }
 
+    [ObjectSystem]
+    public sealed class BattleViewComponentDestroySystem : DestroySystem<BattleViewComponent>
+    {
+        public override void Destroy(BattleViewComponent self)
+        {
+            // Battle TODO
         }
     }
+
+    #endregion
+
+    #region Base Function
+
+    public static class BattleViewComponentSystem
+    {
+        public static void Update(this BattleViewComponent self)
+        {
+            // 需要保证 BattleLogicComponent 跟 BattleViewComponent 挂在同一个 Scene 上
+            // 都通过 BattleTestConfig 的标记进行判断
+            BattleLogicComponent battleLogicComponent = self.Parent.GetComponent<BattleLogicComponent>();
+            UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
+            if (unitComponent == null)
+                return;
+            
+            HashSet<Unit> fishList = unitComponent.GetFishList();
+            for (int index = 0; index < fishList.Count; index++)
+            {
+                Unit unit = fishList.ElementAt(index);
+                unit.BattleUnitViewComponent().Update();
+                // 原逻辑没有做渲染鱼数据分离, 先调用了渲染再调用逻辑更新
+                unit.BattleUnitLogicComponent().FixedUpdate();
+            }
+        }
+    }
+
+    #endregion
 }

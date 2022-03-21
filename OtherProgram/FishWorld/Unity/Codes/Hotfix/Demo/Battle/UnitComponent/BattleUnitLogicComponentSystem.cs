@@ -1,5 +1,7 @@
 namespace ET
 {
+    #region Life Circle
+
     /// <summary>
     /// 原来自带代码实现了 IAwake<int> 用来复制表 Id
     /// 因为并不是每个战斗实体都有表 Id 所以这里不作赋值跟保存
@@ -16,34 +18,61 @@ namespace ET
         public override void Awake(BattleUnitLogicComponent self, UnitInfo unitInfo)
         {
             self.UnitId = unitInfo.UnitId;
-            InitAttrData(self, unitInfo);
-            self.AddComponent<TransformComponent>();
+            self.IsUpdate = false;
+            InitComponent(self, unitInfo);
         }
 
-        private void InitAttrData(BattleUnitLogicComponent self, UnitInfo unitInfo)
+        /// <summary> 初始化组件, 根据 UnitType 类型增加对应组件 </summary>
+        private void InitComponent(BattleUnitLogicComponent self, UnitInfo unitInfo)
         {
-            NumericComponent numericComponent = self.AddComponent<NumericComponent>();
+            // 先添加服务器发送的属性值
+            InitAttributeComponent(self, unitInfo);
+
+            bool isUseModelPool = BattleTestConfig.IsUseModelPool;
+
+            // 再添加变换组件
+            self.AddComponent<TransformComponent>(isUseModelPool);
+
+            switch (unitInfo.UnitType)
+            {
+                case UnitType.Fish:
+                    self.AddComponent<FishMoveComponent, int>(unitInfo.ConfigId, isUseModelPool);
+                    self.TransformComponent().NodeName = self.FishMoveComponent().GetNodeName();
+                    break;
+            }
+        }
+
+        // 在 Unit 节点下 Add, 保持跟其他 Unit 一致
+        private void InitAttributeComponent(BattleUnitLogicComponent self, UnitInfo unitInfo)
+        {
+            bool isUseModelPool = BattleTestConfig.IsUseModelPool;
+            var attributeComponent = self.Unit().AddComponent<NumericComponent>(isUseModelPool);
+
             // 改用 var 以免 UnitInfo 改变后要修改别的地方代码
-            var numericTypes = unitInfo.Ks;
-            var numericValues = unitInfo.Vs;
+            var attributeTypes = unitInfo.Ks;
+            var attributeValues = unitInfo.Vs;
 
             if (unitInfo.Ks == null || unitInfo.Vs == null ||
                 unitInfo.Ks.Count <= 0 || unitInfo.Vs.Count <= 0)
                 return;
 
-            for (int i = 0; i < numericTypes.Count; i++)
-                numericComponent.Set(numericTypes[i], numericValues[i]);
+            for (ushort i = 0; i < attributeTypes.Count; i++)
+                attributeComponent.Set(attributeTypes[i], attributeValues[i]);
         }
     }
-	
+
 	[ObjectSystem]
 	public class BattleUnitLogicComponentDestroySystem : DestroySystem<BattleUnitLogicComponent>
 	{
 		public override void Destroy(BattleUnitLogicComponent self)
 		{
-
-		}
+            // Battle TODO
+        }
 	}
+
+    #endregion
+
+    #region Component Getter
 
     /// <summary>
     /// BattleUnitComponent 添加的子组件都在这里实现获取方法
@@ -52,15 +81,27 @@ namespace ET
     /// </summary>
     public static class BattleUnitLogicComponentChildComponentSystem
     {
-        public static BattleUnitLogicComponent BattleUnitComponent(this TransformComponent self)
-                                                        => self.Parent as BattleUnitLogicComponent;
+        public static Unit Unit(this BattleUnitLogicComponent self) => self.Parent as Unit;
+
+        public static NumericComponent AttributeComponent(this BattleUnitLogicComponent self)
+                                                    => self.Unit().GetComponent<NumericComponent>();
 
         public static TransformComponent TransformComponent(this BattleUnitLogicComponent self)
                                                     => self.GetComponent<TransformComponent>();
+
+        public static FishMoveComponent FishMoveComponent(this BattleUnitLogicComponent self)
+                                                    => self.GetComponent<FishMoveComponent>();                                              
     }
+
+    #endregion
+
+    #region Base Function
 
     public static class BattleUnitLogicComponentSystem
     {
-        public static Unit Unit(this BattleUnitLogicComponent self) => self.Parent as Unit;
+        public static void FixedUpdate(this BattleUnitLogicComponent self) =>
+                                                            self.FishMoveComponent().FixedUpdate();
     }
+
+    #endregion
 }

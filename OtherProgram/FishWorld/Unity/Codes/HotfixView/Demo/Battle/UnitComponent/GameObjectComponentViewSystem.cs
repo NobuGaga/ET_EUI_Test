@@ -19,4 +19,13 @@ namespace ET
                 node.localPosition = Vector3.zero;
         }
     }
+
+    public static class GameObjectComponentViewSystem
+    {
+        public static ObjectPoolComponent ObjectPoolComponent(this GameObjectComponent self)
+        {
+            Unit unit = self.Parent as Unit;
+            return ViewComponentHelper.GetObjectPoolComponent(unit);
+        }
+    }
 }
