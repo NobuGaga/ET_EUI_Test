@@ -1,5 +1,9 @@
 namespace ET
 {
+    /// <summary>
+    /// 跟 Mono 层交互的数据结构拓展方法在这里定义
+    /// 使用 Extension 后缀跟 Model 层数据结构区分, 这是在 Mono 层定义的数据结构(类)
+    /// </summary>
     public static class BattleInfoExtension
     {
         public static void Reset(this FishMoveInfo self)
@@ -20,6 +24,7 @@ namespace ET
             self.MoveSpeed = FishConfig.DefaultMoveSpeed;
 
             self.RoadId = 0;
+            self.IsPathMove = false;
         }
     }
 }

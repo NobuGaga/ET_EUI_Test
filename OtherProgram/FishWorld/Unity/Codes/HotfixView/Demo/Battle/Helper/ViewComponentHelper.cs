@@ -4,25 +4,13 @@ namespace ET
     {
         public static ObjectPoolComponent GetObjectPoolComponent(Unit unit)
         {
-            switch (unit.UnitType)
-            {
-                case UnitType.Player:
-                case UnitType.Cannon:
-                    return unit.DomainScene().GetComponent<ObjectPoolComponent>();
+            UnitType unitType = unit.UnitType;
+            if (unitType == UnitType.Player || unitType == UnitType.Player)
+                return unit.DomainScene().GetComponent<ObjectPoolComponent>();
 
-                case UnitType.Bullet:
-                case UnitType.Fish:
-                    
-                    BattleViewComponent battleViewComponent = null;
-                    if (BattleTestConfig.IsAddBattleToZone)
-                        battleViewComponent = unit.ZoneScene().GetComponent<BattleViewComponent>();
-                    else if (BattleTestConfig.IsAddBattleToCurrent)
-                        battleViewComponent = unit.DomainScene().GetComponent<BattleViewComponent>();
-                    
-                    return battleViewComponent.GetComponent<ObjectPoolComponent>();
-            }
-
-            return null;
+            Scene scene = BattleTestConfig.IsAddBattleToZone ? unit.ZoneScene() : unit.DomainScene();
+            BattleViewComponent battleViewCom = scene.GetComponent<BattleViewComponent>();
+            return battleViewCom.GetComponent<ObjectPoolComponent>();
         }
     }
 }

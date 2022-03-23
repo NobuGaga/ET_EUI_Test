@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Collections.Generic;
 using ET.EventType;
 
@@ -10,22 +9,24 @@ namespace ET
     // Event 的执行不依赖顺序
     // 目前订阅了 AfterCreateZoneScene 事件的处理只有 AfterCreateZoneScene_AddComponent
     // 避免别的事件执行顺序的依赖, 战斗相关组件释放要做好解耦断引用
-    public class AfterCreateZoneScene_BattleLogicInit : AEvent<AfterCreateZoneScene>
+    public class AfterCreateZoneScene_BattleLogicComponent : AEvent<AfterCreateZoneScene>
     {
         protected override async ETTask Run(AfterCreateZoneScene args)
         {
             if (BattleTestConfig.IsAddBattleToZone)
                 args.ZoneScene.AddComponent<BattleLogicComponent>();
+
             await ETTask.CompletedTask;
         }
     }
 
-    public class AfterCreateCurrentScene_BattleLogicInit : AEvent<AfterCreateCurrentScene>
+    public class AfterCreateCurrentScene_BattleLogicComponent : AEvent<AfterCreateCurrentScene>
     {
         protected override async ETTask Run(AfterCreateCurrentScene args)
         {
             if (BattleTestConfig.IsAddBattleToCurrent)
                 args.CurrentScene.AddComponent<BattleLogicComponent>();
+            
             await ETTask.CompletedTask;
         }
     }
@@ -45,16 +46,16 @@ namespace ET
 
     /// <summary>
     /// Battle TODO
-    /// 先在 Update 里实现数据逻辑的更新, 后面做插值后再改成 LateUpdate 进行数据逻辑的更新
+    /// 先在 Update 里实现数据逻辑的更新, 后面做插值后再改成 FixedUpdate 进行数据逻辑的更新
     /// </summary>
-    [ObjectSystem]
-    public sealed class BattleLogicComponentUpdateSystem : UpdateSystem<BattleLogicComponent>
-    {
-        public override void Update(BattleLogicComponent self)
-        {
-            // Battle TODO
-        }
-    }
+    //[ObjectSystem]
+    //public sealed class BattleLogicComponentUpdateSystem : UpdateSystem<BattleLogicComponent>
+    //{
+    //    public override void Update(BattleLogicComponent self)
+    //    {
+    //        // Battle TODO
+    //    }
+    //}
 
     [ObjectSystem]
     public sealed class BattleLogicComponentDestroySystem : DestroySystem<BattleLogicComponent>
@@ -78,11 +79,8 @@ namespace ET
                 return;
 
             HashSet<Unit> fishList = unitComponent.GetFishList();
-            for (int index = 0; index < fishList.Count; index++)
-            {
-                Unit unit = fishList.ElementAt(index);
-                unit.BattleUnitLogicComponent().FixedUpdate();
-            }
+            foreach (Unit fishUnit in fishList)
+                fishUnit.FixedUpdate();
         }
 
         /// <summary>
@@ -90,7 +88,7 @@ namespace ET
         /// </summary>
         public static UnitComponent GetUnitComponent(this BattleLogicComponent self)
         {
-            Scene currentScene = null;
+            Scene currentScene;
             if (BattleTestConfig.IsAddBattleToZone)
                 // CurrentScene 全局只有一个
                 currentScene = self.ZoneScene().CurrentScene();

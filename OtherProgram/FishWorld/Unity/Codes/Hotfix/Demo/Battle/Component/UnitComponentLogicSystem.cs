@@ -7,10 +7,14 @@ namespace ET
     {
         public static Unit AddFish(this UnitComponent self, UnitInfo unitInfo)
         {
-            Unit unit = self.AddChildWithId<Unit, int>(unitInfo.UnitId, unitInfo.ConfigId, BattleTestConfig.IsUseModelPool);
+            bool isUseModelPool = BattleTestConfig.IsUseModelPool;
+
+            Unit unit = self.AddChildWithId<Unit, int>(unitInfo.UnitId, unitInfo.ConfigId, isUseModelPool);
+
             // UnitFactory 会在 Add 后赋值, 这里怕有一些奇怪的逻辑前置赋值了
             unit.UnitType = unitInfo.UnitType;
-            unit.AddComponent<BattleUnitLogicComponent, UnitInfo>(unitInfo, BattleTestConfig.IsUseModelPool);
+
+            unit.AddComponent<BattleUnitLogicComponent, UnitInfo>(unitInfo, isUseModelPool);
             return unit;
         }
 

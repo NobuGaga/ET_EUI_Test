@@ -3,7 +3,7 @@ using UnityEngine;
 namespace ET
 {
     /// <summary>
-    /// GameObjectComponent 生命周期跟随 ObjectPoolComponent(如果有使用的话)
+    /// GameObject 生命周期跟随 ObjectPoolComponent(如果有使用的话)
     /// </summary>
     [ObjectSystem]
     public class GameObjectComponentAwakeSystem : AwakeSystem<GameObjectComponent, string, Transform>
@@ -14,7 +14,8 @@ namespace ET
             self.AssetName = AssetName;
             self.Transform = node;
 
-            BattleUnitViewComponent battleUnitViewComponent = unit.BattleUnitViewComponent();
+            BattleUnitViewComponent battleUnitViewComponent = unit.GetComponent<BattleUnitViewComponent>();
+            // 不是战斗相关的实体直接置为零点
             if (battleUnitViewComponent == null)
                 node.localPosition = Vector3.zero;
         }

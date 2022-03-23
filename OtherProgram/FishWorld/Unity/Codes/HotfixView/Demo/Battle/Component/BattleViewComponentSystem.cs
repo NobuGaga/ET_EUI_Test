@@ -1,4 +1,3 @@
-using System.Linq;
 using ET.EventType;
 using System.Collections.Generic;
 
@@ -16,6 +15,7 @@ namespace ET
         {
             if (BattleTestConfig.IsAddBattleToZone)
                 args.ZoneScene.AddComponent<BattleViewComponent>();
+
             await ETTask.CompletedTask;
         }
     }
@@ -26,6 +26,7 @@ namespace ET
         {
             if (BattleTestConfig.IsAddBattleToCurrent)
                 args.CurrentScene.AddComponent<BattleViewComponent>();
+
             await ETTask.CompletedTask;
         }
     }
@@ -41,8 +42,9 @@ namespace ET
         {
             // Mono 层方法只能在 View 层调用
             BattleLogic.Init();
+
             // 战斗用另外一个对象池组件, 生命周期跟战斗视图组件
-            // 只用来管理鱼跟子弹
+            // 只用来管理鱼跟子弹, 不直接 Add 到 Scene 上是因为 Scene 上面可能已经 Add 了
             self.AddComponent<ObjectPoolComponent>();
         }
     }
@@ -50,7 +52,26 @@ namespace ET
     [ObjectSystem]
     public sealed class BattleViewComponentUpdateSystem : UpdateSystem<BattleViewComponent>
     {
-        public override void Update(BattleViewComponent self) => self.Update();
+        public override void Update(BattleViewComponent self)
+        {
+            // Battle Warning 需要保证 BattleLogicComponent 跟 BattleViewComponent 挂在同一个 Scene 上
+            // 都通过 BattleTestConfig 的标记进行判断
+            BattleLogicComponent battleLogicComponent = self.Parent.GetComponent<BattleLogicComponent>();
+            UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
+            if (unitComponent == null)
+                return;
+
+            HashSet<Unit> fishList = unitComponent.GetFishList();
+            foreach (Unit unit in fishList)
+            {
+                BattleUnitLogicComponent battleUnitLogicComponent = unit.GetComponent<BattleUnitLogicComponent>();
+                if (!battleUnitLogicComponent.IsUpdate)
+                    continue;
+
+                unit.FixedUpdate();
+                unit.Update();
+            }
+        }
     }
 
     [ObjectSystem]
@@ -59,32 +80,6 @@ namespace ET
         public override void Destroy(BattleViewComponent self)
         {
             // Battle TODO
-        }
-    }
-
-    #endregion
-
-    #region Base Function
-
-    public static class BattleViewComponentSystem
-    {
-        public static void Update(this BattleViewComponent self)
-        {
-            // 需要保证 BattleLogicComponent 跟 BattleViewComponent 挂在同一个 Scene 上
-            // 都通过 BattleTestConfig 的标记进行判断
-            BattleLogicComponent battleLogicComponent = self.Parent.GetComponent<BattleLogicComponent>();
-            UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
-            if (unitComponent == null)
-                return;
-            
-            HashSet<Unit> fishList = unitComponent.GetFishList();
-            for (int index = 0; index < fishList.Count; index++)
-            {
-                Unit unit = fishList.ElementAt(index);
-                unit.BattleUnitViewComponent().Update();
-                // 原逻辑没有做渲染鱼数据分离, 先调用了渲染再调用逻辑更新
-                unit.BattleUnitLogicComponent().FixedUpdate();
-            }
         }
     }
 

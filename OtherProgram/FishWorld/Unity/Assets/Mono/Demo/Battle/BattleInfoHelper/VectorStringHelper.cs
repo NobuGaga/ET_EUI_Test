@@ -37,6 +37,7 @@ namespace ET
         public static bool TryParseVector3StringArray(string[] vectorStringArray, out Vector3[] vectorArray)
         {
             vectorArray = null;
+
             if (!TryParseVector3StringArray(vectorStringArray, vectorStringList))
                 return false;
 
@@ -76,21 +77,22 @@ namespace ET
         public static bool TryParseVector3(string vectorString, out Vector3 vector)
         {
             vector = Vector3.zero;
+
             if (string.IsNullOrEmpty(vectorString))
                 return false;
-            
+
             byte vectorFlag = VectorFlagX;
             ushort splitIndex = 0;
             int vectorStringLen = vectorString.Length;
             for (ushort index = splitIndex; index < vectorStringLen; index++)
             {
                 char @char = vectorString[index];
-                if (@char == SplitSymbol)
-                {
-                    vector.SetValue(vectorString, splitIndex, index, vectorFlag);
-                    splitIndex = (ushort)(index + 1);
-                    vectorFlag++;
-                }
+                if (@char != SplitSymbol)
+                    continue;
+
+                vector.SetValue(vectorString, splitIndex, index, vectorFlag);
+                splitIndex = (ushort)(index + 1);
+                vectorFlag++;
             }
 
             // 最后一个 z 值在这里进行赋值, 如果一直没找到则只给 x 赋值
@@ -114,6 +116,8 @@ namespace ET
         {
             vectorStringReader.Clear();
             vectorStringReader.Append(vectorString, splitIndex, index - splitIndex);
+
+            // Battle TODO ToString 有 GC 后期优化
             string floatString = vectorStringReader.ToString();
 
             if (float.TryParse(floatString, out float value))

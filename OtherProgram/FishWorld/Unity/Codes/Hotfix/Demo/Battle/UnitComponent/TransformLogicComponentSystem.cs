@@ -15,10 +15,7 @@ namespace ET
     [ObjectSystem]
     public class TransformComponentDestroySystem : DestroySystem<TransformComponent>
     {
-        public override void Destroy(TransformComponent self)
-        {
-            // Battle TODO
-        }
+        public override void Destroy(TransformComponent self) => self.NodeName = null;
     }
 
     /// <summary>
@@ -29,9 +26,6 @@ namespace ET
     /// </summary>
     public static class TransformLogicComponentSystem
     {
-        public static BattleUnitLogicComponent BattleUnitComponent(this TransformComponent self)
-                                                => self.Parent as BattleUnitLogicComponent;
-
         public static void SetPos(this TransformComponent self, Vector3 Pos)
         {
             self.LogicPos = Pos;

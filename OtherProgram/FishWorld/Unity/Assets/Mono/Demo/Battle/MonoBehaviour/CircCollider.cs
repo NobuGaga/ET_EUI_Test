@@ -1,5 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
+// Battle Review
+
 using UnityEngine;
 
 namespace FishWorld 

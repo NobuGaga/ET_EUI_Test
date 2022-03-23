@@ -10,7 +10,7 @@ namespace ET
     {
         /// <summary> 暂停标识 </summary>
         public bool IsPause;
-        
+
         /// <summary> 移动结束标识(到达生命周期末端, 存活结束时间点) </summary>
         public bool IsMoveEnd;
 
@@ -38,6 +38,8 @@ namespace ET
 
         /// <summary> 鱼线表 ID, 放在这里储存用来获取对应的 FishPath 类 </summary>
         public short RoadId;
+        /// <summary> 是否通过鱼线控制移动 </summary>
+        public bool IsPathMove;
 
         /// <summary> 
         /// Battle Warning

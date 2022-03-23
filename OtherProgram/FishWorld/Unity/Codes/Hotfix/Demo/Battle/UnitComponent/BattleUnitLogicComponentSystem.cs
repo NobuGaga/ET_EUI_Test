@@ -8,6 +8,7 @@ namespace ET
     /// 转到具体的鱼组件去赋值
     /// 现通过增加组件的方式拓展
     /// 在创建 Unit 的时候添加该组件
+    /// 用来实现跟管理战斗的 Unit 行为跟数据储存
     /// </summary>
     [ObjectSystem]
 	public class BattleUnitLogicComponentAwakeSystem : AwakeSystem<BattleUnitLogicComponent, UnitInfo>
@@ -17,36 +18,24 @@ namespace ET
         // 在 UnitFactory 进行类型判断对应的使用 AddChild 传入参数
         public override void Awake(BattleUnitLogicComponent self, UnitInfo unitInfo)
         {
-            self.UnitId = unitInfo.UnitId;
             self.IsUpdate = false;
-            InitComponent(self, unitInfo);
-        }
 
-        /// <summary> 初始化组件, 根据 UnitType 类型增加对应组件 </summary>
-        private void InitComponent(BattleUnitLogicComponent self, UnitInfo unitInfo)
-        {
-            // 先添加服务器发送的属性值
-            InitAttributeComponent(self, unitInfo);
+            Unit unit = self.Parent as Unit;
 
-            bool isUseModelPool = BattleTestConfig.IsUseModelPool;
+            InitAttributeComponent(unit, unitInfo);
+            unit.AddComponent<TransformComponent>(BattleTestConfig.IsUseModelPool);
 
-            // 再添加变换组件
-            self.AddComponent<TransformComponent>(isUseModelPool);
-
-            switch (unitInfo.UnitType)
+            switch (unit.UnitType)
             {
                 case UnitType.Fish:
-                    self.AddComponent<FishMoveComponent, int>(unitInfo.ConfigId, isUseModelPool);
-                    self.TransformComponent().NodeName = self.FishMoveComponent().GetNodeName();
+                    InitFishComponent(unit);
                     break;
             }
         }
 
-        // 在 Unit 节点下 Add, 保持跟其他 Unit 一致
-        private void InitAttributeComponent(BattleUnitLogicComponent self, UnitInfo unitInfo)
+        private void InitAttributeComponent(Unit unit, UnitInfo unitInfo)
         {
-            bool isUseModelPool = BattleTestConfig.IsUseModelPool;
-            var attributeComponent = self.Unit().AddComponent<NumericComponent>(isUseModelPool);
+            var attributeCom= unit.AddComponent<NumericComponent>(BattleTestConfig.IsUseModelPool);
 
             // 改用 var 以免 UnitInfo 改变后要修改别的地方代码
             var attributeTypes = unitInfo.Ks;
@@ -57,7 +46,14 @@ namespace ET
                 return;
 
             for (ushort i = 0; i < attributeTypes.Count; i++)
-                attributeComponent.Set(attributeTypes[i], attributeValues[i]);
+                attributeCom.Set(attributeTypes[i], attributeValues[i]);
+        }
+
+        /// <summary> 初始化鱼类型 Unit 组件, 根据 UnitType 类型增加对应组件 </summary>
+        private void InitFishComponent(Unit unit)
+        {
+            var fishMoveCom = unit.AddComponent<FishMoveComponent>(BattleTestConfig.IsUseModelPool);
+            unit.GetComponent<TransformComponent>().NodeName = fishMoveCom.GetNodeName();
         }
     }
 
@@ -72,35 +68,11 @@ namespace ET
 
     #endregion
 
-    #region Component Getter
-
-    /// <summary>
-    /// BattleUnitComponent 添加的子组件都在这里实现获取方法
-    /// 其子组件也只能通过 BattleUnitComponent() 获取交互
-    /// 子组件间的获取也相应在这里定义方法
-    /// </summary>
-    public static class BattleUnitLogicComponentChildComponentSystem
-    {
-        public static Unit Unit(this BattleUnitLogicComponent self) => self.Parent as Unit;
-
-        public static NumericComponent AttributeComponent(this BattleUnitLogicComponent self)
-                                                    => self.Unit().GetComponent<NumericComponent>();
-
-        public static TransformComponent TransformComponent(this BattleUnitLogicComponent self)
-                                                    => self.GetComponent<TransformComponent>();
-
-        public static FishMoveComponent FishMoveComponent(this BattleUnitLogicComponent self)
-                                                    => self.GetComponent<FishMoveComponent>();                                              
-    }
-
-    #endregion
-
     #region Base Function
 
-    public static class BattleUnitLogicComponentSystem
+    public static class UnitLogicComponentSystem
     {
-        public static void FixedUpdate(this BattleUnitLogicComponent self) =>
-                                                            self.FishMoveComponent().FixedUpdate();
+        public static void FixedUpdate(this Unit self) => self.GetComponent<FishMoveComponent>().FixedUpdate();
     }
 
     #endregion

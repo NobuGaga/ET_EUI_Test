@@ -8,7 +8,13 @@ namespace ET
 		/// 单位 ID (对应以前实体 ID (服务器), 避免混淆用 Unit 标识, 跟服务器保持一致)
 		/// 去除以前用于 C# <=> Lua 交互用的客户端实体 ID
 		/// </summary>
-		public long UnitId;
+		public long UnitId
+        {
+			get { 
+				Unit unit = Parent as Unit;
+				return unit.Id; 
+			}
+        }
 
 		/// <summary>
 		/// Battle TODO
