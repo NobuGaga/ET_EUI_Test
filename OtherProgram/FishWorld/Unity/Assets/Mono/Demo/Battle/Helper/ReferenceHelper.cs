@@ -2,11 +2,15 @@ using UnityEngine;
 
 namespace ET
 {
-    // 战斗用常量代码配置
+    // 战斗节点引用辅助类
     public static class ReferenceHelper
     {
-        private static GameObject fishRootNode;
-        public static GameObject FishRootNode => fishRootNode;
+        public static GameObject CannonCameraNode { get; private set; }
+        public static Camera CannoCamera { get; private set; }
+        public static CannonSeatLayout CannonMonoScript { get; private set; }
+        public static GameObject BulletRootNode { get; private set; }
+
+        public static GameObject FishRootNode { get; private set; }
 
 #if UNITY_EDITOR
 
@@ -15,11 +19,17 @@ namespace ET
 
         public static void Init()
         {
-            fishRootNode = GameObject.Find(ConstHelper.FishRootNodeName);
+            CannonCameraNode = GameObject.Find(ConstHelper.CannonCameraNodeName);
+            CannoCamera = CannonCameraNode.GetComponent<Camera>();
+            CannonMonoScript = CannonCameraNode.GetComponent<CannonSeatLayout>();
+            BulletRootNode = CannonMonoScript.bulletPosTrans.gameObject;
+
+            FishRootNode = GameObject.Find(ConstHelper.FishRootNodeName);
+
 #if UNITY_EDITOR
 
-            if (!fishRootNode.TryGetComponent(out GizmosCaller))
-                GizmosCaller = fishRootNode.AddComponent<GizmosCaller>();
+            if (!FishRootNode.TryGetComponent(out GizmosCaller))
+                GizmosCaller = FishRootNode.AddComponent<GizmosCaller>();
 #endif
         }
     }

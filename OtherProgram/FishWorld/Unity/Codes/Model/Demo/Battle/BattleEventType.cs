@@ -2,6 +2,8 @@ namespace ET
 {
     namespace EventType
     {
+        #region Battle Logic To View Event
+
         /// <summary> 接收到进入房间事件 </summary>
         public struct AfterEnterRoom
         {
@@ -21,5 +23,19 @@ namespace ET
         {
             public int BossUnitConfigId;
         }
+
+        /// <summary> 接收到 Fire 事件 </summary>
+        public struct AfterShoot
+        {
+            public Scene CurrentScene;
+
+            public UnitInfo UnitInfo;
+
+            public int ShootDirX;
+
+            public int ShootDirY;
+        }
+
+        #endregion
     }
 }

@@ -2,9 +2,7 @@ using UnityEngine;
 
 namespace ET
 {
-    /// <summary>
-    /// GameObject 生命周期跟随 ObjectPoolComponent(如果有使用的话)
-    /// </summary>
+    /// <summary> GameObject 生命周期跟随 ObjectPoolComponent(如果有使用的话) </summary>
     [ObjectSystem]
     public class GameObjectComponentAwakeSystem : AwakeSystem<GameObjectComponent, string, Transform>
     {
@@ -26,7 +24,7 @@ namespace ET
         public static ObjectPoolComponent ObjectPoolComponent(this GameObjectComponent self)
         {
             Unit unit = self.Parent as Unit;
-            return ViewComponentHelper.GetObjectPoolComponent(unit);
+            return unit.GetObjectPoolComponent();
         }
     }
 }

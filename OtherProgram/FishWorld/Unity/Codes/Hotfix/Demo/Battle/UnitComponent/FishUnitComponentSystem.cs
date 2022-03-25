@@ -1,13 +1,13 @@
 namespace ET
 {
     [ObjectSystem]
-    public class FishMoveComponentAwakeSystem : AwakeSystem<FishMoveComponent>
+    public class FishUnitComponentAwakeSystem : AwakeSystem<FishUnitComponent>
     {
-        public override void Awake(FishMoveComponent self)
+        public override void Awake(FishUnitComponent self)
         {
             Unit unit = self.Parent as Unit;
 
-            FishMoveInfo info = FishMoveInfo.PopInfo();
+            FishMoveInfo info = FishMoveHelper.PopInfo();
             info.Reset();
 
             // 这里用 var 看起来不像 NumericComponent 组件 = =
@@ -32,18 +32,18 @@ namespace ET
     } 
 
     [ObjectSystem]
-    public class FishMoveComponentDestroySystem : DestroySystem<FishMoveComponent>
+    public class FishUnitComponentDestroySystem : DestroySystem<FishUnitComponent>
     {
-        public override void Destroy(FishMoveComponent self)
+        public override void Destroy(FishUnitComponent self)
         {
             self.Info.PushPool();
             self.Info = null;
         }
     }
 
-    public static class FishMoveComponentSystem
+    public static class FishUnitComponentSystem
     {
-        public static void FixedUpdate(this FishMoveComponent self)
+        public static void FixedUpdate(this FishUnitComponent self)
         {
             FishMoveInfo info = self.Info;
             FishMoveHelper.FixedUpdate(info);
@@ -54,7 +54,7 @@ namespace ET
             self.UpdateTransform();
         }
 
-        public static void UpdateTransform(this FishMoveComponent self)
+        public static void UpdateTransform(this FishUnitComponent self)
         {
             Unit unit = self.Parent as Unit;
             TransformComponent transformComponent = unit.GetComponent<TransformComponent>();
@@ -63,7 +63,7 @@ namespace ET
             transformComponent.SetForward(info.NextForward);
         }
 
-        public static string GetNodeName(this FishMoveComponent self)
+        public static string GetNodeName(this FishUnitComponent self)
         {
             Unit unit = self.Parent as Unit;
             return string.Format(FishConfig.NameFormat, unit.ConfigId, unit.Id);

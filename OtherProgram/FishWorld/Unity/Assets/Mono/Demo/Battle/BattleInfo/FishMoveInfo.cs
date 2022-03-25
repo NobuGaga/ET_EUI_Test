@@ -40,15 +40,5 @@ namespace ET
         public short RoadId;
         /// <summary> 是否通过鱼线控制移动 </summary>
         public bool IsPathMove;
-
-        /// <summary> 
-        /// Battle Warning
-        /// 上一次记录的服务器时间, 以前用 Unity Time.deltaTime, 现在要放到数据层
-        /// 无法引用 Unity 的东西, 所以先用一个字段存储起来计算
-        /// </summary>
-        public long LastServerTime;
-
-        public static FishMoveInfo PopInfo() => 
-                                MonoPool.Instance.Fetch(typeof(FishMoveInfo)) as FishMoveInfo;
     }
 }

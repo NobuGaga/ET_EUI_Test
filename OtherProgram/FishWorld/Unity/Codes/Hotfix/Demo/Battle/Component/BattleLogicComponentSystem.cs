@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using ET.EventType;
 
 namespace ET
@@ -40,7 +39,12 @@ namespace ET
     {
         public override void Awake(BattleLogicComponent self)
         {
-            // Battle TODO
+            Scene currentScene = self.Parent as Scene;
+            if (currentScene.SceneType != SceneType.Current)
+                currentScene = currentScene.CurrentScene();
+
+            // Bullet Unit Component 要挂在 Current Scene 上面, 释放的时候跟 Unit Component 保持一直
+            currentScene.AddComponent<BulletLogicComponent>();
         }
     }
 
@@ -49,11 +53,16 @@ namespace ET
     /// 先在 Update 里实现数据逻辑的更新, 后面做插值后再改成 FixedUpdate 进行数据逻辑的更新
     /// </summary>
     //[ObjectSystem]
-    //public sealed class BattleLogicComponentUpdateSystem : UpdateSystem<BattleLogicComponent>
+    //public sealed class BattleLogicComponentFixedUpdateSystem : FixedUpdateSystem<BattleLogicComponent>
     //{
-    //    public override void Update(BattleLogicComponent self)
+    //    public override void FixedUpdate(BattleLogicComponent self)
     //    {
-    //        // Battle TODO
+    //        UnitComponent unitComponent = self.GetUnitComponent();
+    //        if (unitComponent == null)
+    //            return;
+
+    //        foreach (Unit fishUnit in unitComponent.GetFishUnitList())
+    //            fishUnit.FixedUpdate();
     //    }
     //}
 
@@ -72,15 +81,44 @@ namespace ET
 
     public static class BattleLogicComponentSystem
     {
-        public static void FixedUpdate(this BattleLogicComponent self)
+        /// <summary> 加快获取 CurrentScene 效率 </summary>
+        public static Scene CurrentScene(this BattleLogicComponent self)
         {
-            UnitComponent unitComponent = self.GetUnitComponent();
-            if (unitComponent == null)
-                return;
+            if (BattleTestConfig.IsAddBattleToZone)
+                // CurrentScene 全局只有一个
+                return self.ZoneScene().CurrentScene();
+            
+            return self.DomainScene();
+        }
 
-            HashSet<Unit> fishList = unitComponent.GetFishList();
-            foreach (Unit fishUnit in fishList)
-                fishUnit.FixedUpdate();
+        /// <summary>
+        /// 获取战斗组件所在的 Scene, 所有战斗相关的管理组件都在这个 Scene 下
+        /// 通过在 BattleLogicComponent 的 Awake 跟 BattleViewComponent 的 Awake 中
+        /// 将战斗用的组件添加到 Scene 上
+        /// 因为 Game.Scene 里获取到的可能为空(ZoneScene or CurrentScene)
+        /// 所以调用的时候随便传入一个 Scene (客户端只有一个 ZoneScene 跟一个 CurrentScene)
+        /// </summary>
+        public static Scene BattleScene(this Scene self)
+        {
+            bool isZone = self.SceneType == SceneType.Zone;
+            if ((BattleTestConfig.IsAddBattleToZone && !isZone) ||
+                (BattleTestConfig.IsAddBattleToCurrent && isZone))
+                return self.CurrentScene();
+
+            return self;
+        }
+
+        /// <summary> 拓展实现 Scene 方法, 方便获取 BattleLogicComponent </summary>
+        public static BattleLogicComponent GetBattleLogicComponent(this Scene scene)
+        {
+            Scene battleScene = scene.BattleScene();
+            return battleScene.GetComponent<BattleLogicComponent>();
+        }
+
+        public static long GetSelfUnitId(this BattleLogicComponent self)
+        {
+            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(self.CurrentScene());
+            return selfPlayerUnit.Id;
         }
 
         /// <summary>
@@ -88,12 +126,7 @@ namespace ET
         /// </summary>
         public static UnitComponent GetUnitComponent(this BattleLogicComponent self)
         {
-            Scene currentScene;
-            if (BattleTestConfig.IsAddBattleToZone)
-                // CurrentScene 全局只有一个
-                currentScene = self.ZoneScene().CurrentScene();
-            else
-                currentScene = self.DomainScene();
+            Scene currentScene = self.CurrentScene();
 
             // 登录界面还未创建 CurrentScene 需要作空判断, 如果 BattleLogicComponent 挂 ZoneScene 的话
             if (currentScene == null)

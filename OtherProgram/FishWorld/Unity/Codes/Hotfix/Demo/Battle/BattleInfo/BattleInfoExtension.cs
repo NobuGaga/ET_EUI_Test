@@ -6,6 +6,14 @@ namespace ET
     /// </summary>
     public static class BattleInfoExtension
     {
+        public static void Reset(this BulletMoveInfo self)
+        {
+            self.NextRotation = TransformDefaultConfig.DefaultRotation;
+            self.MoveSpeed = BulletConfig.DefaultMoveSpeed;
+            self.MoveDirection = BulletConfig.DefaultMoveDirection;
+            self.NextStep = BulletConfig.DefaultNextStep;
+        }
+
         public static void Reset(this FishMoveInfo self)
         {
             self.IsPause = false;

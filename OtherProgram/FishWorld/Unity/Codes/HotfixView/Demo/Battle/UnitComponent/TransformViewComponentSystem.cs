@@ -146,9 +146,7 @@ namespace ET
             gameObjectComponent.Transform.forward = forward;
         }
 
-        /// <summary>
-        /// 重置变换会把逻辑数据也重置掉
-        /// </summary>
+        /// <summary> 重置变换会把逻辑数据也重置掉 </summary>
         public static void ResetTransform(this Unit self, bool isSetScale = true)
         {
             TransformComponent transformComponent = self.TransformComponent();

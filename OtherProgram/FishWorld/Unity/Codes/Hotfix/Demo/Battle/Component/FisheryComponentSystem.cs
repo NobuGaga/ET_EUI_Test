@@ -33,9 +33,30 @@ namespace ET
 
     public static class FisheryComponentSystem
     {
-        public static void Test(this FisheryComponent self)
+        private static int GetSeatId(this Unit playerUnit)
         {
-            // Battle TODO
+            NumericComponent numericComponent = playerUnit.GetComponent<NumericComponent>();
+            return numericComponent.GetAsInt(NumericType.Pos);
+        }
+
+        public static int GetSeatId(this FisheryComponent self, long playerUnitId)
+        {
+            Scene currentScene = self.Parent as Scene;
+            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
+            Unit playerUnit = unitComponent.Get(playerUnitId);
+            return playerUnit.GetSeatId();
+        }
+
+        public static int GetSelfSeatId(this FisheryComponent self)
+        {
+            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(self.Parent as Scene);
+            return selfPlayerUnit.GetSeatId();
+        }
+
+        public static CannonComponent GetSelfCannonComponent(this FisheryComponent self)
+        {
+            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(self.Parent as Scene);
+            return selfPlayerUnit.GetComponent<CannonComponent>();
         }
     }
 

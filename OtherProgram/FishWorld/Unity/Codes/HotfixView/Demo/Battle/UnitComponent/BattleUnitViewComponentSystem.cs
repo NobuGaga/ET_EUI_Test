@@ -12,13 +12,14 @@ namespace ET
             switch (unit.UnitType)
             {
                 case UnitType.Fish:
-                    self.NodeParent = GlobalComponent.Instance.FishRoot;
-                    InitModel(currentScene, unit).Coroutine();
+                    self.NodeParent = ReferenceHelper.FishRootNode.transform;
                     break;
                 case UnitType.Bullet:
-
+                    self.NodeParent = ReferenceHelper.BulletRootNode.transform;
                     break;
             }
+
+            InitModel(currentScene, unit).Coroutine();
         }
 
         /// <summary>
@@ -33,11 +34,10 @@ namespace ET
             // 如果是同一个 AssetBundle 里有不同的预设资源则会有问题, 目前模型资源是一个 AssetBundle 里一个预设
             // UI 资源可能多个预设在同一个 AssetBundle 里, ObjectPoolComponent 则不可使用
             // 使用 Asset Bundle Name 拼接 Asset Name 或者是别的方法
-            UnitConfig unitConfig = UnitConfigCategory.Instance.Get(unit.ConfigId);
-            string assetBundlePath = unitConfig.FishAssetBundlePath;
-            string assetName = unitConfig.FishAssetName;
 
-            ObjectPoolComponent objectPoolComponent = ViewComponentHelper.GetObjectPoolComponent(unit);
+            TryGetAssetPathAndName(unit, out string assetBundlePath, out string assetName);
+            
+            ObjectPoolComponent objectPoolComponent = unit.GetObjectPoolComponent();
             GameObject gameObject = objectPoolComponent?.PopObject(assetBundlePath);
 
             if (gameObject == null)
@@ -54,6 +54,36 @@ namespace ET
             bool isUseModelPool = BattleTestConfig.IsUseModelPool;
             unit.AddComponent<GameObjectComponent, string, Transform>(assetBundlePath, node, isUseModelPool);
             unit.InitTransform();
+        }
+
+        private bool TryGetAssetPathAndName(Unit unit, out string assetBundlePath, out string assetName)
+        {
+            switch (unit.UnitType)
+            {
+                case UnitType.Fish:
+                    try
+                    {
+                        // Battle TODO 暂时只有鱼读表, 后续将子弹也读表
+                        UnitConfig unitConfig = UnitConfigCategory.Instance.Get(unit.ConfigId);
+                        assetBundlePath = unitConfig.FishAssetBundlePath;
+                        assetName = unitConfig.FishAssetName;
+                        return true;
+                    }
+                    catch (System.Exception exception)
+                    {
+                        Log.Error($"private Unit.TryGetAssetPathAndName() exception msg = { exception.Message }");
+                    }
+                    break;
+
+                case UnitType.Bullet:
+                    assetBundlePath = ABPath.cannon_1_bulletAB;
+                    assetName = "cannon_1_bullet";
+                    return true;
+            }
+
+            assetBundlePath = ABPath.cannon_1AB;
+            assetName = "cannon_1";
+            return false;
         }
 
         /// <summary>
@@ -103,7 +133,26 @@ namespace ET
         {
             TransformComponent transformComponent = self.GetComponent<TransformComponent>();
             self.SetLocalPos(transformComponent.LogicLocalPos);
-            self.SetForward(transformComponent.LogicForward);
+            switch (self.UnitType)
+            {
+                case UnitType.Fish:
+                    self.SetForward(transformComponent.LogicForward);
+                    return;
+                case UnitType.Bullet:
+                    self.SetLocalRotation(transformComponent.LogicLocalRotation);
+                    return;
+            }
+        }
+
+        public static ObjectPoolComponent GetObjectPoolComponent(this Unit unit)
+        {
+            UnitType unitType = unit.UnitType;
+            if (unitType == UnitType.Player || unitType == UnitType.Player)
+                return unit.DomainScene().GetComponent<ObjectPoolComponent>();
+
+            Scene scene = BattleTestConfig.IsAddBattleToZone ? unit.ZoneScene() : unit.DomainScene();
+            BattleViewComponent battleViewCom = scene.GetComponent<BattleViewComponent>();
+            return battleViewCom.GetComponent<ObjectPoolComponent>();
         }
     }
 

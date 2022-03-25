@@ -30,12 +30,15 @@ namespace ET
                 case UnitType.Fish:
                     InitFishComponent(unit);
                     break;
+                case UnitType.Bullet:
+                    InitBulletComponent(unit);
+                    break;
             }
         }
 
         private void InitAttributeComponent(Unit unit, UnitInfo unitInfo)
         {
-            var attributeCom= unit.AddComponent<NumericComponent>(BattleTestConfig.IsUseModelPool);
+            var attributeCom = unit.AddComponent<NumericComponent>(BattleTestConfig.IsUseModelPool);
 
             // 改用 var 以免 UnitInfo 改变后要修改别的地方代码
             var attributeTypes = unitInfo.Ks;
@@ -49,11 +52,17 @@ namespace ET
                 attributeCom.Set(attributeTypes[i], attributeValues[i]);
         }
 
-        /// <summary> 初始化鱼类型 Unit 组件, 根据 UnitType 类型增加对应组件 </summary>
+        /// <summary> 初始化鱼类型 Unit 组件 </summary>
         private void InitFishComponent(Unit unit)
         {
-            var fishMoveCom = unit.AddComponent<FishMoveComponent>(BattleTestConfig.IsUseModelPool);
+            var fishMoveCom = unit.AddComponent<FishUnitComponent>(BattleTestConfig.IsUseModelPool);
             unit.GetComponent<TransformComponent>().NodeName = fishMoveCom.GetNodeName();
+        }
+
+        /// <summary> 初始化子弹类型 Unit 组件 </summary>
+        private void InitBulletComponent(Unit unit)
+        {
+            // Battle TODO
         }
     }
 
@@ -72,7 +81,19 @@ namespace ET
 
     public static class UnitLogicComponentSystem
     {
-        public static void FixedUpdate(this Unit self) => self.GetComponent<FishMoveComponent>().FixedUpdate();
+        public static void FixedUpdate(this Unit self)
+        {
+            switch (self.UnitType)
+            {
+                case UnitType.Fish:
+                    self.GetComponent<FishUnitComponent>().FixedUpdate();
+                    return;
+                case UnitType.Bullet:
+                    self.GetComponent<BulletUnitComponent>().FixedUpdate();
+                    //self.SetLocalRotation(transformComponent.LogicLocalRotation);
+                    return;
+            }
+        }
     }
 
     #endregion
