@@ -25,7 +25,7 @@ namespace ET
 
             FishMoveHelper.InitInfo(info, roadId, liveTime, remainTime, offsetPosX, offsetPosY, offsetPosZ);
             self.Info = info;
-            self.UpdateTransform();
+            self.InitTransform();
 
             unit.GetComponent<BattleUnitLogicComponent>().IsUpdate = !info.IsMoveEnd;
         }
@@ -36,7 +36,7 @@ namespace ET
     {
         public override void Destroy(FishUnitComponent self)
         {
-            self.Info.PushPool();
+            FishMoveHelper.PushPool(self.Info);
             self.Info = null;
         }
     }
@@ -54,7 +54,15 @@ namespace ET
             self.UpdateTransform();
         }
 
-        public static void UpdateTransform(this FishUnitComponent self)
+        public static void InitTransform(this FishUnitComponent self)
+        {
+            Unit unit = self.Parent as Unit;
+            TransformComponent transformComponent = unit.GetComponent<TransformComponent>();
+            transformComponent.NodeName = self.GetNodeName();
+            self.UpdateTransform();
+        }
+
+        private static void UpdateTransform(this FishUnitComponent self)
         {
             Unit unit = self.Parent as Unit;
             TransformComponent transformComponent = unit.GetComponent<TransformComponent>();
@@ -63,7 +71,7 @@ namespace ET
             transformComponent.SetForward(info.NextForward);
         }
 
-        public static string GetNodeName(this FishUnitComponent self)
+        private static string GetNodeName(this FishUnitComponent self)
         {
             Unit unit = self.Parent as Unit;
             return string.Format(FishConfig.NameFormat, unit.ConfigId, unit.Id);

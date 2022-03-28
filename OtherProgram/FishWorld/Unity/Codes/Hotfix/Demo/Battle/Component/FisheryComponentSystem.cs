@@ -52,12 +52,6 @@ namespace ET
             Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(self.Parent as Scene);
             return selfPlayerUnit.GetSeatId();
         }
-
-        public static CannonComponent GetSelfCannonComponent(this FisheryComponent self)
-        {
-            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(self.Parent as Scene);
-            return selfPlayerUnit.GetComponent<CannonComponent>();
-        }
     }
 
     #endregion

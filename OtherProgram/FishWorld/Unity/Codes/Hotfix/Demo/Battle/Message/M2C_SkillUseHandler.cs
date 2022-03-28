@@ -1,5 +1,4 @@
-﻿
-namespace ET
+﻿namespace ET
 {
     [MessageHandler]
     public class M2C_SkillUseHandler: AMHandler<M2C_SkillUse>
@@ -8,30 +7,23 @@ namespace ET
         {
             if (message.Result != ErrorCode.ERR_Success)
             {
-                await ETTask.CompletedTask;
                 return;
             }
 
-            Scene currentScene = session.DomainScene().CurrentScene();;
-            Unit  myUnit       = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
-            
+            Scene currentScene = session.DomainScene().CurrentScene();
+            Unit  unit         = currentScene.GetComponent<UnitComponent>().Get(message.UnitId);
+
+            if (null == unit)
+            {
+                Log.Error("释放技能的玩家未找到");
+                return;
+            }
+
             Log.Info($"服务端通知使用技能{message.SkillId}");
 
-            if (myUnit.Id == message.UnitId)
-            {
-                SkillComponent skillComponent = myUnit.GetComponent<SkillComponent>();
-                
-                skillComponent.SetSkill(message);
-            }
+            SkillComponent skillComponent = unit.GetComponent<SkillComponent>();
 
-            if (message.SkillId == SkillId.Ice)
-            {
-                this.IceHandler(session, message);
-            }
-        }
-
-        public void IceHandler(Session session, M2C_SkillUse message)
-        {
+            await skillComponent.SetSkill(message);
         }
     }
 }

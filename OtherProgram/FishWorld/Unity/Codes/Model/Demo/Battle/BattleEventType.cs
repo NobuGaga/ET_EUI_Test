@@ -5,7 +5,7 @@ namespace ET
         #region Battle Logic To View Event
 
         /// <summary> 接收到进入房间事件 </summary>
-        public struct AfterEnterRoom
+        public struct ReceiveEnterRoom
         {
             public Scene CurrentScene;
 
@@ -13,27 +13,29 @@ namespace ET
         }
 
         /// <summary> 接收到切换区域事件 </summary>
-        public struct AfterExchangeArea
+        public struct ReceiveExchangeArea
         {
             public FisheryComponent FisheryComponent;
         }
 
         /// <summary> 接收到 Boss 来袭事件 </summary>
-        public struct AfterBossComming
+        public struct ReceiveBossComming
         {
             public int BossUnitConfigId;
         }
 
         /// <summary> 接收到 Fire 事件 </summary>
-        public struct AfterShoot
+        public struct ReceiveFire
         {
             public Scene CurrentScene;
 
             public UnitInfo UnitInfo;
 
-            public int ShootDirX;
+            public float ShootDirX;
 
-            public int ShootDirY;
+            public float ShootDirY;
+
+            public M2C_Fire Message;
         }
 
         #endregion

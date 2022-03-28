@@ -1,33 +1,20 @@
 namespace ET
 {
     [ObjectSystem]
-    public class BulletUnitComponentAwakeSystem : AwakeSystem<BulletUnitComponent>
+    public class BulletUnitComponentAwakeSystem : AwakeSystem<BulletUnitComponent, CannonShootInfo>
     {
-        public override void Awake(BulletUnitComponent self)
+        public override void Awake(BulletUnitComponent self, CannonShootInfo cannonShootInfo)
         {
             Unit unit = self.Parent as Unit;
 
-            BulletMoveInfo info = BulletMoveHelper.PopInfo();
-            info.Reset();
+            BulletMoveInfo bulletMoveInfo = BulletMoveHelper.PopInfo();
+            bulletMoveInfo.Reset();
+            BulletMoveHelper.InitInfo(bulletMoveInfo, cannonShootInfo);
+            self.Info = bulletMoveInfo;
 
-            //// 这里用 var 看起来不像 NumericComponent 组件 = =
-            //var attributeComponent = unit.GetComponent<NumericComponent>();
-            //// 鱼线表 ID
-            //short roadId = (short)attributeComponent[NumericType.RoadId];
-            //// 出生时间戳, 服务器发送毫秒
-            //long liveTime = attributeComponent[NumericType.LiveTime];
-            //// 剩余存活时间, 单位毫秒
-            //uint remainTime = (uint)attributeComponent[NumericType.RemainTime];
-            //// 初始位置偏移值 XYZ, 在这里转换进行转换, 因为转换的修正值配置在 Model 层
-            //float offsetPosX = (float)attributeComponent[NumericType.PositionX] / FishConfig.ServerOffsetScale;
-            //float offsetPosY = (float)attributeComponent[NumericType.PositionY] / FishConfig.ServerOffsetScale;
-            //float offsetPosZ = (float)attributeComponent[NumericType.PositionZ] / FishConfig.ServerOffsetScale;
+            self.InitTransform();
 
-            //BulletMoveHelper.InitInfo(info, roadId, liveTime, remainTime, offsetPosX, offsetPosY, offsetPosZ);
-            //self.Info = info;
-            //self.UpdateTransform();
-
-            //unit.GetComponent<BattleUnitLogicComponent>().IsUpdate = !info.IsMoveEnd;
+            unit.GetComponent<BattleUnitLogicComponent>().IsUpdate = true;
         }
     } 
 
@@ -36,7 +23,7 @@ namespace ET
     {
         public override void Destroy(BulletUnitComponent self)
         {
-            self.Info.PushPool();
+            BulletMoveHelper.PushPool(self.Info);
             self.Info = null;
         }
     }
@@ -45,28 +32,32 @@ namespace ET
     {
         public static void FixedUpdate(this BulletUnitComponent self)
         {
-            //BulletMoveInfo info = self.Info;
-            //BulletMoveHelper.FixedUpdate(info);
-            
-            //if (info.IsMoveTimeOut())
-            //    info.NextPos = FishConfig.RemovePoint;
-
-            //self.UpdateTransform();
+            BulletMoveInfo info = self.Info;
+            BulletMoveHelper.FixedUpdate(info);
+            self.UpdateTransform();
         }
 
-        public static void UpdateTransform(this BulletUnitComponent self)
-        {
-            //Unit unit = self.Parent as Unit;
-            //TransformComponent transformComponent = unit.GetComponent<TransformComponent>();
-            //BulletMoveInfo info = self.Info;
-            //transformComponent.SetLocalPos(info.NextPos);
-            //transformComponent.SetForward(info.NextForward);
-        }
-
-        public static string GetNodeName(this BulletUnitComponent self)
+        public static void InitTransform(this BulletUnitComponent self)
         {
             Unit unit = self.Parent as Unit;
-            return string.Format(FishConfig.NameFormat, unit.ConfigId, unit.Id);
+            TransformComponent transformComponent = unit.GetComponent<TransformComponent>();
+            transformComponent.NodeName = self.GetNodeName();
+            self.UpdateTransform();
+        }
+
+        private static void UpdateTransform(this BulletUnitComponent self)
+        {
+            Unit unit = self.Parent as Unit;
+            TransformComponent transformComponent = unit.GetComponent<TransformComponent>();
+            BulletMoveInfo info = self.Info;
+            transformComponent.SetLocalPos(info.CurrentLocalPos);
+            transformComponent.SetLocalRotation(info.CurrentRotation);
+        }
+
+        private static string GetNodeName(this BulletUnitComponent self)
+        {
+            Unit unit = self.Parent as Unit;
+            return string.Format(BulletConfig.NameFormat, unit.Id);
         }
     }
 }

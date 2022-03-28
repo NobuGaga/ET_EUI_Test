@@ -13,7 +13,7 @@ namespace ET
 
 			FisheryComponent.AreaId = message.AreaId;
 
-			AfterExchangeArea eventData = new AfterExchangeArea() {
+			ReceiveExchangeArea eventData = new ReceiveExchangeArea() {
 				FisheryComponent = FisheryComponent,
 			};
 

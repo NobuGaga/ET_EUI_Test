@@ -16,7 +16,7 @@ namespace ET
 
             // 调用注意顺序, 先初始化 Mono 层引用类
             ReferenceHelper.Init();
-            CameraHelper.Init(Screen.width, Screen.height, ReferenceHelper.CannoCamera.orthographicSize);
+            BulletCameraHelper.Init(Screen.width, Screen.height, ReferenceHelper.CannoCamera.orthographicSize);
 
 #if UNITY_EDITOR
 

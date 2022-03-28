@@ -12,7 +12,7 @@ namespace ET
 			Scene CurrentScene = zoneScene.CurrentScene();
 
 			// Battle TODO
-			AfterBossComming eventData = new AfterBossComming() {
+			ReceiveBossComming eventData = new ReceiveBossComming() {
 				BossUnitConfigId = message.CfgId,
 			};
 

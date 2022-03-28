@@ -8,10 +8,12 @@ namespace ET
     {
         public static void Reset(this BulletMoveInfo self)
         {
-            self.NextRotation = TransformDefaultConfig.DefaultRotation;
+            self.CurrentRotation = TransformDefaultConfig.DefaultRotation;
+
             self.MoveSpeed = BulletConfig.DefaultMoveSpeed;
             self.MoveDirection = BulletConfig.DefaultMoveDirection;
-            self.NextStep = BulletConfig.DefaultNextStep;
+
+            self.CurrentLocalPos = BulletConfig.RemovePoint;
         }
 
         public static void Reset(this FishMoveInfo self)

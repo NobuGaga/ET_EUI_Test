@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using ET.EventType;
 
 namespace ET
@@ -22,22 +21,19 @@ namespace ET
 
 			int seatId = fisheryComponent.GetSeatId(message.UnitId);
 
-			long trackFishUnitId = BulletConfig.DefaultTrackUnitId;
+			long trackFishUnitId = BulletConfig.DefaultTrackFishUnitId;
 			if (message.FishId != null && message.FishId.Count > 0)
 				trackFishUnitId = message.FishId[0];
 
-			UnitInfo UnitInfo = new UnitInfo()
-			{
-				Ks = new List<int>() { NumericType.Pos, NumericType.TrackFishId, NumericType.BulletId },
-				Vs = new List<long>() { seatId, trackFishUnitId, message.BulletId },
-			};
+			UnitInfo UnitInfo = UnitInfoFactory.PopBulletInfo(seatId, message.BulletId, trackFishUnitId);
 
-			AfterShoot eventData = new AfterShoot()
+			ReceiveFire eventData = new ReceiveFire()
 			{
 				CurrentScene = CurrentScene,
 				UnitInfo = UnitInfo,
 				ShootDirX = message.PosX,
 				ShootDirY = message.PosY,
+				Message = message,
 			};
 
 			Game.EventSystem.Publish(eventData);

@@ -15,7 +15,7 @@ namespace ET
 			FisheryComponent.LeftIceTime = message.LeftIceTime;
 			FisheryComponent.AreaId = message.AreaId;
 
-			AfterEnterRoom eventData = new AfterEnterRoom() {
+			ReceiveEnterRoom eventData = new ReceiveEnterRoom() {
 				CurrentScene = CurrentScene,
 				FisheryComponent = FisheryComponent,
 			};

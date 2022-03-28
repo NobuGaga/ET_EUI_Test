@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace ET.Battle
+namespace ET
 {
     public static class SkillHelper
     {

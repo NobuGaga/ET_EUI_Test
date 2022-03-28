@@ -6,7 +6,7 @@ using UnityEngine;
 namespace ET
 {
     // 模拟 DoTween FishPath
-    public class FishPathInfo : BattleBaseInfo
+    public class FishPathInfo
     {
         // 缓存 key, 使用整数, 数值越大越精确
         private const ushort PERC_INT_RESOLUTION = 10000;
@@ -35,13 +35,6 @@ namespace ET
             _secondPos = posList[1];
             int wpsLen = posList.Length;
             _lastTwoPointSum = posList[wpsLen - 1] + posList[wpsLen - 2];
-        }
-
-        ~FishPathInfo()
-        {
-            _percentPosMap.Clear();
-            _percentPosMap = null;
-            _posList = null;
         }
 
         // 根据时间获取路径点

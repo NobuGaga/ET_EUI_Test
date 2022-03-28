@@ -4,8 +4,5 @@
 
 namespace ET
 {
-	public partial class UnitInfo
-	{
-		public UnitType UnitType => (UnitType)Type;
-	}
+
 }

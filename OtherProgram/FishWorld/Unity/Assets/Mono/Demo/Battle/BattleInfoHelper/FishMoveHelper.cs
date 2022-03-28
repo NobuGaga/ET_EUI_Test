@@ -12,6 +12,8 @@ namespace ET
         public static FishMoveInfo PopInfo() =>
                                 MonoPool.Instance.Fetch(typeof(FishMoveInfo)) as FishMoveInfo;
 
+        public static void PushPool(FishMoveInfo info) => MonoPool.Instance.Recycle(info);
+
         public static bool IsMoveTimeOut(this FishMoveInfo info) => info.MoveTime > info.MoveDuration;
 
         private static FishPathInfo Path(this FishMoveInfo info) =>

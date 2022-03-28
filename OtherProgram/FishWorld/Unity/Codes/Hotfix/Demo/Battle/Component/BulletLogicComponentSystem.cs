@@ -83,65 +83,38 @@ namespace ET
         /// Battle Warning 必要在调用前调用 UIFisheriesComponent.CalcCannonRotation
         /// 修改炮台旋转方向为当前设计方向
         /// </summary>
-        public static void ShootBullet(this BattleLogicComponent battleLogicComponent, CannonShootInfo info)
+        public static void ShootBullet(this BattleLogicComponent battleLogicComponent, UnitInfo unitInfo,
+                                        CannonShootInfo cannonShootInfo)
         {
             Scene currentScene = battleLogicComponent.CurrentScene();
-            FisheryComponent fisheryComponent = currentScene.GetComponent<FisheryComponent>();
-            int seatId = fisheryComponent.GetSelfSeatId();
             BulletLogicComponent self = currentScene.GetComponent<BulletLogicComponent>();
-            try
-            {
-                if (self.TryGenerateBulletId(out long unitId))
-                    // Battle TODO 暂时写死追踪鱼 ID
-                    self.AddUnit(seatId, unitId, 0);
-            }
-            catch (Exception exception)
-            {
-                Log.Error(exception);
-            }
-        }
 
-        public static void AddUnit(this BulletLogicComponent self, long playerId, long bulletUnitId, long trackFishUnitId)
-        {
-            Scene currentScene = self.DomainScene();
-            // Player Unit 在 UnitComponent 上储存
-            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
-            int seatId = unitComponent.GetSeatId(playerId);
-            self.AddUnit(seatId, bulletUnitId, trackFishUnitId);
-        }
+            if (unitInfo.UnitId == BulletConfig.DefaultBulletUnitId)
+            {
+                try
+                {
+                    if (self.TryGenerateBulletId(out long unitId))
+                        unitInfo.UnitId = unitId;
+                }
+                catch (Exception exception)
+                {
+                    Log.Error(exception);
+                }
+            }
 
-        private static void AddUnit(this BulletLogicComponent self, int seatId, long bulletUnitId, long trackFishUnitId)
-        {
-            Scene currentScene = self.DomainScene();
             bool isUseModelPool = BattleTestConfig.IsUseModelPool;
-            int bulletUnitConfigId = BulletConfig.BulletUnitConfigId;
 
             // 保持所有的战斗 Unit 都 Add 到 Current Scene 上, 因为 Unit 只是数据
-            Unit unit = currentScene.AddChildWithId<Unit, int>(bulletUnitId, bulletUnitConfigId, isUseModelPool);
-            unit.InitBulletUnit(seatId, trackFishUnitId);
+            Unit unit = currentScene.AddChildWithId<Unit, int>(unitInfo.UnitId, unitInfo.ConfigId, isUseModelPool);
+            // Add BattleUnitLogicComponent 前要对 UnitType 进行赋值
+            unit.UnitType = unitInfo.UnitType;
+            unit.AddComponent<BattleUnitLogicComponent, UnitInfo, CannonShootInfo>(unitInfo, cannonShootInfo, isUseModelPool);
 
             self.ShootBulletCount++;
-            self.BulletIdList.Add(bulletUnitId);
-            self.BulletUnitMap.Add(bulletUnitId, unit);
+            self.BulletIdList.Add(unitInfo.UnitId);
+            self.BulletUnitMap.Add(unitInfo.UnitId, unit);
 
             Game.EventSystem.Publish(new EventType.AfterUnitCreate() { CurrentScene = currentScene, Unit = unit });
-        }
-
-        /// <summary>
-        /// 这里不修改 Unit 的 Awake 参数, 使用拓展 Unit 方法实现
-        /// 初始化子弹 Unit 处理
-        /// </summary>
-        private static void InitBulletUnit(this Unit self, int seatId, long trackFishUnitId)
-        {
-            self.UnitType = UnitType.Bullet;
-
-            UnitInfo unitInfo = new UnitInfo()
-            {
-                Ks = new List<int>() { NumericType.Pos, NumericType.TrackFishId },
-                Vs = new List<long>() { seatId, trackFishUnitId },
-            };
-            
-            self.AddComponent<BattleUnitLogicComponent, UnitInfo>(unitInfo);
         }
 
         public static void RemoveUnit(this BulletLogicComponent self, long unitId)

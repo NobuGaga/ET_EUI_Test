@@ -3,18 +3,18 @@ using UnityEngine;
 
 namespace ET
 {
-    public class AfterEnterRoom_CameraComponent : AEvent<AfterEnterRoom>
+    public class AfterEnterRoom_CameraComponent : AEvent<ReceiveEnterRoom>
     {
-        protected override async ETTask Run(AfterEnterRoom args)
+        protected override async ETTask Run(ReceiveEnterRoom args)
         {
             CameraComponent cameraComponent = args.CurrentScene.ZoneScene().GetComponent<CameraComponent>();
             await cameraComponent.SetTransformByAreaId(args.FisheryComponent.AreaId);
         }
     }
 
-    public class AfterExchangeArea_CameraComponent : AEvent<AfterExchangeArea>
+    public class AfterExchangeArea_CameraComponent : AEvent<ReceiveExchangeArea>
     {
-        protected override async ETTask Run(AfterExchangeArea args)
+        protected override async ETTask Run(ReceiveExchangeArea args)
         {
             FisheryComponent fisheryComponent = args.FisheryComponent;
             CameraComponent cameraComponent = fisheryComponent.ZoneScene().GetComponent<CameraComponent>();

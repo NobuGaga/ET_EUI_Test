@@ -2,7 +2,7 @@ namespace ET
 {
 	// 战斗单位逻辑组件, 用以拓展 Unit 单位, 作一些战斗用处理
 	// 用来储存战斗用逻辑相关数据
-	public class BattleUnitLogicComponent : Entity, IAwake<UnitInfo>, IDestroy
+	public class BattleUnitLogicComponent : Entity, IAwake<UnitInfo, CannonShootInfo>, IDestroy
 	{
 		/// <summary>
 		/// 单位 ID (对应以前实体 ID (服务器), 避免混淆用 Unit 标识, 跟服务器保持一致)

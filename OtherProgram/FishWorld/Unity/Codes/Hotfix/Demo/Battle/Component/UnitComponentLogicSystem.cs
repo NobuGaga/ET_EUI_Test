@@ -5,16 +5,6 @@ namespace ET
     /// <summary> 原 UnitComponent 组件数据逻辑拓展 </summary>
 	public static class UnitComponentLogicSystem
     {
-        /// <summary> 获取玩家座位 ID </summary>
-        /// <param name="playerId">玩家 ID</param>
-        public static int GetSeatId(this UnitComponent self, long playerId)
-        {
-            Unit unit = self.Get(playerId);
-            NumericComponent attributeComponent = unit.GetComponent<NumericComponent>();
-            return attributeComponent.GetAsInt(NumericType.Pos);
-        }
-        
-
         public static Unit AddBattleUnit(this UnitComponent self, UnitInfo unitInfo)
         {
             bool isUseModelPool = BattleTestConfig.IsUseModelPool;
@@ -25,10 +15,10 @@ namespace ET
 
             Unit unit = self.AddChildWithId<Unit, int>(unitInfo.UnitId, configId, isUseModelPool);
 
-            // UnitFactory 会在 Add 后赋值, 这里怕有一些奇怪的逻辑前置赋值了
+            // Add BattleUnitLogicComponent 前要对 UnitType 进行赋值
             unit.UnitType = unitInfo.UnitType;
 
-            unit.AddComponent<BattleUnitLogicComponent, UnitInfo>(unitInfo, isUseModelPool);
+            unit.AddComponent<BattleUnitLogicComponent, UnitInfo, CannonShootInfo>(unitInfo, null, isUseModelPool);
             return unit;
         }
 

@@ -11,15 +11,13 @@ namespace ET
     /// 用来实现跟管理战斗的 Unit 行为跟数据储存
     /// </summary>
     [ObjectSystem]
-	public class BattleUnitLogicComponentAwakeSystem : AwakeSystem<BattleUnitLogicComponent, UnitInfo>
-	{
+	public class BattleUnitLogicComponentAwakeSystem : AwakeSystem<BattleUnitLogicComponent, UnitInfo, CannonShootInfo>
+    {
         // 添加通用数据或者组件
         // 在 AddChild 的时候根据传入参数调用相应的 IAake 方法
         // 在 UnitFactory 进行类型判断对应的使用 AddChild 传入参数
-        public override void Awake(BattleUnitLogicComponent self, UnitInfo unitInfo)
+        public override void Awake(BattleUnitLogicComponent self, UnitInfo unitInfo, CannonShootInfo cannonShootInfo)
         {
-            self.IsUpdate = false;
-
             Unit unit = self.Parent as Unit;
 
             InitAttributeComponent(unit, unitInfo);
@@ -28,10 +26,10 @@ namespace ET
             switch (unit.UnitType)
             {
                 case UnitType.Fish:
-                    InitFishComponent(unit);
+                    unit.AddComponent<FishUnitComponent>(BattleTestConfig.IsUseModelPool);
                     break;
                 case UnitType.Bullet:
-                    InitBulletComponent(unit);
+                    unit.AddComponent<BulletUnitComponent, CannonShootInfo>(cannonShootInfo, BattleTestConfig.IsUseModelPool);
                     break;
             }
         }
@@ -51,35 +49,19 @@ namespace ET
             for (ushort i = 0; i < attributeTypes.Count; i++)
                 attributeCom.Set(attributeTypes[i], attributeValues[i]);
         }
-
-        /// <summary> 初始化鱼类型 Unit 组件 </summary>
-        private void InitFishComponent(Unit unit)
-        {
-            var fishMoveCom = unit.AddComponent<FishUnitComponent>(BattleTestConfig.IsUseModelPool);
-            unit.GetComponent<TransformComponent>().NodeName = fishMoveCom.GetNodeName();
-        }
-
-        /// <summary> 初始化子弹类型 Unit 组件 </summary>
-        private void InitBulletComponent(Unit unit)
-        {
-            // Battle TODO
-        }
     }
 
 	[ObjectSystem]
 	public class BattleUnitLogicComponentDestroySystem : DestroySystem<BattleUnitLogicComponent>
 	{
-		public override void Destroy(BattleUnitLogicComponent self)
-		{
-            // Battle TODO
-        }
+		public override void Destroy(BattleUnitLogicComponent self) => self.IsUpdate = false;
 	}
 
     #endregion
 
     #region Base Function
 
-    public static class UnitLogicComponentSystem
+    public static class BattleUnitLogicComponentSystem
     {
         public static void FixedUpdate(this Unit self)
         {
@@ -90,7 +72,6 @@ namespace ET
                     return;
                 case UnitType.Bullet:
                     self.GetComponent<BulletUnitComponent>().FixedUpdate();
-                    //self.SetLocalRotation(transformComponent.LogicLocalRotation);
                     return;
             }
         }

@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace ET
@@ -11,34 +10,38 @@ namespace ET
     public static class BulletMoveHelper
     {
         public static BulletMoveInfo PopInfo() =>
-                        MonoPool.Instance.Fetch(typeof(BulletMoveInfo)) as BulletMoveInfo;
+                                    MonoPool.Instance.Fetch(typeof(BulletMoveInfo)) as BulletMoveInfo;
 
-        public static void InitInfo(BulletMoveInfo info, float moveSpeed, float moveDirX, float moveDirY,
-                                float startPosX, float startPosY, UInt32 trackEntityId)
+        public static void PushPool(BulletMoveInfo info) => MonoPool.Instance.Recycle(info);
+
+        public static void InitInfo(BulletMoveInfo bulletMoveInfo, CannonShootInfo cannonShootInfo)
         {
-            //_nextPos.Set(startPosX, startPosY, 0);
-            //_transCom.SetLocalPos(_nextPos);
-            SetMoveDirection(moveDirX, moveDirY, true);
-            //StartMove(moveSpeed);
+            bulletMoveInfo.CurrentLocalPos = cannonShootInfo.GetBulletStartPosition();
+            bulletMoveInfo.MoveDirection = cannonShootInfo.ShootDirection;
+            SetNextRotation(bulletMoveInfo);
         }
 
         public static void FixedUpdate(BulletMoveInfo info)
         {
+            // 反弹逻辑修改, 先判断上一次渲染的位置是否到达边界(也就是先显示碰到边界)
+            // 再修改射击方向, 设置当前帧反弹后的位置
+            BulletCameraHelper.CheckCollideBorder(info);
+
+            float moveLength = TimeHelper.ClinetDeltaFrameTime() * info.MoveSpeed;
+            ref Vector2 MoveDirection = ref info.MoveDirection;
+            ref Vector3 CurrentLocalPos = ref info.CurrentLocalPos;
+            CurrentLocalPos.x += info.MoveDirection.x * moveLength;
+            CurrentLocalPos.y += info.MoveDirection.y * moveLength;
+
+            SetNextRotation(info);
+
+            // 追踪鱼重新计算方向, 在逻辑层设置好方向
             //Vector3 targetPos = fishEntity.GetScreenPos();
             //Vector3 scrrenPos = _transCom.GetScreenPos();
             //float moveDirX = targetPos.x - scrrenPos.x;
             //float moveDirY = targetPos.y - scrrenPos.y;
             //if (moveDirX > DirectionFix && moveDirY > DirectionFix)
-            //    SetMoveDirection(moveDirX, moveDirY, true);
-            
-            float moveLength = TimeHelper.ClinetDeltaFrameTime() * info.MoveSpeed;
-            ref Vector2 MoveDirection = ref info.MoveDirection;
-            ref Vector2 NextStep = ref info.NextStep;
-            NextStep.x = info.MoveDirection.x * moveLength;
-            NextStep.y = info.MoveDirection.y * moveLength;
-            
-            //if (EntityUtility.CheckBulletScreenReflect(ref _nextPos, ref info.MoveDirection))
-            //    SetMoveDirection(info.MoveDirection.x, info.MoveDirection.y, false);
+            //    SetNextRotation(moveDirX, moveDirY, true);
         }
 
         //public override void OnCustomUpdate()
@@ -47,15 +50,13 @@ namespace ET
         //    _transCom.SetLocalRotation(NextRotation);
         //}
 
-        public static void SetMoveDirection(float moveDirX, float moveDirY, bool isNormalize)
+        private static void SetNextRotation(BulletMoveInfo info)
         {
-            //info.MoveDirection.Set(moveDirX, moveDirY);
-            //if (isNormalize)
-            //    info.MoveDirection.Normalize();
-            //EntityUtility.CalcScreenQuaternion(info.MoveDirection, ref NextRotation);
-            //// 子弹本身的模型制作带了翻转
-            //NextRotation.z = -NextRotation.y;
-            //NextRotation.y = 0;
+            CannonShootHelper.SetLocalQuaternion(info);
+
+            // Battle Warning 子弹本身的模型制作带了翻转
+            info.CurrentRotation.z = - info.CurrentRotation.y;
+            info.CurrentRotation.y = 0;
         }
     }
 }
