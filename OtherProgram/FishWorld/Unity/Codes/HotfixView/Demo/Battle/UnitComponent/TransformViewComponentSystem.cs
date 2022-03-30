@@ -71,14 +71,6 @@ namespace ET
                 return;
 
             Transform transform = gameObjectComponent.Transform;
-
-            if (transform == null)
-            {
-                // Battle TODO delete
-                Log.Error($"模型资源有问题, 烦请把鱼基础表 ID = { self.ConfigId }, 发给基层员工 = 毕伟雄");
-                return;
-            }
-
             transform.localPosition = localPos;
             
             TransformComponent transformComponent = self.TransformComponent();
@@ -133,17 +125,8 @@ namespace ET
         public static void SetForward(this Unit self, Vector3 forward)
         {
             GameObjectComponent gameObjectComponent = self.GameObjectComponent();
-            if (gameObjectComponent == null)
-                return;
-
-            if (gameObjectComponent.Transform == null)
-            {
-                // Battle TODO delete
-                Log.Error($"模型资源有问题, 烦请把鱼基础表 ID = { self.ConfigId }, 发给基层员工 = 毕伟雄");
-                return;
-            }
-
-            gameObjectComponent.Transform.forward = forward;
+            if (gameObjectComponent != null)
+                gameObjectComponent.Transform.forward = forward;
         }
 
         /// <summary> 重置变换会把逻辑数据也重置掉 </summary>

@@ -22,6 +22,7 @@ namespace ET
 
             InitAttributeComponent(unit, unitInfo);
             unit.AddComponent<TransformComponent>(BattleTestConfig.IsUseModelPool);
+            unit.AddComponent<ColliderLogicComponent>(BattleTestConfig.IsUseModelPool);
 
             switch (unit.UnitType)
             {

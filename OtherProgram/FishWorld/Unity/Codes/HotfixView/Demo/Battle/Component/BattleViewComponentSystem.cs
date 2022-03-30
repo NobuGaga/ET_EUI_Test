@@ -36,8 +36,8 @@ namespace ET
     {
         protected override async ETTask Run(ReceiveFire args)
         {
-            BattleViewComponent battleViewComponent = args.CurrentScene.GetBattleViewComponent();
-            battleViewComponent.CallLogicShootBullet(args.UnitInfo, ref args.ShootDirX, ref args.ShootDirY);
+            BattleViewComponent battleViewCom = args.CurrentScene.GetBattleViewComponent();
+            battleViewCom.CallLogicShootBullet(args.UnitInfo, ref args.TouchPosX, ref args.TouchPosY);
             await ETTask.CompletedTask;
         }
     }
@@ -67,8 +67,7 @@ namespace ET
         {
             // Battle Warning 需要保证 BattleLogicComponent 跟 BattleViewComponent 挂在同一个 Scene 上
             // 都通过 BattleTestConfig 的标记进行判断
-            // BattleLogicComponent battleLogicComponent = self.DomainScene().GetBattleLogicComponent();
-            BattleLogicComponent battleLogicComponent = self.Parent.GetComponent<BattleLogicComponent>();
+            var battleLogicComponent = self.Parent.GetComponent<BattleLogicComponent>();
             // Battle TODO 先更新鱼的位置, 再更新子弹的位置(因为子弹需要鱼的位置计算追踪)
             UpdateFishUnitList(battleLogicComponent);
             UpdateBulletUnitList(battleLogicComponent);
@@ -76,15 +75,13 @@ namespace ET
 
         private void UpdateFishUnitList(BattleLogicComponent battleLogicComponent)
         {
-            UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
-            if (unitComponent == null)
+            HashSet<Unit> fishUnitList = GetFishUnitList(battleLogicComponent);
+            if (fishUnitList == null)
                 return;
 
-            HashSet<Unit> fishUnitList = unitComponent.GetFishUnitList();
             foreach (Unit fishUnit in fishUnitList)
             {
-                BattleUnitLogicComponent battleUnitLogicComponent = fishUnit.GetComponent<BattleUnitLogicComponent>();
-                if (!battleUnitLogicComponent.IsUpdate)
+                if (!fishUnit.GetComponent<BattleUnitLogicComponent>().IsUpdate)
                     continue;
 
                 fishUnit.FixedUpdate();
@@ -95,24 +92,63 @@ namespace ET
         private void UpdateBulletUnitList(BattleLogicComponent battleLogicComponent)
         {
             Scene currentScene = battleLogicComponent.CurrentScene();
+            if (currentScene == null)
+                return;
+
             BulletLogicComponent bulletLogicComponent = currentScene.GetComponent<BulletLogicComponent>();
             List<long> bulletIdList = bulletLogicComponent.BulletIdList;
-            Dictionary<long, Unit> bulletUnitMap = bulletLogicComponent.BulletUnitMap;
             long bulletUnitId;
             Unit bulletUnit;
-            for (ushort index = 0; index < bulletIdList.Count; index++)
+            for (int index = bulletIdList.Count - 1; index >= 0; index--)
             {
                 bulletUnitId = bulletIdList[index];
-                if (!bulletUnitMap.ContainsKey(bulletUnitId))
+                bulletUnit = bulletLogicComponent.GetChild<Unit>(bulletUnitId);
+                if (bulletUnit == null)
                 {
                     Log.Error($"private BattleViewComponent.UpdateBulletUnitList bullet is not exist. bulletUnitId = { bulletUnitId }");
                     continue;
                 }
 
-                bulletUnit = bulletUnitMap[bulletUnitId];
                 bulletUnit.FixedUpdate();
                 bulletUnit.Update();
+                CheckBulletCollide(battleLogicComponent, bulletUnit);
             }
+        }
+
+        private void CheckBulletCollide(BattleLogicComponent battleLogicComponent, Unit bulletUnit)
+        {
+            HashSet<Unit> fishUnitList = GetFishUnitList(battleLogicComponent);
+            if (fishUnitList == null)
+                return;
+
+            var bulletColliderViewCom = bulletUnit.GetComponent<ColliderViewComponent>();
+            if (bulletColliderViewCom == null)
+                return;
+
+            var bulletColliderMonoCom = bulletColliderViewCom.MonoComponent;
+            foreach (Unit fishUnit in fishUnitList)
+            {
+                var colliderViewComponent = fishUnit.GetComponent<ColliderViewComponent>();
+                if (colliderViewComponent == null)
+                    continue;
+
+                var colliderMonoComponent = colliderViewComponent.MonoComponent;
+                if (bulletColliderMonoCom.IsCollide(colliderMonoComponent))
+                {
+                    Vector3 screenPosition = bulletUnit.GetScreenPos();
+                    battleLogicComponent.Collide(screenPosition.x, screenPosition.y, bulletUnit.Id, fishUnit.Id);
+                    return;
+                }
+            }
+        }
+
+        private HashSet<Unit> GetFishUnitList(BattleLogicComponent battleLogicComponent)
+        {
+            UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
+            if (unitComponent == null)
+                return null;
+
+            return unitComponent.GetFishUnitList();
         }
     }
 
@@ -144,8 +180,10 @@ namespace ET
         /// <summary> 拓展实现 Scene 方法, 方便获取 BattleViewComponent </summary>
         public static BattleViewComponent GetBattleViewComponent(this Scene scene)
         {
-            Scene battleScene = scene.BattleScene();
-            return battleScene.GetComponent<BattleViewComponent>();
+            if (BattleTestConfig.IsAddBattleToZone && scene.SceneType == SceneType.Current)
+                scene = scene.ZoneScene();
+
+            return scene.GetComponent<BattleViewComponent>();
         }
 
         public static void RotateCannon(this BattleViewComponent self, ref float touchPosX, ref float touchPosY)
@@ -156,7 +194,8 @@ namespace ET
             self.RotateCannon(selfSeatId, ref touchPosX, ref touchPosY);
         }
 
-        private static CannonShootInfo RotateCannon(this BattleViewComponent self, int seatId, ref float touchPosX, ref float touchPosY)
+        private static CannonShootInfo RotateCannon(this BattleViewComponent self, int seatId, ref float touchPosX, 
+                                                                                               ref float touchPosY)
         {
             Scene currentScene = self.CurrentScene();
             Unit playerUnit = UnitHelper.GetPlayUnitBySeatId(currentScene, seatId);
@@ -165,30 +204,41 @@ namespace ET
             Transform transform = gameObjectComponent.GameObject.transform;
 
             // 在视图层获取屏幕坐标, 不放到 Mono 层因为 Mono 层的 Helper 类不能调用 Unity 的东西
-            Vector3 shootPointScreenPos = GlobalComponent.Instance.CannonSeatLayout.GetShootScreenPoint(seatId);
-            Vector2 shootDirection = new Vector2(touchPosX - shootPointScreenPos.x, touchPosY - shootPointScreenPos.y);
+            Vector3 shootScreenPos = GlobalComponent.Instance.CannonSeatLayout.GetShootScreenPoint(seatId);
+            Vector2 shootDirection = new Vector2(touchPosX - shootScreenPos.x, touchPosY - shootScreenPos.y);
 
             CannonShootInfo cannonShootInfo = CannonShootHelper.PopInfo();
-            CannonShootHelper.InitInfo(cannonShootInfo, transform.localRotation, shootDirection, shootPointScreenPos);
+            CannonShootHelper.InitInfo(cannonShootInfo, transform.localRotation, shootDirection, shootScreenPos);
             transform.localRotation = cannonShootInfo.LocalRotation;
 
             // 返回值方便发射子弹获取炮台信息
             return cannonShootInfo;
         }
 
-        public static void CallLogicShootBullet(this BattleViewComponent self, ref float shootDirX, ref float shootDirY)
+        public static void CallLogicShootBullet(this BattleViewComponent self, ref float touchPosX, ref float touchPosY)
         {
             Scene currentScene = self.CurrentScene();
             FisheryComponent fisheryComponent = currentScene.GetComponent<FisheryComponent>();
             int selfSeatId = fisheryComponent.GetSelfSeatId();
-            self.CallLogicShootBullet(selfSeatId, ref shootDirX, ref shootDirY);
+
+            UnitInfo unitInfo = self.CallLogicShootBullet(selfSeatId, ref touchPosX, ref touchPosY);
+            
+            // Battle TODO 自己发射子弹发送协议, 后面把整个触控交互逻辑判断放到逻辑层
+            // Battle TODO 炮倍, 暂时写死
+            int cannonStack = 1;
+            unitInfo.TryGetTrackFishUnitId(out long trackFishUnitId);
+            BattleLogicComponent battleLogicCom = currentScene.GetBattleLogicComponent();
+            battleLogicCom.C2M_Fire(unitInfo.UnitId, touchPosX, touchPosY, cannonStack, trackFishUnitId);
         }
 
-        private static void CallLogicShootBullet(this BattleViewComponent self, int seatId,
-                                                ref float shootDirX, ref float shootDirY)
+        private static UnitInfo CallLogicShootBullet(this BattleViewComponent self, int seatId,
+                                                ref float touchPosX, ref float touchPosY)
         {
-            UnitInfo unitInfo = UnitInfoFactory.PopBulletInfo(seatId);
-            self.CallLogicShootBullet(unitInfo, ref shootDirX, ref shootDirY);
+            Scene currentScene = self.CurrentScene();
+            BulletLogicComponent bulletLogicComponent = currentScene.GetComponent<BulletLogicComponent>();
+            UnitInfo unitInfo = bulletLogicComponent.PopUnitInfo(seatId);
+            self.CallLogicShootBullet(unitInfo, ref touchPosX, ref touchPosY);
+            return unitInfo;
         }
 
         /// <summary> 通知战斗逻辑发射子弹, 这里做一些视图层的处理然后再把数据传到逻辑层 </summary>

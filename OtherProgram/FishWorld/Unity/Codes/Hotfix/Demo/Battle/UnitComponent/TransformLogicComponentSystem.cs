@@ -70,6 +70,7 @@ namespace ET
             if (isSetScale)
                 self.SetScale(TransformDefaultConfig.DefaultScale);
 
+            self.SetForward(TransformDefaultConfig.DefaultForward);
             self.ScreenPos = TransformDefaultConfig.DefaultScreenPos;
         }
     }

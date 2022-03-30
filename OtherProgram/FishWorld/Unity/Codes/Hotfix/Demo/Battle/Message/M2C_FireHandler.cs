@@ -18,21 +18,17 @@ namespace ET
 				return;
 
 			FisheryComponent fisheryComponent = CurrentScene.GetComponent<FisheryComponent>();
-
 			int seatId = fisheryComponent.GetSeatId(message.UnitId);
 
-			long trackFishUnitId = BulletConfig.DefaultTrackFishUnitId;
-			if (message.FishId != null && message.FishId.Count > 0)
-				trackFishUnitId = message.FishId[0];
-
-			UnitInfo UnitInfo = UnitInfoFactory.PopBulletInfo(seatId, message.BulletId, trackFishUnitId);
+			BulletLogicComponent bulletLogicComponent = CurrentScene.GetComponent<BulletLogicComponent>();
+			UnitInfo UnitInfo = bulletLogicComponent.PopUnitInfo(seatId, message.BulletId, message.TrackFishUnitId);
 
 			ReceiveFire eventData = new ReceiveFire()
 			{
 				CurrentScene = CurrentScene,
 				UnitInfo = UnitInfo,
-				ShootDirX = message.PosX,
-				ShootDirY = message.PosY,
+				TouchPosX = message.TouchPosX,
+				TouchPosY = message.TouchPosY,
 				Message = message,
 			};
 

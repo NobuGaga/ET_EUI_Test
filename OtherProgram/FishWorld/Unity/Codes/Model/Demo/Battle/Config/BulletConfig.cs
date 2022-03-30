@@ -13,6 +13,9 @@ namespace ET
         /// <summary> 默认子弹 Unit ID </summary>
         public const ushort DefaultBulletUnitId = 0;
 
+        /// <summary> 触控屏幕坐标转换修正值 </summary>
+        public const float TouchScreenPosFix = 100;
+
         /// <summary>
         /// 默认移动速度, 这里的速度都是通过乘以时间间隔实现的
         /// 实际是一个更新时间步长修正值
@@ -26,7 +29,7 @@ namespace ET
         public static Vector2 DefaultNextStep = new Vector2(0, 0);
 
         /// <summary> 子弹移除屏幕坐标点 </summary>
-        public static Vector3 RemovePoint = new Vector3(0, 0, -100);
+        public static Vector3 RemovePoint = new Vector3(-100, -100, 0);
 
         /// <summary> 单个玩家发射子弹上限 先写死方便生成 ID 后面改成读表 </summary>
         public const ushort ShootMaxBulletCount = 30;
@@ -42,6 +45,8 @@ namespace ET
         /// <summary> 子弹存活节点名, 只在编辑器模式下设置 </summary>
         public const string NameFormat = "bullet_{0}";
 
+        public const int BulletColliderID = 1;
+
         // 子弹 ID 生成校正值, 后面放到全局表的 partial Category AfterEndInit() 里实现
         static BulletConfig()
         {
@@ -55,7 +60,7 @@ namespace ET
                 count++;
             }
 
-            BulletIdFix = 10 ^ count;
+            BulletIdFix = (int)Mathf.Pow(10, count);
         }
     }
 }

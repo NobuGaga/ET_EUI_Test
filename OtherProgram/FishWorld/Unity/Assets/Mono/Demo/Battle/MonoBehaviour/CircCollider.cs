@@ -2,7 +2,7 @@
 
 using UnityEngine;
 
-namespace FishWorld 
+namespace ET 
 {
     public class CircCollider : MonoBehaviour
     {   

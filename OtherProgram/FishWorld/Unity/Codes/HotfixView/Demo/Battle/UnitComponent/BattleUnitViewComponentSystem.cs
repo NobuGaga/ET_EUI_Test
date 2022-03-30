@@ -50,9 +50,16 @@ namespace ET
             }
 
             Transform node = gameObject.transform;
+            if (unit.IsDisposed)
+            {
+                // Battle Warning 异步加载完回来如果 Unit 已经被销毁则直接销毁 gameObject
+                UnityEngine.Object.Destroy(gameObject);
+                return;
+            }
 
             bool isUseModelPool = BattleTestConfig.IsUseModelPool;
             unit.AddComponent<GameObjectComponent, string, Transform>(assetBundlePath, node, isUseModelPool);
+            unit.AddComponent<ColliderViewComponent>();
             unit.InitTransform();
         }
 
@@ -137,11 +144,14 @@ namespace ET
             {
                 case UnitType.Fish:
                     self.SetForward(transformComponent.LogicForward);
-                    return;
+                    break;
                 case UnitType.Bullet:
                     self.SetLocalRotation(transformComponent.LogicLocalRotation);
-                    return;
+                    break;
             }
+
+            ColliderViewComponent colliderViewComponent = self.GetComponent<ColliderViewComponent>();
+            colliderViewComponent?.Update();
         }
 
         public static ObjectPoolComponent GetObjectPoolComponent(this Unit unit)
@@ -151,8 +161,12 @@ namespace ET
                 return unit.DomainScene().GetComponent<ObjectPoolComponent>();
 
             Scene scene = BattleTestConfig.IsAddBattleToZone ? unit.ZoneScene() : unit.DomainScene();
-            BattleViewComponent battleViewCom = scene.GetComponent<BattleViewComponent>();
-            return battleViewCom.GetComponent<ObjectPoolComponent>();
+            // BattleTestConfig.IsAddBattleToZone 为 true 时, 关闭应用, Zone Scene 为空
+            if (scene == null)
+                return null;
+
+            BattleViewComponent battleViewComponent = scene.GetComponent<BattleViewComponent>();
+            return battleViewComponent.GetComponent<ObjectPoolComponent>();
         }
     }
 

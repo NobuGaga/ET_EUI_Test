@@ -39,12 +39,8 @@ namespace ET
     {
         public override void Awake(BattleLogicComponent self)
         {
-            Scene currentScene = self.Parent as Scene;
-            if (currentScene.SceneType != SceneType.Current)
-                currentScene = currentScene.CurrentScene();
-
-            // Bullet Unit Component 要挂在 Current Scene 上面, 释放的时候跟 Unit Component 保持一直
-            currentScene.AddComponent<BulletLogicComponent>();
+            self.FireInfo = new C2M_Fire();
+            self.HitInfo = new C2M_Hit();
         }
     }
 
@@ -91,6 +87,16 @@ namespace ET
             return self.DomainScene();
         }
 
+        /// <summary> 加快获取 CurrentScene 效率 </summary>
+        public static Scene ZoneScene(this BattleLogicComponent self)
+        {
+            Scene scene = self.Parent as Scene;
+            if (BattleTestConfig.IsAddBattleToZone)
+                return scene;
+
+            return scene.ZoneScene();
+        }
+
         /// <summary>
         /// 获取战斗组件所在的 Scene, 所有战斗相关的管理组件都在这个 Scene 下
         /// 通过在 BattleLogicComponent 的 Awake 跟 BattleViewComponent 的 Awake 中
@@ -134,6 +140,38 @@ namespace ET
 
             // Battle Warning 目前使用统一挂在 CurrentScene 的 UnitComponent
             return currentScene.GetComponent<UnitComponent>();
+        }
+
+        /// <summary> 碰撞处理 </summary>
+        public static void Collide(this BattleLogicComponent self, float screenPosX, float screenPosY,
+                                                                   long bulletUnitId, long fishUnitId)
+        {
+            Scene currentScene = self.CurrentScene();
+            if (currentScene == null)
+                return;
+
+            // 子弹的移除都是本地客户端判定是否碰撞来进行
+            BulletLogicComponent bulletLogicComponent = currentScene.GetComponent<BulletLogicComponent>();
+            Unit bulletUnit = bulletLogicComponent.GetChild<Unit>(bulletUnitId);
+            var attributeComponent = bulletUnit.GetComponent<NumericComponent>();
+            int seatId = attributeComponent.GetAsInt(NumericType.Pos);
+            Unit playerUnit = UnitHelper.GetPlayUnitBySeatId(currentScene, seatId);
+            long playerUnitId = playerUnit.Id;
+
+            if (playerUnitId == self.GetSelfUnitId())
+                self.C2M_Hit(screenPosX, screenPosY, bulletUnitId, fishUnitId);
+
+            bulletLogicComponent.RemoveUnit(bulletUnitId);
+
+            BulletCollideFish eventData = new BulletCollideFish()
+            {
+                ScreenPosX = screenPosX,
+                ScreenPosY = screenPosY,
+                PlayerUnitId = playerUnitId,
+                FishUnitId = fishUnitId,
+            };
+
+            Game.EventSystem.Publish(eventData);
         }
     }
 

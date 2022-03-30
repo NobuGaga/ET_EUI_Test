@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace ET
 {
 	/// <summary>
@@ -8,5 +6,8 @@ namespace ET
 	public class BattleLogicComponent : Entity, IAwake, IDestroy//, Battle TODO IUpdate
 	{
 
+		public C2M_Fire FireInfo;
+
+		public C2M_Hit HitInfo;
 	}
 }

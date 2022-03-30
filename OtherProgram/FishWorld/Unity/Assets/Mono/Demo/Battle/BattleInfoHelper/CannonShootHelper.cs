@@ -21,7 +21,8 @@ namespace ET
 
         public static void PushPool(CannonShootInfo info) => MonoPool.Instance.Recycle(info);
 
-        public static void InitInfo(CannonShootInfo info, Quaternion localRotation, Vector2 shootDirection, Vector3 shootPointScreenPos)
+        public static void InitInfo(CannonShootInfo info, Quaternion localRotation,
+                                    Vector2 shootDirection, Vector3 shootPointScreenPos)
         {
             info.LocalRotation = localRotation;
 
@@ -79,35 +80,7 @@ namespace ET
         {
             self.x = x; self.y = y; self.z = z; self.w = w;
         }
+
         private static float SqrMagnitude(this ref Vector2 self) => self.x * self.x + self.y * self.y;
-
-        private static readonly float forwardX = Vector3.forward.x;
-        private static readonly float forwardY = Vector3.forward.y;
-        private static readonly float forwardZ = Vector3.forward.z;
-
-        /// <summary>
-        /// 计算炮台射击方向, 需要先获取上一帧炮台的旋转, 然后再给类结构的方向赋值
-        /// (只需要依赖当前帧炮台旋转方向)
-        /// </summary>
-        //public static void CalculateCannonDirection(CannonShootInfo info)
-        //{
-        //    ref Quaternion rotation = ref info.LocalRotation;
-        //    float doubleX = rotation.x * 2;
-        //    float doubleY = rotation.y * 2;
-        //    float doubleZ = rotation.z * 2;
-        //    float squareX = rotation.x * doubleX;
-        //    float squareY = rotation.y * doubleY;
-        //    float squareZ = rotation.z * doubleZ;
-        //    float multiplyXY = rotation.x * doubleY;
-        //    float multiplyXZ = rotation.x * doubleZ;
-        //    float multiplyYZ = rotation.y * doubleZ;
-        //    float multiplyWX = rotation.w * doubleX;
-        //    float multiplyWY = rotation.w * doubleY;
-        //    float multiplyWZ = rotation.w * doubleZ;
-
-        //    ref Vector2 direction = ref info.ShootDirection;
-        //    direction.x = ((1 - squareY + squareZ) * forwardX) + ((multiplyXY - multiplyWZ) * forwardY) + ((multiplyXZ + multiplyWY) * forwardZ);
-        //    direction.y = ((multiplyXZ - multiplyWY) * forwardX) + ((multiplyYZ + multiplyWX) * forwardY) + ((1 - (squareX + squareY)) * forwardZ);
-        //}
     }
 }

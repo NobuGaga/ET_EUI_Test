@@ -13,14 +13,10 @@ namespace ET
 		/// <summary> 自己发射的子弹个数 </summary>
 		public ushort ShootBulletCount;
 
+		/// <summary> 用于客户端本地创建 Unit 统一使用的 UnitInfo </summary>
+		public UnitInfo unitInfo = new UnitInfo();
+
 		/// <summary> 渔场内存在的子弹 ID 列表, 加快遍历速度 </summary>
 		public List<long> BulletIdList = new List<long>(FisheryConfig.FisheryMaxBulletCount);
-
-		/// <summary>
-		/// 储存渔场内子弹 Unit 的字典, 因为子弹的 Unit ID 是客户端生成的
-		/// 为避免跟 UnitComponent 里的 Unit ID 重复导致查询失败
-		/// 放在战斗管理来储存子弹 Unit 数据
-		/// </summary>
-		public Dictionary<long, Unit> BulletUnitMap = new Dictionary<long, Unit>(FisheryConfig.FisheryMaxBulletCount);
 	}
 }
