@@ -20,7 +20,7 @@ namespace ET
 
         /// <summary> 骨骼点世界坐标(根据上一帧骨骼点更新) </summary>
         private Vector2 center;
-        private float centerZ;
+        public float CenterZ;
 
         /// <summary> 
         /// 偏移值, 线碰撞只做开始位置跟结束位置 Y 轴的偏移
@@ -28,10 +28,14 @@ namespace ET
         /// </summary>
         private Line2DOffset offset;
 
+#if UNITY_EDITOR
+
+        private float scale;
+#endif
         /// <summary> 线段开始位置(屏幕坐标) </summary>
         private Vector2 startPos;
         /// <summary> 线段结束位置(屏幕坐标) </summary>
-        private Vector2 endPos;
+        public Vector2 EndPos;
         /// <summary> 开始坐标跟结束坐标的距离 </summary>
         private Vector2 distance;
 
@@ -40,12 +44,16 @@ namespace ET
             this.cameraType = cameraType;
 
             center = ColliderConfig.DefaultCenter;
-            centerZ = ColliderConfig.DefaultCenter.z;
+            CenterZ = ColliderConfig.DefaultCenter.z;
 
             offset = new Line2DOffset(startOffset, endOffset);
-            
+
+#if UNITY_EDITOR
+
+            scale = ColliderConfig.DefaultScale;
+#endif
             startPos = new Vector2(0, -startOffset);
-            endPos = new Vector2(0, endOffset);
+            EndPos = new Vector2(0, endOffset);
 
             distance = new Vector2(0, startOffset + endOffset);
         }
@@ -78,8 +86,8 @@ namespace ET
             if (diffX * diffX + diffY * diffY < minDisSquare)
                 return true;
 
-            diffX = endPos.x - pointX;
-            diffY = endPos.y - pointY;
+            diffX = EndPos.x - pointX;
+            diffY = EndPos.y - pointY;
 
             if (diffX * diffX + diffY * diffY < minDisSquare)
                 return true;
@@ -95,10 +103,10 @@ namespace ET
             float linePointX = distance.x * dotSpSe + startPos.x;
             float linePointY = distance.y * dotSpSe + startPos.y;
 
-            float minX = Mathf.Min(startPos.x, endPos.x);
-            float minY = Mathf.Min(startPos.y, endPos.y);
-            float maxX = Mathf.Max(startPos.x, endPos.x);
-            float maxY = Mathf.Max(startPos.y, endPos.y);
+            float minX = Mathf.Min(startPos.x, EndPos.x);
+            float minY = Mathf.Min(startPos.y, EndPos.y);
+            float maxX = Mathf.Max(startPos.x, EndPos.x);
+            float maxY = Mathf.Max(startPos.y, EndPos.y);
 
             if (linePointX < minX || linePointX > maxX || linePointY < minY || linePointY > maxY)
                 return false;
@@ -119,24 +127,45 @@ namespace ET
         public void Update(ref Vector3 boneWorldPoint, float scale, ref Vector2 direction)
         {
             center.Set(boneWorldPoint.x, boneWorldPoint.y);
-            centerZ = boneWorldPoint.z;
+            CenterZ = boneWorldPoint.z;
 
+#if UNITY_EDITOR
+
+            this.scale = scale;
+#endif
             // 计算屏幕坐标, 赋值完中心点, 缩放值, 方向后进行
             float directionX = direction.x * scale;
             float directionY = direction.y * scale;
 
             Vector3 screenPos = ColliderHelper.GetScreenPoint(cameraType, center.x - directionX * offset.Start,
                                                                           center.y - directionY * offset.Start,
-                                                                          centerZ);
+                                                                          CenterZ);
             startPos.Set(screenPos.x, screenPos.y);
 
             screenPos = ColliderHelper.GetScreenPoint(cameraType, center.x + directionX * offset.End,
                                                                   center.y + directionY * offset.End,
-                                                                  centerZ);
-            endPos.Set(screenPos.x, screenPos.y);
+                                                                  CenterZ);
+            EndPos.Set(screenPos.x, screenPos.y);
 
-            distance.Set(endPos.x - startPos.x, endPos.y - startPos.y);
+            distance.Set(EndPos.x - startPos.x, EndPos.y - startPos.y);
         }
+
+#if UNITY_EDITOR
+
+        private static Vector3 _drawStartPoint;
+        private static Vector3 _drawEndPoint;
+
+        public void AddLineDrawData()
+        {
+            _drawStartPoint.Set(startPos.x, startPos.y, CenterZ);
+            _drawEndPoint.Set(EndPos.x, EndPos.y, CenterZ);
+
+            Vector3 startWorldPoint = ColliderHelper.GetWorldPoint(ColliderConfig.CannonCamera, ref _drawStartPoint);
+            Vector3 endWorldPoint = ColliderHelper.GetWorldPoint(ColliderConfig.CannonCamera, ref _drawEndPoint);
+
+            BattleDebug.AddLineDrawData(startWorldPoint, endWorldPoint);
+        }
+#endif
     }
 
     public static class Line2DExtension

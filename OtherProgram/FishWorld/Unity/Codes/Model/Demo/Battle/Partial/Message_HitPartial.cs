@@ -11,4 +11,11 @@ namespace ET
 			FishId = fishUnitId;
 		}
 	}
+
+	public partial class M2C_Hit
+	{
+		public float ScreenPosX => PosX / BulletConfig.TouchScreenPosFix;
+
+		public float ScreenPosY => PosY / BulletConfig.TouchScreenPosFix;
+	}
 }

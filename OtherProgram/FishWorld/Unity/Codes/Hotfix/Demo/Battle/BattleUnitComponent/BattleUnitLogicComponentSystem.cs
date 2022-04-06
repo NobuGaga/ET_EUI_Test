@@ -1,7 +1,5 @@
 namespace ET
 {
-    #region Life Circle
-
     /// <summary>
     /// 原来自带代码实现了 IAwake<int> 用来复制表 Id
     /// 因为并不是每个战斗实体都有表 Id 所以这里不作赋值跟保存
@@ -58,10 +56,6 @@ namespace ET
 		public override void Destroy(BattleUnitLogicComponent self) => self.IsUpdate = false;
 	}
 
-    #endregion
-
-    #region Base Function
-
     public static class BattleUnitLogicComponentSystem
     {
         public static void FixedUpdate(this Unit self)
@@ -77,6 +71,4 @@ namespace ET
             }
         }
     }
-
-    #endregion
 }

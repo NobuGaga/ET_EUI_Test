@@ -1,25 +1,24 @@
 #if UNITY_EDITOR
 
+using System;
 using UnityEngine;
 
 namespace ET
 {
     public class GizmosCaller : MonoBehaviour
     {
+        private Action drawGizmos;
 
-        public delegate void OnDrawGizmosFunction();
-        private OnDrawGizmosFunction function;
-
-        private void OnDrawGizmos()
+        public void OnDrawGizmos()
         {
-            //function?.Invoke();
-            if (function != null)
-                function();
+            //drawGizmos?.Invoke();
+            if (drawGizmos != null)
+                drawGizmos();
         }
 
-        public static GizmosCaller operator +(GizmosCaller caller, OnDrawGizmosFunction function)
+        public static GizmosCaller operator +(GizmosCaller caller, Action drawGizmos)
         {
-            caller.function += function;
+            caller.drawGizmos += drawGizmos;
             return caller;
         }
     }

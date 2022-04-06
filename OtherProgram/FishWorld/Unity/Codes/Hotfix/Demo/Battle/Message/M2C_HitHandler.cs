@@ -12,7 +12,7 @@ namespace ET
 			Scene CurrentScene = zoneScene.CurrentScene();
 
 			UnitComponent unitComponent = CurrentScene.GetComponent<UnitComponent>();
-			unitComponent.Remove(Message.FishId).Coroutine();
+			unitComponent.Remove(Message.FishId);
 
 			KillFish eventData = new KillFish()
 			{

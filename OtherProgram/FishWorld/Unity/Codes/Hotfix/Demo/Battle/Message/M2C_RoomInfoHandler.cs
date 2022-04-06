@@ -9,15 +9,18 @@ namespace ET
 		protected override async ETTask Run(Session session, M2C_RoomInfo message)
 		{
 			Scene CurrentScene = session.DomainScene().CurrentScene();
-			FisheryComponent FisheryComponent = CurrentScene.GetComponent<FisheryComponent>();
+			FisheryComponent fisheryComponent = CurrentScene.GetComponent<FisheryComponent>();
+			SkillComponent skillComponent = CurrentScene.GetComponent<SkillComponent>();
 
-			FisheryComponent.RoomType = message.RoomId;
-			FisheryComponent.LeftIceTime = message.LeftIceTime;
-			FisheryComponent.AreaId = message.AreaId;
+			fisheryComponent.RoomType = message.RoomId;
+			skillComponent.IceEndTime = message.IceTime;
+			fisheryComponent.AreaId = message.AreaId;
 
 			ReceiveEnterRoom eventData = new ReceiveEnterRoom() {
 				CurrentScene = CurrentScene,
-				FisheryComponent = FisheryComponent,
+				RoomId = message.RoomId,
+				IceEndTime = skillComponent.IceEndTime,
+				AreaId = message.AreaId,
 			};
 
 			Game.EventSystem.Publish(eventData);

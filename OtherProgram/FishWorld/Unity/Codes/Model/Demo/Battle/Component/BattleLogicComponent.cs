@@ -5,9 +5,14 @@ namespace ET
 	/// </summary>
 	public class BattleLogicComponent : Entity, IAwake, IDestroy//, Battle TODO IUpdate
 	{
+		// Battle TODO delete
+		/// <summary> 上一次发射子弹时间戳(毫秒) </summary>
+		public long LastShootBulletTime;
 
 		public C2M_Fire FireInfo;
 
 		public C2M_Hit HitInfo;
+
+		public C2M_SkillUse UseSkillInfo;
 	}
 }

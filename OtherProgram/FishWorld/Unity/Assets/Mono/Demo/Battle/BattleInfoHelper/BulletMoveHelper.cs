@@ -27,28 +27,24 @@ namespace ET
             // 再修改射击方向, 设置当前帧反弹后的位置
             BulletCameraHelper.CheckCollideBorder(info);
 
+            ref Vector3 currentLocalPos = ref info.CurrentLocalPos;
+            ref Vector2 moveDirection = ref info.MoveDirection;
+
+            if (info.TrackPosition != BulletMoveDefaultInfo.TrackPosition)
+            {
+                // 追踪鱼重新计算方向, 在逻辑层设置好追踪屏幕位置
+                ref Vector3 trackPosition = ref info.TrackPosition;
+                moveDirection.x = trackPosition.x - currentLocalPos.x;
+                moveDirection.y = trackPosition.y - currentLocalPos.y;
+                moveDirection.Normalize();
+            }
+
             float moveLength = TimeHelper.ClinetDeltaFrameTime() * info.MoveSpeed;
-            ref Vector2 MoveDirection = ref info.MoveDirection;
-            ref Vector3 CurrentLocalPos = ref info.CurrentLocalPos;
-            CurrentLocalPos.x += info.MoveDirection.x * moveLength;
-            CurrentLocalPos.y += info.MoveDirection.y * moveLength;
+            currentLocalPos.x += moveDirection.x * moveLength;
+            currentLocalPos.y += moveDirection.y * moveLength;
 
             SetNextRotation(info);
-
-            // 追踪鱼重新计算方向, 在逻辑层设置好方向
-            //Vector3 targetPos = fishEntity.GetScreenPos();
-            //Vector3 scrrenPos = _transCom.GetScreenPos();
-            //float moveDirX = targetPos.x - scrrenPos.x;
-            //float moveDirY = targetPos.y - scrrenPos.y;
-            //if (moveDirX > DirectionFix && moveDirY > DirectionFix)
-            //    SetNextRotation(moveDirX, moveDirY, true);
         }
-
-        //public override void OnCustomUpdate()
-        //{
-        //    _transCom.SetLocalPos(_nextPos);
-        //    _transCom.SetLocalRotation(NextRotation);
-        //}
 
         private static void SetNextRotation(BulletMoveInfo info)
         {

@@ -19,5 +19,14 @@ namespace ET
 
         /// <summary> 当前子弹局部坐标 </summary>
         public Vector3 CurrentLocalPos;
+
+        /// <summary> 追踪位置, 每帧更新 </summary>
+        public Vector3 TrackPosition;
+    }
+
+    public static class BulletMoveDefaultInfo
+    {
+        /// <summary> 子弹默认追踪位置 </summary>
+        public static Vector3 TrackPosition = new Vector3(-100, -100, -100);
     }
 }

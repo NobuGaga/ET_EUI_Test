@@ -3,12 +3,79 @@ using UnityEngine;
 
 namespace ET
 {
+    public static class CameraComponentSystem
+    {
+        public static async ETTask SetTransformByAreaId(this CameraComponent self, int areaId)
+        {
+            FisheryLevelConfig config = FisheryLevelConfigCategory.Instance.Get(areaId);
+            string vectorString = config.CameraParamPosition;
+            float time = (float)config.CameraMoveTime / FishConfig.MilliSecond;
+
+            // Battle TODO 先不设置鱼节点变换, 因为主界面场景摄像机写死变换鱼影响到这边逻辑
+            Vector3 vector;
+            if (VectorStringHelper.TryParseVector3(vectorString, out vector))
+                await self.PlayMovePosition(vector, time);
+
+            vectorString = config.CameraParamRotation;
+            time = (float)config.CameraRotateTime / FishConfig.MilliSecond;
+
+            if (VectorStringHelper.TryParseVector3(vectorString, out vector))
+                await self.PlayRotate(vector, time);
+        }
+
+        public static void StopTransformTween(this CameraComponent self)
+        {
+            Transform cameraTrans = self.mainCamera.transform;
+            DotweenHelper.DOKill(cameraTrans);
+        }
+
+        public static async ETTask PlayMovePosition(this CameraComponent self, Vector3 endValue, float duration)
+        {
+            Transform cameraTrans = self.mainCamera.transform;
+            Transform fishRootTrans = GlobalComponent.Instance.FishRoot;
+            //Vector3 fishRootEndValue = endValue - cameraTrans.position + fishRootTrans.position;
+
+            if (duration > 0)
+            {
+                DotweenHelper.DOMove(cameraTrans, endValue, duration).Coroutine();
+                //DotweenHelper.DOMove(fishRootTrans, fishRootEndValue, duration).Coroutine();
+            }
+            else
+            {
+                cameraTrans.position = endValue;
+                //fishRootTrans.position = fishRootEndValue;
+            }
+
+            await ETTask.CompletedTask;
+        }
+
+        public static async ETTask PlayRotate(this CameraComponent self, Vector3 endValue, float duration)
+        {
+            Transform cameraTrans = self.mainCamera.transform;
+            Transform fishRootTrans = GlobalComponent.Instance.FishRoot;
+            //Vector3 fishRootEndValue = endValue - cameraTrans.eulerAngles + fishRootTrans.eulerAngles;
+
+            if (duration > 0)
+            {
+                DotweenHelper.DORotate(cameraTrans, endValue, duration).Coroutine();
+                //DotweenHelper.DOMove(fishRootTrans, fishRootEndValue, duration).Coroutine();
+            }
+            else
+            {
+                cameraTrans.eulerAngles = endValue;
+                //fishRootTrans.eulerAngles = fishRootEndValue;
+            }
+
+            await ETTask.CompletedTask;
+        }
+    }
+
     public class AfterEnterRoom_CameraComponent : AEvent<ReceiveEnterRoom>
     {
         protected override async ETTask Run(ReceiveEnterRoom args)
         {
             CameraComponent cameraComponent = args.CurrentScene.ZoneScene().GetComponent<CameraComponent>();
-            await cameraComponent.SetTransformByAreaId(args.FisheryComponent.AreaId);
+            await cameraComponent.SetTransformByAreaId(args.AreaId);
         }
     }
 
@@ -22,46 +89,13 @@ namespace ET
         }
     }
 
-    public static class CameraComponentSystem
+    public class UIFisheriesE_exitEventArgs_CameraComponent : AEvent<UIFisheriesE_exitEventArgs>
     {
-        public static async ETTask SetTransformByAreaId(this CameraComponent self, int areaId)
+        protected override async ETTask Run(UIFisheriesE_exitEventArgs args)
         {
-            FisheryLevelConfig config = FisheryLevelConfigCategory.Instance.Get(areaId);
-            string vectorString = config.CameraParamPosition;
-            float time = (float)config.CameraMoveTime / FishConfig.MilliSecond;
-
-            Vector3 vector;
-            if (VectorStringHelper.TryParseVector3(vectorString, out vector))
-                await self.PlayMovePosition(vector, time);
-
-            vectorString = config.CameraParamRotation;
-            time = (float)config.CameraRotateTime / FishConfig.MilliSecond;
-
-            if (VectorStringHelper.TryParseVector3(vectorString, out vector))
-                await self.PlayRotate(vector, time);
-        }
-
-        public static async ETTask PlayMovePosition(this CameraComponent self, Vector3 endValue, float duration)
-        {
-            Transform transform = self.mainCamera.transform;
-
-            if (duration > 0)
-                DotweenHelper.DOMove(transform, endValue, duration).Coroutine();
-            else
-                transform.position = endValue;
-
-            await ETTask.CompletedTask;
-        }
-
-        public static async ETTask PlayRotate(this CameraComponent self, Vector3 endValue, float duration)
-        {
-            Transform transform = self.mainCamera.transform;
-
-            if (duration > 0)
-                DotweenHelper.DORotate(transform, endValue, duration).Coroutine();
-            else
-                transform.eulerAngles = endValue;
-
+            UIFisheriesComponent fisheryComponent = args.UIFisheriesComponent;
+            CameraComponent cameraComponent = fisheryComponent.ZoneScene().GetComponent<CameraComponent>();
+            cameraComponent.StopTransformTween();
             await ETTask.CompletedTask;
         }
     }

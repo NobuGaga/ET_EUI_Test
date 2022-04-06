@@ -122,13 +122,7 @@ namespace ET
                 nextTime = 1;
         }
 
-        public static void SetMoveSpeed(FishMoveInfo info, float moveSpeed) => info.MoveSpeed = moveSpeed;
-
-        public static void PauseMove(FishMoveInfo info) => info.IsPause = true;
-
-        public static void ResumeMove(FishMoveInfo info) => info.IsPause = false;
-
-        public static void StopMove(FishMoveInfo info)
+        private static void StopMove(FishMoveInfo info)
         {
             info.IsPause = false;
             info.IsMoveEnd = true;

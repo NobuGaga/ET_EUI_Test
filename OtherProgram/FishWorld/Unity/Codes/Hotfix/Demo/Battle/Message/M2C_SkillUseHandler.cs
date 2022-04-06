@@ -1,4 +1,6 @@
-﻿namespace ET
+using ET.EventType;
+
+namespace ET
 {
     [MessageHandler]
     public class M2C_SkillUseHandler: AMHandler<M2C_SkillUse>
@@ -6,24 +8,20 @@
         protected override async ETTask Run(Session session, M2C_SkillUse message)
         {
             if (message.Result != ErrorCode.ERR_Success)
-            {
                 return;
-            }
 
-            Scene currentScene = session.DomainScene().CurrentScene();
-            Unit  unit         = currentScene.GetComponent<UnitComponent>().Get(message.UnitId);
+            Scene zoneScene = session.DomainScene();
+            Scene currentScene = zoneScene.CurrentScene();
+            SkillComponent skillComponent = currentScene.GetComponent<SkillComponent>();
+            skillComponent.UpdateSkill(message.UnitId, message.SkillType, message.SkillTime, message.SkillCDTime);
 
-            if (null == unit)
+            Game.EventSystem.Publish(new ReceiveSkillUse()
             {
-                Log.Error("释放技能的玩家未找到");
-                return;
-            }
+                CurrentScene = currentScene,
+                Message = message,
+            });
 
-            Log.Info($"服务端通知使用技能{message.SkillId}");
-
-            SkillComponent skillComponent = unit.GetComponent<SkillComponent>();
-
-            await skillComponent.SetSkill(message);
+            await ETTask.CompletedTask;
         }
     }
 }

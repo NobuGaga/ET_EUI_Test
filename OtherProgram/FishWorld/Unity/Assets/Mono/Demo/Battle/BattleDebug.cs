@@ -29,12 +29,18 @@ namespace ET
             _listLineData.Add(_lineDataCache);
         }
 
+        public static void Clear() => _listLineData.Clear();
+
         public static void OnDrawGizmosCallBack()
         {
+            if (Camera.current.name != ColliderConfig.CannonCameraName)
+                return;
+
             foreach (LineDrawData data in _listLineData)
             {
                 Gizmos.color = Color.red;
                 Gizmos.DrawSphere(data.from, 3);
+
                 Gizmos.color = Color.green;
                 Gizmos.DrawSphere(data.to, 3);
             }

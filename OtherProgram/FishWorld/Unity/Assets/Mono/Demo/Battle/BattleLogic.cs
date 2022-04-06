@@ -25,9 +25,13 @@ namespace ET
             isInit = true;
         }
 
+
+        public static void Clear()
+        {
 #if UNITY_EDITOR
 
-        public static void AddLineDrawData(Vector3 from, Vector3 to) => BattleDebug.AddLineDrawData(from, to);
+            BattleDebug.Clear();
 #endif
+        }
     }
 }

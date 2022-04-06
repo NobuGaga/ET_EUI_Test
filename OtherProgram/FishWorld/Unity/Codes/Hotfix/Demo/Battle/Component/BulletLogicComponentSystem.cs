@@ -2,22 +2,6 @@ using ET.EventType;
 
 namespace ET
 {
-    #region Event
-
-    public class AfterCreateCurrentScene_BulletLogicComponent : AEvent<AfterCreateCurrentScene>
-    {
-        protected override async ETTask Run(AfterCreateCurrentScene args)
-        {
-            // Bullet Unit Component 要挂在 Current Scene 上面, 释放的时候跟 Unit Component 保持一直
-            args.CurrentScene.AddComponent<BulletLogicComponent>();
-            await ETTask.CompletedTask;
-        }
-    }
-
-    #endregion
-
-    #region Life Circle
-
     [ObjectSystem]
     public sealed class BulletLogicComponentAwakeSystem : AwakeSystem<BulletLogicComponent>
     {
@@ -30,16 +14,20 @@ namespace ET
         public override void Destroy(BulletLogicComponent self) => self.RemoveAllUnit();
     }
 
-    #endregion
-
-    #region Base Function
-
     public static class BulletLogicComponentSystem
     {
         public static UnitInfo PopUnitInfo(this BulletLogicComponent self, int seatId)
         {
             self.unitInfo.Dispose();
             self.unitInfo.InitBulletInfo(seatId);
+            return self.unitInfo;
+        }
+
+        public static UnitInfo PopUnitInfo(this BulletLogicComponent self, int seatId,
+                                           long trackFishUnitId)
+        {
+            self.unitInfo.Dispose();
+            self.unitInfo.InitBulletInfo(seatId, BulletConfig.DefaultBulletUnitId, trackFishUnitId);
             return self.unitInfo;
         }
 
@@ -51,20 +39,10 @@ namespace ET
             return self.unitInfo;
         }
 
-        /// <summary> 到达自己发射炮弹的上限 </summary>
-        private static bool IsShootLimit(this BulletLogicComponent self)
-        {
-            bool isShootLimit = self.ShootBulletCount >= BulletConfig.ShootMaxBulletCount;
-            if (isShootLimit)
-                Log.Error($"发射子弹超出配置表配置上限 : { BulletConfig.ShootMaxBulletCount }");
-
-            return isShootLimit;
-        }
-
         /// <summary> 生成自己发射的子弹 Unit ID </summary>
-        private static void TryGenerateBulletId(this BulletLogicComponent self, out long unitId)
+        private static long GenerateBulletId(this BulletLogicComponent self)
         {
-            unitId = 0;
+            long unitId = 0;
 
             Scene currentScene = self.Parent as Scene;
             Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
@@ -84,7 +62,7 @@ namespace ET
                 if (circleTime++ > BulletConfig.ShootMaxBulletCount)
                 {
                     Log.Error("生成自己发射的子弹 ID 逻辑异常, 超过执行循环次数");
-                    return;
+                    return unitId;
                 }
 
                 unitId = bulletIdFix + (++self.BulletId);
@@ -93,6 +71,42 @@ namespace ET
                     self.BulletId = 0;
             }
             while (self.GetChild<Unit>(unitId) != null);
+
+            return unitId;
+        }
+
+        ///<summary> 检查自己玩家是否可以进行普通射击 </summary>
+        /// <returns> 战斗编码, 用于视图层处理 </returns>
+        public static ushort CheckSelfNormalShootState(this BattleLogicComponent battleLogicComponent)
+        {
+            // 优先级搞得在前面先判断, 后面复杂了在根据 Code 定义优先级来调用
+            Scene currentScene = battleLogicComponent.CurrentScene();
+            SkillComponent skillComponent = currentScene.GetComponent<SkillComponent>();
+            if (skillComponent.IsControlSelfShoot())
+                return BattleCodeConfig.SkillControl;
+
+            return battleLogicComponent.CheckSelfSkillShootState();
+        }
+
+        public static ushort CheckSelfSkillShootState(this BattleLogicComponent battleLogicComponent)
+        {
+            Scene currentScene = battleLogicComponent.CurrentScene();
+            var shootInterval = TimeHelper.ServerNow() - battleLogicComponent.LastShootBulletTime;
+            if (shootInterval < BulletConfig.ShootBulletInterval)
+                return BattleCodeConfig.ShootIntervalLimit;
+
+            BulletLogicComponent self = currentScene.GetComponent<BulletLogicComponent>();
+            if (self.ShootBulletCount >= BulletConfig.ShootMaxBulletCount)
+                return BattleCodeConfig.UpperLimitBullet;
+
+            Unit playerUnit = UnitHelper.GetMyUnitFromZoneScene(battleLogicComponent.ZoneScene());
+            var attributeComponent = playerUnit.GetComponent<NumericComponent>();
+            int coin = attributeComponent.GetAsInt(NumericType.Coin);
+            int cannonStack = attributeComponent.GetAsInt(NumericType.CannonStack);
+            if (coin < cannonStack)
+                return BattleCodeConfig.NotEnoughMoney;
+
+            return BattleCodeConfig.Success;
         }
 
         /// <summary> 
@@ -108,10 +122,7 @@ namespace ET
 
             if (unitInfo.UnitId == BulletConfig.DefaultBulletUnitId)
             {
-                if (self.IsShootLimit())
-                    return;
-
-                self.TryGenerateBulletId(out long unitId);
+                long unitId = self.GenerateBulletId();
                 unitInfo.UnitId = unitId;
             }
 
@@ -125,6 +136,8 @@ namespace ET
 
             self.ShootBulletCount++;
             self.BulletIdList.Add(unitInfo.UnitId);
+
+            battleLogicComponent.LastShootBulletTime = TimeHelper.ServerNow();
 
             Game.EventSystem.Publish(new AfterUnitCreate() { CurrentScene = currentScene, Unit = unit });
         }
@@ -167,6 +180,4 @@ namespace ET
             self.BulletIdList.Clear();
         }
     }
-
-    #endregion
 }

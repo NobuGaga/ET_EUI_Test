@@ -31,7 +31,7 @@ namespace ET
                 self.SetName(self.TransformComponent().NodeName);
         }
 
-        public static void UpdateTransform(this Unit self, bool isSetScale = true)
+        private static void UpdateTransform(this Unit self, bool isSetScale = true)
         {
             self.UpdateLocalPos();
             self.UpdatePos();
@@ -43,12 +43,14 @@ namespace ET
                 self.UpdateScale();
 
             self.UpdateForward();
+
+            self.UpdateScreenPosition();
         }
 
-        public static void UpdatePos(this Unit self) =>
+        private static void UpdatePos(this Unit self) =>
                                     self.SetPos(self.TransformComponent().LogicPos);
 
-        public static void SetPos(this Unit self, Vector3 pos)
+        private static void SetPos(this Unit self, Vector3 pos)
         {
             GameObjectComponent gameObjectComponent = self.GameObjectComponent();
             if (gameObjectComponent == null)
@@ -61,7 +63,7 @@ namespace ET
             transformComponent.LogicLocalPos = transform.localPosition;
         }
 
-        public static void UpdateLocalPos(this Unit self) =>
+        private static void UpdateLocalPos(this Unit self) =>
                                 self.SetLocalPos(self.TransformComponent().LogicLocalPos);
 
         public static void SetLocalPos(this Unit self, Vector3 localPos)
@@ -77,10 +79,10 @@ namespace ET
             transformComponent.LogicPos = transform.position;
         }
 
-        public static void UpdateRotation(this Unit self) =>
+        private static void UpdateRotation(this Unit self) =>
                                     self.SetRotation(self.TransformComponent().LogicRotation);
 
-        public static void SetRotation(this Unit self, Quaternion rotation)
+        private static void SetRotation(this Unit self, Quaternion rotation)
         {
             GameObjectComponent gameObjectComponent = self.GameObjectComponent();
             if (gameObjectComponent == null)
@@ -93,7 +95,7 @@ namespace ET
             transformComponent.LogicLocalRotation = transform.localRotation;
         }
 
-        public static void UpdateLocalRotation(this Unit self) =>
+        private static void UpdateLocalRotation(this Unit self) =>
                                 self.SetLocalRotation(self.TransformComponent().LogicLocalRotation);
 
         public static void SetLocalRotation(this Unit self, Quaternion localRotation)
@@ -109,17 +111,17 @@ namespace ET
             transformComponent.LogicRotation = transform.rotation;
         }
 
-        public static void UpdateScale(this Unit self) =>
+        private static void UpdateScale(this Unit self) =>
                                 self.SetScale(self.TransformComponent().LogicScale);
 
-        public static void SetScale(this Unit self, Vector3 scale)
+        private static void SetScale(this Unit self, Vector3 scale)
         {
             GameObjectComponent gameObjectComponent = self.GameObjectComponent();
             if (gameObjectComponent != null)
                 gameObjectComponent.Transform.localScale = scale;
         }
 
-        public static void UpdateForward(this Unit self) =>
+        private static void UpdateForward(this Unit self) =>
                                         self.SetForward(self.TransformComponent().LogicForward);
 
         public static void SetForward(this Unit self, Vector3 forward)
@@ -130,7 +132,7 @@ namespace ET
         }
 
         /// <summary> 重置变换会把逻辑数据也重置掉 </summary>
-        public static void ResetTransform(this Unit self, bool isSetScale = true)
+        private static void ResetTransform(this Unit self, bool isSetScale = true)
         {
             TransformComponent transformComponent = self.TransformComponent();
             transformComponent.ResetTransform(isSetScale);
@@ -142,15 +144,25 @@ namespace ET
                 self.UpdateScale();
         }
 
-        public static Vector3 GetScreenPos(this Unit self)
+        public static Vector3 GetScreenPosition(this Unit self)
+        {
+            self.UpdateScreenPosition();
+            return self.TransformComponent().ScreenPos;
+        }
+
+        public static void UpdateScreenPosition(this Unit self)
         {
             TransformComponent transformComponent = self.TransformComponent();
             if (!transformComponent.IsScreenPosDirty)
-                return transformComponent.ScreenPos;
+                return;
 
             transformComponent.ScreenPos = self.GetScreenPoint();
             transformComponent.IsScreenPosDirty = false;
-            return transformComponent.ScreenPos;
+
+            ref Vector3 pos = ref transformComponent.ScreenPos;
+
+            transformComponent.IsInScreen = pos.x > 0 && pos.y > 0 &&
+                                            pos.x < Screen.width && pos.y < Screen.height;
         }
 
         private static Vector3 GetScreenPoint(this Unit self)
@@ -176,7 +188,7 @@ namespace ET
             return camera;
         }
 
-        public static void SetParent(this Unit self, Transform parent, bool isKeepMoveState = true)
+        private static void SetParent(this Unit self, Transform parent, bool isKeepMoveState = true)
         {
             if (parent == null)
                 return;
@@ -190,7 +202,7 @@ namespace ET
                 gameObjectComponent.Transform.SetParent(parent, isKeepMoveState);
         }
 
-        public static void SetName(this Unit self, string name)
+        private static void SetName(this Unit self, string name)
         {
             if (name == null)
                 return;

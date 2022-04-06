@@ -4,11 +4,11 @@ namespace ET
 {
 	public static class FishConfig
 	{
-        /// <summary> 服务器传偏移值修正比例 </summary>
-        public const ushort ServerOffsetScale = 100;
-
         /// <summary> 毫秒转换 </summary>
         public const ushort MilliSecond = 1000;
+
+        /// <summary> 服务器传偏移值修正比例 </summary>
+        public const ushort ServerOffsetScale = 100;
 
         /// <summary>
         /// 默认移动速度, 这里的速度都是通过乘以时间间隔实现的
@@ -16,8 +16,9 @@ namespace ET
         /// </summary>
         public const ushort DefaultMoveSpeed = 1;
 
+        // Battle Warning 成员变量值类型 GC 标记
         /// <summary> 鱼移除屏幕坐标点 </summary>
-        public static Vector3 RemovePoint = new Vector3(0, 0, -10000);
+        public static Vector3 RemovePoint = new Vector3(-10000, 0, 0);
 
         /// <summary> 鱼回收节点名, 只在编辑器模式下设置 </summary>
         public const string DefaultName = "fish_die_node";

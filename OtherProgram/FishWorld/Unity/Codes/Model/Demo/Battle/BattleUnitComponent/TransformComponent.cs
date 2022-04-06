@@ -27,6 +27,9 @@ namespace ET
         /// </summary>
         public Vector3 ScreenPos;
 
+        /// <summary> 是否在屏幕内 </summary>
+        public bool IsInScreen;
+
         /// <summary>
         /// 节点名, 只在编辑器模式下用于设置名字
         /// 通过热更层标记进行判断(原来通过宏定义)

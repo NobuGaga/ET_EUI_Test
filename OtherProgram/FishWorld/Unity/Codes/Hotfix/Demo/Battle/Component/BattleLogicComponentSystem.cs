@@ -2,45 +2,17 @@ using ET.EventType;
 
 namespace ET
 {
-    #region Event
-
-    // 先按 ZoneScene 的生命周期走, 后面看设计合理性是挂在 Current 还是 Zone
-    // Event 的执行不依赖顺序
-    // 目前订阅了 AfterCreateZoneScene 事件的处理只有 AfterCreateZoneScene_AddComponent
-    // 避免别的事件执行顺序的依赖, 战斗相关组件释放要做好解耦断引用
-    public class AfterCreateZoneScene_BattleLogicComponent : AEvent<AfterCreateZoneScene>
-    {
-        protected override async ETTask Run(AfterCreateZoneScene args)
-        {
-            if (BattleTestConfig.IsAddBattleToZone)
-                args.ZoneScene.AddComponent<BattleLogicComponent>();
-
-            await ETTask.CompletedTask;
-        }
-    }
-
-    public class AfterCreateCurrentScene_BattleLogicComponent : AEvent<AfterCreateCurrentScene>
-    {
-        protected override async ETTask Run(AfterCreateCurrentScene args)
-        {
-            if (BattleTestConfig.IsAddBattleToCurrent)
-                args.CurrentScene.AddComponent<BattleLogicComponent>();
-            
-            await ETTask.CompletedTask;
-        }
-    }
-
-    #endregion
-
-    #region Life Circle
-
     [ObjectSystem]
     public sealed class BattleLogicComponentAwakeSystem : AwakeSystem<BattleLogicComponent>
     {
         public override void Awake(BattleLogicComponent self)
         {
+            // Battle TODO delete
+            self.LastShootBulletTime = 0;
+
             self.FireInfo = new C2M_Fire();
             self.HitInfo = new C2M_Hit();
+            self.UseSkillInfo = new C2M_SkillUse();
         }
     }
 
@@ -53,12 +25,7 @@ namespace ET
     //{
     //    public override void FixedUpdate(BattleLogicComponent self)
     //    {
-    //        UnitComponent unitComponent = self.GetUnitComponent();
-    //        if (unitComponent == null)
-    //            return;
-
-    //        foreach (Unit fishUnit in unitComponent.GetFishUnitList())
-    //            fishUnit.FixedUpdate();
+    //        // Battle TODO
     //    }
     //}
 
@@ -70,10 +37,6 @@ namespace ET
             // Battle TODO
         }
     }
-
-    #endregion
-
-    #region Base Function
 
     public static class BattleLogicComponentSystem
     {
@@ -121,12 +84,6 @@ namespace ET
             return battleScene.GetComponent<BattleLogicComponent>();
         }
 
-        public static long GetSelfUnitId(this BattleLogicComponent self)
-        {
-            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(self.CurrentScene());
-            return selfPlayerUnit.Id;
-        }
-
         /// <summary>
         /// 方便以后将 UnitComponent 挂到别的 Scene, 在 BattleLogicComponent 定义接口获取
         /// </summary>
@@ -146,25 +103,27 @@ namespace ET
         public static void Collide(this BattleLogicComponent self, float screenPosX, float screenPosY,
                                                                    long bulletUnitId, long fishUnitId)
         {
-            Scene currentScene = self.CurrentScene();
-            if (currentScene == null)
+            Scene CurrentScene = self.CurrentScene();
+            if (CurrentScene == null)
                 return;
 
             // 子弹的移除都是本地客户端判定是否碰撞来进行
-            BulletLogicComponent bulletLogicComponent = currentScene.GetComponent<BulletLogicComponent>();
+            BulletLogicComponent bulletLogicComponent = CurrentScene.GetComponent<BulletLogicComponent>();
             Unit bulletUnit = bulletLogicComponent.GetChild<Unit>(bulletUnitId);
             var attributeComponent = bulletUnit.GetComponent<NumericComponent>();
             int seatId = attributeComponent.GetAsInt(NumericType.Pos);
-            Unit playerUnit = UnitHelper.GetPlayUnitBySeatId(currentScene, seatId);
+            Unit playerUnit = UnitHelper.GetPlayUnitBySeatId(CurrentScene, seatId);
             long playerUnitId = playerUnit.Id;
+            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(CurrentScene);
 
-            if (playerUnitId == self.GetSelfUnitId())
+            if (playerUnitId == selfPlayerUnit.Id)
                 self.C2M_Hit(screenPosX, screenPosY, bulletUnitId, fishUnitId);
 
             bulletLogicComponent.RemoveUnit(bulletUnitId);
 
             BulletCollideFish eventData = new BulletCollideFish()
             {
+                CurrentScene = CurrentScene,
                 ScreenPosX = screenPosX,
                 ScreenPosY = screenPosY,
                 PlayerUnitId = playerUnitId,
@@ -175,5 +134,33 @@ namespace ET
         }
     }
 
-    #endregion
+    // 先按 ZoneScene 的生命周期走, 后面看设计合理性是挂在 Current 还是 Zone
+    // Event 的执行不依赖顺序
+    // 目前订阅了 AfterCreateZoneScene 事件的处理只有 AfterCreateZoneScene_AddComponent
+    // 避免别的事件执行顺序的依赖, 战斗相关组件释放要做好解耦断引用
+    public class AfterCreateZoneScene_BattleLogicComponent : AEvent<AfterCreateZoneScene>
+    {
+        protected override async ETTask Run(AfterCreateZoneScene args)
+        {
+            if (BattleTestConfig.IsAddBattleToZone)
+                args.ZoneScene.AddComponent<BattleLogicComponent>();
+
+            await ETTask.CompletedTask;
+        }
+    }
+
+    public class AfterCreateCurrentScene_BattleLogicComponent : AEvent<AfterCreateCurrentScene>
+    {
+        protected override async ETTask Run(AfterCreateCurrentScene args)
+        {
+            if (BattleTestConfig.IsAddBattleToCurrent)
+                args.CurrentScene.AddComponent<BattleLogicComponent>();
+
+            args.CurrentScene.AddComponent<BulletLogicComponent>();
+            args.CurrentScene.AddComponent<FisheryComponent>();
+            args.CurrentScene.AddComponent<SkillComponent>();
+
+            await ETTask.CompletedTask;
+        }
+    }
 }

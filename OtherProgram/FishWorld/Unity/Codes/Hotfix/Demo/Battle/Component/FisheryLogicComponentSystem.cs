@@ -1,22 +1,7 @@
-using ET.EventType;
+using System.Collections.Generic;
 
 namespace ET
 {
-    #region Event
-
-    public class AfterCreateCurrentScene_FisheryComponent : AEvent<AfterCreateCurrentScene>
-    {
-        protected override async ETTask Run(AfterCreateCurrentScene args)
-        {
-            args.CurrentScene.AddComponent<FisheryComponent>();
-            await ETTask.CompletedTask;
-        }
-    }
-
-    #endregion
-
-    #region Life Circle
-
     [ObjectSystem]
     public sealed class FisheryComponentAwakeSystem : AwakeSystem<FisheryComponent>
     {
@@ -26,12 +11,17 @@ namespace ET
             self.RoomType = 1;
         }
     }
-    
-    #endregion
 
-    #region Base
+    [ObjectSystem]
+    public sealed class FisheryComponentDestroySystem : DestroySystem<FisheryComponent>
+    {
+        public override void Destroy(FisheryComponent self)
+        {
+            // Battle TODO
+        }
+    }
 
-    public static class FisheryComponentSystem
+    public static class FisheryLogicComponentSystem
     {
         private static int GetSeatId(this Unit playerUnit)
         {
@@ -52,7 +42,19 @@ namespace ET
             Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(self.Parent as Scene);
             return selfPlayerUnit.GetSeatId();
         }
-    }
 
-    #endregion
+        /// <summary> 渔场冰冻技能逻辑处理 </summary>
+        /// <param name="isSkillStart">是否开始使用冰冻技能</param>
+        public static void FisheryIceSkill(this BattleLogicComponent self, bool isSkillStart)
+        {
+            Scene currentScene = self.CurrentScene();
+            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
+            HashSet<Unit> fishUnitList = unitComponent.GetFishUnitList();
+            foreach (Unit fishUnit in fishUnitList)
+            {
+                FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+                fishUnitComponent.Info.IsPause = isSkillStart;
+            }
+        }
+    }
 }

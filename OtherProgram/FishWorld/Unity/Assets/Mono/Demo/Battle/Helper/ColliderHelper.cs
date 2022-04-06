@@ -143,5 +143,19 @@ namespace ET
             Log.Error($"ColliderHelper.GetScreenPoint cameraType error = { cameraType }");
             return Vector3.zero;
         }
+
+        public static Vector3 GetWorldPoint(ushort cameraType, ref Vector3 screenPoint)
+        {
+            switch (cameraType)
+            {
+                case ColliderConfig.FishCamera:
+                    return Camera.main.ScreenToWorldPoint(screenPoint);
+                case ColliderConfig.CannonCamera:
+                    return ReferenceHelper.CannoCamera.ScreenToWorldPoint(screenPoint);
+            }
+
+            Log.Error($"ColliderHelper.GetWorldPoint cameraType error = { cameraType }");
+            return Vector3.zero;
+        }
     }
 }

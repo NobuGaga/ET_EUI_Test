@@ -76,5 +76,11 @@ namespace ET
             Unit unit = self.Parent as Unit;
             return string.Format(FishConfig.NameFormat, unit.ConfigId, unit.Id);
         }
+
+        public static void SetMoveSpeed(this FishUnitComponent self, float moveSpeed) => self.Info.MoveSpeed = moveSpeed;
+
+        public static void PauseMove(this FishUnitComponent self) => self.Info.IsPause = true;
+
+        public static void ResumeMove(this FishUnitComponent self) => self.Info.IsPause = false;
     }
 }

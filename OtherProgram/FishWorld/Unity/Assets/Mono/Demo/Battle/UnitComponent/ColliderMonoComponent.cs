@@ -55,9 +55,9 @@ namespace ET
                 {
                     Line2D line = (Line2D)collider;
                     line.Update(ref boneWorldPosition, scale, ref moveDirection);
-//#if UNITY_EDITOR
-//                    line.AddLineDrawData();
-//#endif
+#if UNITY_EDITOR
+                    line.AddLineDrawData();
+#endif
                     collider = line;
                 }
             }
@@ -81,6 +81,21 @@ namespace ET
             }
 
             return false;
+        }
+
+        public Vector3 GetBulletCollidePoint()
+        {
+            if (BonesTransList == null || BonesTransList.Length == 0 ||
+                ColliderList == null || ColliderList.Length == 0)
+            {
+                Vector3 worldPosition = rootTransform.position;
+                return ColliderHelper.GetScreenPoint(ColliderConfig.CannonCamera, ref worldPosition);
+            }
+
+            Line2D line = (Line2D)ColliderList[0];
+            ref Vector2 endPos = ref line.EndPos;
+            ref float centerZ = ref line.CenterZ;
+            return new Vector3(endPos.x, endPos.y, centerZ);
         }
     }
 }
