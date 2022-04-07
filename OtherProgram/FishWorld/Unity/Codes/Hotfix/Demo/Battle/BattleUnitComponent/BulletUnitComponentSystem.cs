@@ -92,25 +92,17 @@ namespace ET
         private static void UpdateTrackPosition(this BulletUnitComponent self)
         {
             long trackFishUnitId = self.GetTrackFishUnitId();
-            var battleLogicComponent = self.DomainScene().GetBattleLogicComponent();
-            UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
-            Unit fishUnit;
-
             if (trackFishUnitId == BulletConfig.DefaultTrackFishUnitId)
-            {
-                // 检查是否有目标存在
-                fishUnit = unitComponent.GetMaxScoreFish();
-                if (fishUnit != null && fishUnit.IsDisposed)
-                    self.ChangeTrackFishUnit(fishUnit);
-                
                 return;
-            }
 
             // 检查之前目标的合法性
-            fishUnit = unitComponent.Get(trackFishUnitId);
+            var battleLogicComponent = self.DomainScene().GetBattleLogicComponent();
+            UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
+            Unit fishUnit = unitComponent.Get(trackFishUnitId);
+
             if (fishUnit == null || fishUnit.IsDisposed)
             {
-                self.ChangeTrackFishUnit(unitComponent.GetMaxScoreFish());
+                self.SetNormalBullet();
                 return;
             }
 
@@ -118,26 +110,15 @@ namespace ET
             if (transformComponent.IsInScreen)
                 self.Info.TrackPosition = transformComponent.ScreenPos;
             else
-                self.ChangeTrackFishUnit(unitComponent.GetMaxScoreFish());
+                self.SetNormalBullet();
         }
 
-        private static void ChangeTrackFishUnit(this BulletUnitComponent self, Unit fishUnit)
+        private static void SetNormalBullet(this BulletUnitComponent self)
         {
-            bool isCanTrack = fishUnit != null;
-            long trackFishUnitId = isCanTrack ? fishUnit.Id : BulletConfig.DefaultTrackFishUnitId;
-
             Unit unit = self.Parent as Unit;
             var attributeComponent = unit.GetComponent<NumericComponent>();
-            attributeComponent.Set(NumericType.TrackFishId, trackFishUnitId);
-
-            if (!isCanTrack)
-            {
-                self.Info.TrackPosition = BulletMoveDefaultInfo.TrackPosition;
-                return;
-            }
-            
-            TransformComponent transformComponent = fishUnit.GetComponent<TransformComponent>();
-            self.Info.TrackPosition = transformComponent.ScreenPos;
+            attributeComponent.Set(NumericType.TrackFishId, BulletConfig.DefaultTrackFishUnitId);
+            self.Info.TrackPosition = BulletMoveDefaultInfo.TrackPosition;
         }
     }
 }

@@ -169,11 +169,10 @@ namespace ET
 
     public class AfterShoot_BattleViewComponent : AEvent<ReceiveFire>
     {
-        protected override async ETTask Run(ReceiveFire args)
+        protected override void Run(ReceiveFire args)
         {
             BattleViewComponent battleViewComponent = args.CurrentScene.GetBattleViewComponent();
             battleViewComponent.CallLogicShootBullet(args.UnitInfo, ref args.TouchPosX, ref args.TouchPosY);
-            await ETTask.CompletedTask;
         }
     }
 }

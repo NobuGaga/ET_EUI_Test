@@ -6,7 +6,7 @@ namespace ET
 {
     public class BattleEventReceiveSkillUseSystem : AEvent<ReceiveSkillUse>
     {
-        protected override async ETTask Run(ReceiveSkillUse args)
+        protected override void Run(ReceiveSkillUse args)
         {
             switch (args.Message.SkillType)
             {
@@ -28,8 +28,6 @@ namespace ET
                 PlayerUnitId = args.Message.UnitId,
                 SkillType = args.Message.SkillType,
             });
-
-            await ETTask.CompletedTask;
         }
     }
 }

@@ -32,8 +32,8 @@ namespace ET
             // Battle TODO 先更新鱼的位置, 再更新子弹的位置(因为子弹需要鱼的位置计算追踪)
             UpdateSkillBeforeFish(battleLogicComponent);
             UpdateFishUnitList(battleLogicComponent);
+            UpdateSkillAfterFishBeforeBullet(battleLogicComponent);
             UpdateBulletUnitList(battleLogicComponent);
-            UpdateSkillAfterBullet(battleLogicComponent);
         }
 
         private void UpdateSkillBeforeFish(BattleLogicComponent battleLogicComponent)
@@ -41,6 +41,33 @@ namespace ET
             Scene currentScene = battleLogicComponent.CurrentScene();
             if (currentScene != null)
                 currentScene.GetComponent<SkillComponent>().FixedUpdate();
+        }
+
+        private void UpdateSkillAfterFishBeforeBullet(BattleLogicComponent battleLogicComponent)
+        {
+            Scene currentScene = battleLogicComponent.CurrentScene();
+            if (currentScene == null)
+                return;
+
+            SkillComponent skillComponent = currentScene.GetComponent<SkillComponent>();
+            HashSet<Unit> playerUnitList = skillComponent.GetPlayerUnitList();
+            if (playerUnitList == null)
+                return;
+
+            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
+            foreach (Unit playerUnit in playerUnitList)
+            {
+                if (playerUnit.Id != selfPlayerUnit.Id)
+                    continue;
+
+                var playerSkillComponent = playerUnit.GetComponent<PlayerSkillComponent>();
+                List<long> skillTypeList = playerSkillComponent.SkillTypeList;
+                for (ushort index = 0; index < skillTypeList.Count; index++)
+                {
+                    SkillUnit skillUnit = playerSkillComponent.Get((int)skillTypeList[index]);
+                    skillUnit.Update();
+                }
+            }
         }
 
         private void UpdateFishUnitList(BattleLogicComponent battleLogicComponent)
@@ -82,33 +109,6 @@ namespace ET
                 bulletUnit.FixedUpdate();
                 bulletUnit.Update();
                 CheckBulletCollide(battleLogicComponent, bulletUnit);
-            }
-        }
-
-        private void UpdateSkillAfterBullet(BattleLogicComponent battleLogicComponent)
-        {
-            Scene currentScene = battleLogicComponent.CurrentScene();
-            if (currentScene == null)
-                return;
-
-            SkillComponent skillComponent = currentScene.GetComponent<SkillComponent>();
-            HashSet<Unit> playerUnitList = skillComponent.GetPlayerUnitList();
-            if (playerUnitList == null)
-                return;
-
-            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
-            foreach (Unit playerUnit in playerUnitList)
-            {
-                if (playerUnit.Id != selfPlayerUnit.Id)
-                    continue;
-
-                var playerSkillComponent = playerUnit.GetComponent<PlayerSkillComponent>();
-                List<long> skillTypeList = playerSkillComponent.SkillTypeList;
-                for (ushort index = 0; index < skillTypeList.Count; index++)
-                {
-                    SkillUnit skillUnit = playerSkillComponent.Get((int)skillTypeList[index]);
-                    skillUnit.Update();
-                }
             }
         }
 
@@ -196,23 +196,19 @@ namespace ET
     // 避免别的事件执行顺序的依赖, 战斗相关组件释放要做好解耦断引用
     public class AfterCreateZoneScene_BattleViewComponent : AEvent<AfterCreateZoneScene>
     {
-        protected override async ETTask Run(AfterCreateZoneScene args)
+        protected override void Run(AfterCreateZoneScene args)
         {
             if (BattleTestConfig.IsAddBattleToZone)
                 args.ZoneScene.AddComponent<BattleViewComponent>();
-
-            await ETTask.CompletedTask;
         }
     }
 
     public class AfterCreateCurrentScene_BattleViewComponent : AEvent<AfterCreateCurrentScene>
     {
-        protected override async ETTask Run(AfterCreateCurrentScene args)
+        protected override void Run(AfterCreateCurrentScene args)
         {
             if (BattleTestConfig.IsAddBattleToCurrent)
                 args.CurrentScene.AddComponent<BattleViewComponent>();
-
-            await ETTask.CompletedTask;
         }
     }
 }

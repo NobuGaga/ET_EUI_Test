@@ -140,18 +140,16 @@ namespace ET
     // 避免别的事件执行顺序的依赖, 战斗相关组件释放要做好解耦断引用
     public class AfterCreateZoneScene_BattleLogicComponent : AEvent<AfterCreateZoneScene>
     {
-        protected override async ETTask Run(AfterCreateZoneScene args)
+        protected override void Run(AfterCreateZoneScene args)
         {
             if (BattleTestConfig.IsAddBattleToZone)
                 args.ZoneScene.AddComponent<BattleLogicComponent>();
-
-            await ETTask.CompletedTask;
         }
     }
 
     public class AfterCreateCurrentScene_BattleLogicComponent : AEvent<AfterCreateCurrentScene>
     {
-        protected override async ETTask Run(AfterCreateCurrentScene args)
+        protected override void Run(AfterCreateCurrentScene args)
         {
             if (BattleTestConfig.IsAddBattleToCurrent)
                 args.CurrentScene.AddComponent<BattleLogicComponent>();
@@ -159,8 +157,6 @@ namespace ET
             args.CurrentScene.AddComponent<BulletLogicComponent>();
             args.CurrentScene.AddComponent<FisheryComponent>();
             args.CurrentScene.AddComponent<SkillComponent>();
-
-            await ETTask.CompletedTask;
         }
     }
 }

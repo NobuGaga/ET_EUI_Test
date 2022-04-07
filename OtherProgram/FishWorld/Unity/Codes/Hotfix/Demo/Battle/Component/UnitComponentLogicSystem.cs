@@ -42,11 +42,19 @@ namespace ET
 
                 var attributeComponent = fishUnit.GetComponent<NumericComponent>();
                 int score = attributeComponent.GetAsInt(NumericType.Score);
+                Log.Debug($"GetMaxScoreFish score = { score }");
                 if (score > maxScore)
                 {
                     maxScore = score;
                     maxScoreUnit = fishUnit;
                 }
+            }
+
+            if (maxScoreUnit != null)
+            {
+                var transformComponent = maxScoreUnit.GetComponent<TransformComponent>();
+                Log.Debug($"GetMaxScoreFish maxScoreUnit.Id = { maxScoreUnit.Id }");
+                Log.Debug($"GetMaxScoreFish maxScoreUnit.ScreenPos = { transformComponent.ScreenPos }");
             }
 
             return maxScoreUnit;

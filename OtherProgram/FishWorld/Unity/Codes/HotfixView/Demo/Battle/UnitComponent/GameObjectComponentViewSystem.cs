@@ -8,14 +8,20 @@ namespace ET
     {
         public override void Awake(GameObjectComponent self, string AssetName, Transform node)
         {
-            Unit unit = self.Parent as Unit;
             self.AssetName = AssetName;
             self.Transform = node;
 
+            if (self.Parent is Unit)
+                AwakeUnit(self, self.Parent as Unit);
+        }
+
+        private void AwakeUnit(GameObjectComponent self, Unit unit)
+        {
             BattleUnitViewComponent battleUnitViewComponent = unit.GetComponent<BattleUnitViewComponent>();
+
             // 不是战斗相关的实体直接置为零点
             if (battleUnitViewComponent == null)
-                node.localPosition = Vector3.zero;
+                self.Transform.localPosition = Vector3.zero;
         }
     }
 

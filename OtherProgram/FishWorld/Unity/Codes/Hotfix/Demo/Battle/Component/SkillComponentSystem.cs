@@ -38,8 +38,8 @@ namespace ET
             Unit maxScoreUnit = unitComponent.GetMaxScoreFish();
             if (maxScoreUnit != null)
                 self.UseSkill(skillId, maxScoreUnit.Id);
-
-            self.UseSkill(skillId, BulletConfig.DefaultTrackFishUnitId);
+            else
+                self.UseSkill(skillId, BulletConfig.DefaultTrackFishUnitId);
         }
 
         private static void UseSkill(this BattleLogicComponent self, int skillId, long targetId)

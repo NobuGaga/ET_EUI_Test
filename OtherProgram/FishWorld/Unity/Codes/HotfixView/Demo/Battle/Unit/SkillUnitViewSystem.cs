@@ -14,50 +14,58 @@ namespace ET
                 return;
 
             if (skillType == SkillType.Aim)
+                self.UpdateAimSkill();
+            else if (skillType == SkillType.Laser)
             {
-                var bulletLogicComponent = self.DomainScene().GetComponent<BulletLogicComponent>();
-                List<long> bulletIdList = bulletLogicComponent.BulletIdList;
-                if (bulletIdList.Count == 0)
-                {
-                    self.SetPosition(SkillConfig.RemovePoint);
-                    return;
-                }
-
-                long trackFishUnitId = BulletConfig.DefaultTrackFishUnitId;
-                for (ushort index = 0; index < bulletIdList.Count; index++)
-                {
-                    long bulletUnitId = bulletIdList[index];
-                    Unit bulletUnit = bulletLogicComponent.GetChild<Unit>(bulletUnitId);
-                    var bulletUnitComponent = bulletUnit.GetComponent<BulletUnitComponent>();
-                    trackFishUnitId = bulletUnitComponent.GetTrackFishUnitId();
-                    if (trackFishUnitId != BulletConfig.DefaultTrackFishUnitId)
-                        break;
-                }
-
-                var battleLogicComponent = self.DomainScene().GetBattleLogicComponent();
-                UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
-                Unit fishUnit = unitComponent.Get(trackFishUnitId);
-                self.SetPosition(fishUnit.GetScreenPosition());
+                // Battle TODO
             }
         }
-        
+
+        private static void UpdateAimSkill(this SkillUnit self)
+        {
+            var bulletLogicComponent = self.DomainScene().GetComponent<BulletLogicComponent>();
+            List<long> bulletIdList = bulletLogicComponent.BulletIdList;
+            if (bulletIdList.Count == 0)
+            {
+                self.SetPosition(SkillConfig.RemovePoint);
+                return;
+            }
+
+            long trackFishUnitId = BulletConfig.DefaultTrackFishUnitId;
+            for (ushort index = 0; index < bulletIdList.Count; index++)
+            {
+                long bulletUnitId = bulletIdList[index];
+                Unit bulletUnit = bulletLogicComponent.GetChild<Unit>(bulletUnitId);
+                var bulletUnitComponent = bulletUnit.GetComponent<BulletUnitComponent>();
+                trackFishUnitId = bulletUnitComponent.GetTrackFishUnitId();
+                if (trackFishUnitId != BulletConfig.DefaultTrackFishUnitId)
+                    break;
+            }
+
+            var battleLogicComponent = self.DomainScene().GetBattleLogicComponent();
+            UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
+            Unit fishUnit = unitComponent.Get(trackFishUnitId);
+            self.SetPosition(fishUnit.GetScreenPosition());
+        }
+
         private static void SetPosition(this SkillUnit unit, Vector3 screenPosition)
         {
             Log.Debug($"SetPosition screenPosition = { screenPosition }");
             Vector3 uiPos = UIHelper.ScreenPosToUI(screenPosition.x, screenPosition.y);
-            var gameObjectComponent = unit.GetComponent<GameObjectComponent>();
-            gameObjectComponent.Transform.localPosition = uiPos;
             Log.Debug($"SetPosition uiPos = { uiPos }");
+            
+            var gameObjectComponent = unit.GetComponent<GameObjectComponent>();
+            if (gameObjectComponent == null)
+                return;
+
+            gameObjectComponent.Transform.localPosition = uiPos;
         }
     }
 
     public class SkillUnit_AfterCreateSkillUnit : AEvent<AfterCreateSkillUnit>
     {
-        protected override async ETTask Run(AfterCreateSkillUnit args)
-        {
-            InitModel(args.CurrentScene, args.SkillUnit).Coroutine();
-            await ETTask.CompletedTask;
-        }
+        protected override void Run(AfterCreateSkillUnit args) =>
+                                InitModel(args.CurrentScene, args.SkillUnit).Coroutine();
 
         /// <summary>
         /// 初始化加载技能预设模型

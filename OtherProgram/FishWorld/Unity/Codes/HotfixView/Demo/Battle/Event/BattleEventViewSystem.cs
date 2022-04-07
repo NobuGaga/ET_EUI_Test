@@ -6,7 +6,7 @@ namespace ET
 {
     public class BattleEventL2V_FisherySkillStartSystem : AEvent<FisherySkillStart>
     {
-        protected override async ETTask Run(FisherySkillStart args)
+        protected override void Run(FisherySkillStart args)
         {
             BattleViewComponent battleViewComponent = args.CurrentScene.GetBattleViewComponent();
             switch (args.SkillType)
@@ -15,14 +15,12 @@ namespace ET
                     battleViewComponent.FisheryIceSkill();
                     break;
             }
-
-            await ETTask.CompletedTask;
         }
     }
 
     public class BattleEventL2V_FisherySkillRuningSystem : AEvent<PlayerSkillRuning>
     {
-        protected override async ETTask Run(PlayerSkillRuning args)
+        protected override void Run(PlayerSkillRuning args)
         {
             BattleViewComponent battleViewComponent = args.CurrentScene.GetBattleViewComponent();
             PlayerComponent playerComponent = args.CurrentScene.ZoneScene().GetComponent<PlayerComponent>();
@@ -39,8 +37,6 @@ namespace ET
 
                     break;
             }
-
-            await ETTask.CompletedTask;
         }
     }
 }

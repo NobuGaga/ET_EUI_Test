@@ -5,7 +5,7 @@ namespace ET
 {
     public static class CameraComponentSystem
     {
-        public static async ETTask SetTransformByAreaId(this CameraComponent self, int areaId)
+        public static void SetTransformByAreaId(this CameraComponent self, int areaId)
         {
             FisheryLevelConfig config = FisheryLevelConfigCategory.Instance.Get(areaId);
             string vectorString = config.CameraParamPosition;
@@ -14,13 +14,13 @@ namespace ET
             // Battle TODO 先不设置鱼节点变换, 因为主界面场景摄像机写死变换鱼影响到这边逻辑
             Vector3 vector;
             if (VectorStringHelper.TryParseVector3(vectorString, out vector))
-                await self.PlayMovePosition(vector, time);
+                self.PlayMovePosition(vector, time);
 
             vectorString = config.CameraParamRotation;
             time = (float)config.CameraRotateTime / FishConfig.MilliSecond;
 
             if (VectorStringHelper.TryParseVector3(vectorString, out vector))
-                await self.PlayRotate(vector, time);
+                self.PlayRotate(vector, time);
         }
 
         public static void StopTransformTween(this CameraComponent self)
@@ -29,7 +29,7 @@ namespace ET
             DotweenHelper.DOKill(cameraTrans);
         }
 
-        public static async ETTask PlayMovePosition(this CameraComponent self, Vector3 endValue, float duration)
+        public static void PlayMovePosition(this CameraComponent self, Vector3 endValue, float duration)
         {
             Transform cameraTrans = self.mainCamera.transform;
             Transform fishRootTrans = GlobalComponent.Instance.FishRoot;
@@ -45,11 +45,9 @@ namespace ET
                 cameraTrans.position = endValue;
                 //fishRootTrans.position = fishRootEndValue;
             }
-
-            await ETTask.CompletedTask;
         }
 
-        public static async ETTask PlayRotate(this CameraComponent self, Vector3 endValue, float duration)
+        public static void PlayRotate(this CameraComponent self, Vector3 endValue, float duration)
         {
             Transform cameraTrans = self.mainCamera.transform;
             Transform fishRootTrans = GlobalComponent.Instance.FishRoot;
@@ -65,38 +63,35 @@ namespace ET
                 cameraTrans.eulerAngles = endValue;
                 //fishRootTrans.eulerAngles = fishRootEndValue;
             }
-
-            await ETTask.CompletedTask;
         }
     }
 
     public class AfterEnterRoom_CameraComponent : AEvent<ReceiveEnterRoom>
     {
-        protected override async ETTask Run(ReceiveEnterRoom args)
+        protected override void Run(ReceiveEnterRoom args)
         {
             CameraComponent cameraComponent = args.CurrentScene.ZoneScene().GetComponent<CameraComponent>();
-            await cameraComponent.SetTransformByAreaId(args.AreaId);
+            cameraComponent.SetTransformByAreaId(args.AreaId);
         }
     }
 
     public class AfterExchangeArea_CameraComponent : AEvent<ReceiveExchangeArea>
     {
-        protected override async ETTask Run(ReceiveExchangeArea args)
+        protected override void Run(ReceiveExchangeArea args)
         {
             FisheryComponent fisheryComponent = args.FisheryComponent;
             CameraComponent cameraComponent = fisheryComponent.ZoneScene().GetComponent<CameraComponent>();
-            await cameraComponent.SetTransformByAreaId(args.FisheryComponent.AreaId);
+            cameraComponent.SetTransformByAreaId(args.FisheryComponent.AreaId);
         }
     }
 
     public class UIFisheriesE_exitEventArgs_CameraComponent : AEvent<UIFisheriesE_exitEventArgs>
     {
-        protected override async ETTask Run(UIFisheriesE_exitEventArgs args)
+        protected override void Run(UIFisheriesE_exitEventArgs args)
         {
             UIFisheriesComponent fisheryComponent = args.UIFisheriesComponent;
             CameraComponent cameraComponent = fisheryComponent.ZoneScene().GetComponent<CameraComponent>();
             cameraComponent.StopTransformTween();
-            await ETTask.CompletedTask;
         }
     }
 }
