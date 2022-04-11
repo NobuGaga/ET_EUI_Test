@@ -30,15 +30,6 @@ namespace ET
             ref Vector3 currentLocalPos = ref info.CurrentLocalPos;
             ref Vector2 moveDirection = ref info.MoveDirection;
 
-            if (info.TrackPosition != BulletMoveDefaultInfo.TrackPosition)
-            {
-                // 追踪鱼重新计算方向, 在逻辑层设置好追踪屏幕位置
-                ref Vector3 trackPosition = ref info.TrackPosition;
-                moveDirection.x = trackPosition.x - currentLocalPos.x;
-                moveDirection.y = trackPosition.y - currentLocalPos.y;
-                moveDirection.Normalize();
-            }
-
             float moveLength = TimeHelper.ClinetDeltaFrameTime() * info.MoveSpeed;
             currentLocalPos.x += moveDirection.x * moveLength;
             currentLocalPos.y += moveDirection.y * moveLength;

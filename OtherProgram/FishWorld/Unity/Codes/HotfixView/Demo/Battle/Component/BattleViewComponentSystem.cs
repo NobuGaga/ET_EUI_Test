@@ -32,7 +32,7 @@ namespace ET
             // Battle TODO 先更新鱼的位置, 再更新子弹的位置(因为子弹需要鱼的位置计算追踪)
             UpdateSkillBeforeFish(battleLogicComponent);
             UpdateFishUnitList(battleLogicComponent);
-            UpdateSkillAfterFishBeforeBullet(battleLogicComponent);
+            UpdateSkillBeforeBullet(battleLogicComponent);
             UpdateBulletUnitList(battleLogicComponent);
         }
 
@@ -40,34 +40,14 @@ namespace ET
         {
             Scene currentScene = battleLogicComponent.CurrentScene();
             if (currentScene != null)
-                currentScene.GetComponent<SkillComponent>().FixedUpdate();
+                currentScene.GetComponent<SkillComponent>().FixedUpdateBeforeFish();
         }
 
-        private void UpdateSkillAfterFishBeforeBullet(BattleLogicComponent battleLogicComponent)
+        private void UpdateSkillBeforeBullet(BattleLogicComponent battleLogicComponent)
         {
             Scene currentScene = battleLogicComponent.CurrentScene();
-            if (currentScene == null)
-                return;
-
-            SkillComponent skillComponent = currentScene.GetComponent<SkillComponent>();
-            HashSet<Unit> playerUnitList = skillComponent.GetPlayerUnitList();
-            if (playerUnitList == null)
-                return;
-
-            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
-            foreach (Unit playerUnit in playerUnitList)
-            {
-                if (playerUnit.Id != selfPlayerUnit.Id)
-                    continue;
-
-                var playerSkillComponent = playerUnit.GetComponent<PlayerSkillComponent>();
-                List<long> skillTypeList = playerSkillComponent.SkillTypeList;
-                for (ushort index = 0; index < skillTypeList.Count; index++)
-                {
-                    SkillUnit skillUnit = playerSkillComponent.Get((int)skillTypeList[index]);
-                    skillUnit.Update();
-                }
-            }
+            if (currentScene != null)
+                currentScene.GetComponent<SkillComponent>().UpdateBeforeBullet();
         }
 
         private void UpdateFishUnitList(BattleLogicComponent battleLogicComponent)
@@ -135,7 +115,15 @@ namespace ET
                 var colliderMonoComponent = colliderViewComponent.MonoComponent;
                 if (bulletColliderMonoCom.IsCollide(colliderMonoComponent))
                 {
-                    Vector3 screenPosition = bulletColliderMonoCom.GetBulletCollidePoint();
+                    var bulletUnitCom = bulletUnit.GetComponent<BulletUnitComponent>();
+                    Vector3 screenPosition;
+                    if (bulletUnitCom.IsTrackBullet())
+                    {
+                        var fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+                        screenPosition = fishUnitComponent.AimPointPosition;
+                    }
+                    else
+                        screenPosition = bulletColliderMonoCom.GetBulletCollidePoint();
                     battleLogicComponent.Collide(screenPosition.x, screenPosition.y, bulletUnit.Id, fishUnit.Id);
                     return;
                 }

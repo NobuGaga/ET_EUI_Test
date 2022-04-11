@@ -144,12 +144,6 @@ namespace ET
                 self.UpdateScale();
         }
 
-        public static Vector3 GetScreenPosition(this Unit self)
-        {
-            self.UpdateScreenPosition();
-            return self.TransformComponent().ScreenPos;
-        }
-
         public static void UpdateScreenPosition(this Unit self)
         {
             TransformComponent transformComponent = self.TransformComponent();
@@ -167,11 +161,11 @@ namespace ET
 
         private static Vector3 GetScreenPoint(this Unit self)
         {
-            GameObjectComponent gameObjectComponent1 = self.GameObjectComponent();
+            GameObjectComponent gameObjectComponent = self.GameObjectComponent();
             Camera camera = self.GetDisplayCamera();
 
-            if (gameObjectComponent1 != null)
-                return camera.WorldToScreenPoint(gameObjectComponent1.Transform.position);
+            if (gameObjectComponent != null)
+                return camera.WorldToScreenPoint(gameObjectComponent.Transform.position);
 
             TransformComponent transformComponent = self.TransformComponent();
             return camera.WorldToScreenPoint(transformComponent.LogicPos);

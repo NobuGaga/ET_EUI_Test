@@ -75,6 +75,28 @@ namespace ET
             return unitId;
         }
 
+        /// <summary> 生成马上销毁的子弹 Unit ID </summary>
+        private static long GenerateOneHitBulletId(this BulletLogicComponent self)
+        {
+            if (self.OneHitBulletIdStack.Count > 0)
+                return self.OneHitBulletIdStack.Pop();
+
+            return self.GetOneHitBulletIdFix() + self.OneHitBulletId++;
+        }
+
+        /// <summary> 获取单次使用子弹 ID 校正值 </summary>
+        public static long GetOneHitBulletIdFix(this BulletLogicComponent self)
+        {
+            Scene currentScene = self.Parent as Scene;
+            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
+            NumericComponent numericComponent = selfPlayerUnit.GetComponent<NumericComponent>();
+            int seatId = numericComponent.GetAsInt(NumericType.Pos);
+
+            // 这里采用位置 ID 乘以每个人发射子弹上限的数字位数加多两位
+            // 例如发射子弹上限为 30, 则 UnitId = seatId * 1000 + OneHitBulletId;
+            return BulletConfig.BulletIdFix * seatId * 10;
+        }
+
         ///<summary> 检查自己玩家是否可以进行普通射击 </summary>
         /// <returns> 战斗编码, 用于视图层处理 </returns>
         public static ushort CheckSelfNormalShootState(this BattleLogicComponent battleLogicComponent)
@@ -107,6 +129,24 @@ namespace ET
                 return BattleCodeConfig.NotEnoughMoney;
 
             return BattleCodeConfig.Success;
+        }
+
+        /// <summary> 战斗逻辑发射协议子弹, 直接创建子弹 ID 然后再发送击中协议过去 </summary>
+        public static void Shoot_C2M_Bullet(this BattleLogicComponent battleLogicComponent, float screenPosX,
+                                            float screenPosY, int cannonStack, long trackFishUnitId)
+        {
+            Scene currentScene = battleLogicComponent.CurrentScene();
+            BulletLogicComponent self = currentScene.GetComponent<BulletLogicComponent>();
+
+            // 生成一个不跟普通子弹重复的 ID
+            // 然后只做时间间隔的刷新, 不加入子弹碰撞列表中
+            // 因为发射出去后马上当成已经发生碰撞的子弹
+            long bulletUnitId = self.GenerateOneHitBulletId();
+
+            battleLogicComponent.LastShootBulletTime = TimeHelper.ServerNow();
+
+            battleLogicComponent.C2M_Fire(bulletUnitId, screenPosX, screenPosY, cannonStack, trackFishUnitId);
+            battleLogicComponent.C2M_Hit(screenPosX, screenPosY, bulletUnitId, trackFishUnitId);
         }
 
         /// <summary> 
@@ -173,11 +213,17 @@ namespace ET
             // 重置子弹 Unit ID 计数器
             self.BulletId = 0;
 
+            // 重置单次使用子弹 Unit ID 计数器
+            self.OneHitBulletId = 0;
+
             // 重置自己发射子弹个数
             self.ShootBulletCount = 0;
 
             // 不在 Awake 创建, 在定义的时候 new, 在 Destroy 清理, 更改是否使用池的标识时不用改写代码
             self.BulletIdList.Clear();
+
+            // 不在 Awake 创建, 在定义的时候 new, 在 Destroy 清理, 更改是否使用池的标识时不用改写代码
+            self.OneHitBulletIdStack.Clear();
         }
     }
 }

@@ -10,6 +10,13 @@ namespace ET
 		/// <summary> 客户端生成的子弹 ID 计数器 </summary>
 		public long BulletId;
 
+		/// <summary>
+		/// 客户端生成单次使用的子弹 ID 计数器
+		/// 只增不减, 退出渔场时清零
+		/// 通过复用缓存值保证唯一性
+		/// </summary>
+		public long OneHitBulletId;
+
 		/// <summary> 自己发射的子弹个数 </summary>
 		public ushort ShootBulletCount;
 
@@ -18,5 +25,7 @@ namespace ET
 
 		/// <summary> 渔场内存在的子弹 ID 列表, 加快遍历速度 </summary>
 		public List<long> BulletIdList = new List<long>(FisheryConfig.FisheryMaxBulletCount);
+
+		public Stack<long> OneHitBulletIdStack = new Stack<long>(FisheryConfig.FisheryMaxBulletCount);
 	}
 }

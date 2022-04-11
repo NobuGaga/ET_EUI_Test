@@ -26,7 +26,9 @@ namespace ET
         /// <summary> 接收到 Boss 来袭事件 </summary>
         public struct ReceiveBossComming
         {
-            public int BossUnitConfigId;
+            public int   BossUnitConfigId;
+            public Scene ZoneScene;
+
         }
 
         /// <summary> 接收到 Fire 事件 </summary>
@@ -121,7 +123,7 @@ namespace ET
 
             public long PlayerUnitId;
 
-            public int SkillType;
+            public SkillUnit SkillUnit;
         }
 
         /// <summary> 渔场技能效果结束事件 </summary>

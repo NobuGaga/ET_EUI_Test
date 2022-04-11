@@ -8,7 +8,8 @@ namespace ET
     {
         public override void Awake(PlayerSkillComponent self)
         {
-            // Battle TODO
+            self.IsAutoShoot = false;
+            self.TrackFishUnitId = BulletConfig.DefaultTrackFishUnitId;
         }
     }
 
@@ -19,10 +20,18 @@ namespace ET
                              self.SkillTypeList.Clear();
     }
 
-    public static class PlayerSkillComponentSystem
+    public static class PlayerSkillLogicComponentSystem
     {
-        public static void Set(this PlayerSkillComponent self, int skillType, int skillTime, int skillCdTime)
+        public static void Set(this PlayerSkillComponent self, M2C_SkillUse message)
         {
+            int skillType = message.SkillType;
+            int skillTime = message.SkillTime;
+            int skillCdTime = message.SkillCDTime;
+
+            self.TrackFishUnitId = BulletConfig.DefaultTrackFishUnitId;
+            if (message.TargetId != null && message.TargetId.Count > 0)
+                self.TrackFishUnitId = message.TargetId[0];
+
             SkillUnit skillUnit = self.GetChild<SkillUnit>(skillType);
             if (skillUnit != null)
             {
@@ -68,7 +77,7 @@ namespace ET
             return null;
         }
 
-        public static void FixedUpdate(this PlayerSkillComponent self)
+        public static void FixedUpdateBeforeFish(this PlayerSkillComponent self)
         {
             Unit playerUnit = self.Parent as Unit;
             List<long> skillTypeList = self.SkillTypeList;
@@ -82,7 +91,7 @@ namespace ET
                     skillUnit.SkillEnd(playerUnit.Id);
 
                 if (skillUnit.IsInSkill())
-                    skillUnit.FixedUpdate();
+                    skillUnit.FixedUpdateBeforeFish();
 
                 // 技能 CD 结束且技能不生效则移除, 技能 CD 时间戳不被修改
                 if (skillUnit.IsCdEnd() && !skillUnit.IsRunning())
@@ -91,6 +100,29 @@ namespace ET
                     self.RemoveChild(skillType);
                 }
             }
+
+            self.UpdateMaxScoreFish();
+        }
+
+        private static void UpdateMaxScoreFish(this PlayerSkillComponent self)
+        {
+            ref long trackFishUnitId = ref self.TrackFishUnitId;
+            if (!self.IsInSkill(SkillType.Aim) && !self.IsInSkill(SkillType.Laser))
+            {
+                trackFishUnitId = BulletConfig.DefaultTrackFishUnitId;
+                return;
+            }
+
+            var battleLogicComponent = self.DomainScene().GetBattleLogicComponent();
+            UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
+            Unit fishUnit = unitComponent.Get(trackFishUnitId);
+
+            if (fishUnit != null && !fishUnit.IsDisposed &&
+                fishUnit.GetComponent<TransformComponent>().IsInScreen)
+                return;
+
+            fishUnit = unitComponent.GetMaxScoreFish();
+            trackFishUnitId = fishUnit != null ? fishUnit.Id : BulletConfig.DefaultTrackFishUnitId;
         }
     }
 }

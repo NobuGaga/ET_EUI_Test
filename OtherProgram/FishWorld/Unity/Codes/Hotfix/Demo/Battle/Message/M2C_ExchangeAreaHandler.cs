@@ -10,14 +10,14 @@ namespace ET
 		{
 			Scene CurrentScene = session.DomainScene().CurrentScene();
 			FisheryComponent FisheryComponent = CurrentScene.GetComponent<FisheryComponent>();
-
 			FisheryComponent.AreaId = message.AreaId;
 
-			ReceiveExchangeArea eventData = new ReceiveExchangeArea() {
-				FisheryComponent = FisheryComponent,
-			};
+			CurrentScene.GetBattleLogicComponent().QuickMoveFish();
 
-			Game.EventSystem.Publish(eventData);
+			Game.EventSystem.Publish(new ReceiveExchangeArea()
+			{
+				FisheryComponent = FisheryComponent,
+			});
 
 			await ETTask.CompletedTask;
 		}

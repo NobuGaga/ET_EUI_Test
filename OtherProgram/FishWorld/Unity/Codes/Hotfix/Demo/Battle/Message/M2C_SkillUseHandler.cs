@@ -13,7 +13,7 @@ namespace ET
             Scene zoneScene = session.DomainScene();
             Scene currentScene = zoneScene.CurrentScene();
             SkillComponent skillComponent = currentScene.GetComponent<SkillComponent>();
-            skillComponent.UpdateSkill(message.UnitId, message.SkillType, message.SkillTime, message.SkillCDTime);
+            skillComponent.UpdateSkill(message);
 
             Game.EventSystem.Publish(new ReceiveSkillUse()
             {

@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace ET
 {
     [ObjectSystem]
@@ -26,13 +28,27 @@ namespace ET
         public static void Update(this ColliderViewComponent self)
         {
             Unit unit = self.Parent as Unit;
+
             if (self.IsBullet)
             {
                 BulletUnitComponent bulletUnit = unit.GetComponent<BulletUnitComponent>();
                 BulletMoveInfo info = bulletUnit.Info;
                 self.MonoComponent.SetMoveDirection(info.MoveDirection);
             }
+
             self.MonoComponent.UpdateColliderCenter();
+
+            switch (unit.UnitType)
+            {
+                case UnitType.Fish:
+                    TransformComponent transformComponent = unit.GetComponent<TransformComponent>();
+                    FishUnitComponent fishUnitComponent = unit.GetComponent<FishUnitComponent>();
+                    fishUnitComponent.AimPointPosition = self.MonoComponent.GetFishAimPoint();
+                    ref Vector3 aimPointPos = ref fishUnitComponent.AimPointPosition;
+                    transformComponent.IsInScreen = aimPointPos.x > 0 && aimPointPos.y > 0 &&
+                                aimPointPos.x < Screen.width && aimPointPos.y < Screen.height;
+                    break;
+            }
         }
     }
 }

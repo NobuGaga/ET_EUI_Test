@@ -97,5 +97,20 @@ namespace ET
             ref float centerZ = ref line.CenterZ;
             return new Vector3(endPos.x, endPos.y, centerZ);
         }
+
+        public Vector3 GetFishAimPoint()
+        {
+            Vector3 worldPosition;
+            if (BonesTransList == null || BonesTransList.Length == 0)
+            {
+                worldPosition = rootTransform.position;
+                return ColliderHelper.GetScreenPoint(ColliderConfig.FishCamera, ref worldPosition);
+            }
+
+            int length = (BonesTransList.Length + 1) / 2 - 1;
+            Transform pointNode = BonesTransList[length];
+            worldPosition = pointNode.position;
+            return ColliderHelper.GetScreenPoint(ColliderConfig.FishCamera, ref worldPosition);
+        }
     }
 }

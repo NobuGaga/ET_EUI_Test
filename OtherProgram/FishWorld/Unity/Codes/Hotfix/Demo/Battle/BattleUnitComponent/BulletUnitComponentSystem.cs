@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace ET
 {
     [ObjectSystem]
@@ -64,6 +66,9 @@ namespace ET
             return string.Format(BulletConfig.NameFormat, unit.Id);
         }
 
+        public static bool IsTrackBullet(this BulletUnitComponent self) =>
+                           self.GetTrackFishUnitId() == BulletConfig.DefaultTrackFishUnitId;
+
         public static long GetTrackFishUnitId(this BulletUnitComponent self)
         {
             Unit unit = self.Parent as Unit;
@@ -74,43 +79,47 @@ namespace ET
         public static void InitTrackPosition(this BulletUnitComponent self)
         {
             long trackFishUnitId = self.GetTrackFishUnitId();
-
             if (trackFishUnitId == BulletConfig.DefaultTrackFishUnitId)
-            {
-                self.Info.TrackPosition = BulletMoveDefaultInfo.TrackPosition;
                 return;
-            }
 
             var battleLogicComponent = self.DomainScene().GetBattleLogicComponent();
             UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
             Unit fishUnit = unitComponent.Get(trackFishUnitId);
-            TransformComponent transformComponent = fishUnit.GetComponent<TransformComponent>();
-            self.Info.TrackPosition = transformComponent.ScreenPos;
+            FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+            self.SetTrackDirection(fishUnitComponent.AimPointPosition);
         }
 
         /// <summary> 更新追踪鱼的屏幕坐标 </summary>
         private static void UpdateTrackPosition(this BulletUnitComponent self)
         {
             long trackFishUnitId = self.GetTrackFishUnitId();
-            if (trackFishUnitId == BulletConfig.DefaultTrackFishUnitId)
-                return;
-
-            // 检查之前目标的合法性
-            var battleLogicComponent = self.DomainScene().GetBattleLogicComponent();
-            UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
-            Unit fishUnit = unitComponent.Get(trackFishUnitId);
-
-            if (fishUnit == null || fishUnit.IsDisposed)
+            Unit fishUnit = SkillHelper.GetTrackFishUnit(self.DomainScene(), trackFishUnitId);
+            if (fishUnit == null)
             {
                 self.SetNormalBullet();
                 return;
             }
 
-            TransformComponent transformComponent = fishUnit.GetComponent<TransformComponent>();
-            if (transformComponent.IsInScreen)
-                self.Info.TrackPosition = transformComponent.ScreenPos;
-            else
-                self.SetNormalBullet();
+            FishUnitComponent fishUnitComponent1 = fishUnit.GetComponent<FishUnitComponent>();
+            self.SetTrackDirection(fishUnitComponent1.AimPointPosition);
+        }
+
+        private static void SetTrackDirection(this BulletUnitComponent self, Vector3 trackScreenPos)
+        {
+            // 追踪鱼重新计算方向, 在逻辑层设置好追踪屏幕位置
+            Unit bulletUnit = self.Parent as Unit;
+            TransformComponent transformComponent = bulletUnit.GetComponent<TransformComponent>();
+            ref Vector3 bulletPosition = ref transformComponent.ScreenPos;
+            ref Vector2 moveDirection = ref self.Info.MoveDirection;
+            float moveDirectionX = trackScreenPos.x - bulletPosition.x;
+            if (Mathf.Abs(moveDirectionX) > BulletConfig.TrackDirectionFix)
+                moveDirection.x = moveDirectionX;
+
+            float moveDirectionY = trackScreenPos.y - bulletPosition.y;
+            if (Mathf.Abs(moveDirectionY) > BulletConfig.TrackDirectionFix)
+                moveDirection.y = moveDirectionY;
+
+            moveDirection.Normalize();
         }
 
         private static void SetNormalBullet(this BulletUnitComponent self)
@@ -118,7 +127,6 @@ namespace ET
             Unit unit = self.Parent as Unit;
             var attributeComponent = unit.GetComponent<NumericComponent>();
             attributeComponent.Set(NumericType.TrackFishId, BulletConfig.DefaultTrackFishUnitId);
-            self.Info.TrackPosition = BulletMoveDefaultInfo.TrackPosition;
         }
     }
 }

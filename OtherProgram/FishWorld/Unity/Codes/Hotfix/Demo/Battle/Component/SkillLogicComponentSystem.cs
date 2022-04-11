@@ -18,72 +18,76 @@ namespace ET
         }
     }
 
-    public static class SkillComponentSystem
+    public static class SkillLogicComponentSystem
     {
-        public static void UseSkill(this BattleLogicComponent self, int skillId)
+        public static void UseSkill(this BattleLogicComponent self, int skillType)
         {
-            if (skillId == SkillType.Ice)
+            // 优先使用当前玩家的追踪目标
+            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(self.CurrentScene());
+            if (selfPlayerUnit != null && !selfPlayerUnit.IsDisposed)
             {
-                self.UseSkill(skillId, BulletConfig.DefaultTrackFishUnitId);
-                return;
+                var playerSkillComponent = selfPlayerUnit.GetComponent<PlayerSkillComponent>();
+                long trackFishUnitId = playerSkillComponent.TrackFishUnitId;
+                if (trackFishUnitId != BulletConfig.DefaultTrackFishUnitId)
+                {
+                    self.UseSkill(skillType, trackFishUnitId);
+                    return;
+                }
             }
 
+            // 当前玩家没有目标则重新寻找目标
             UnitComponent unitComponent = self.GetUnitComponent();
             if (unitComponent == null)
             {
-                self.UseSkill(skillId, BulletConfig.DefaultTrackFishUnitId);
+                self.UseSkill(skillType, BulletConfig.DefaultTrackFishUnitId);
                 return;
             }
 
-            Unit maxScoreUnit = unitComponent.GetMaxScoreFish();
-            if (maxScoreUnit != null)
-                self.UseSkill(skillId, maxScoreUnit.Id);
-            else
-                self.UseSkill(skillId, BulletConfig.DefaultTrackFishUnitId);
+            Unit unit = unitComponent.GetMaxScoreFish();
+            self.UseSkill(skillType, unit != null ? unit.Id : BulletConfig.DefaultTrackFishUnitId);
         }
 
-        private static void UseSkill(this BattleLogicComponent self, int skillId, long targetId)
+        private static void UseSkill(this BattleLogicComponent self, int skillType, long trackFishUnitId)
         {
             Scene currentScene = self.CurrentScene();
             Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
             PlayerSkillComponent skillUnitComponent = selfPlayerUnit.GetComponent<PlayerSkillComponent>();
 
-            if (!skillUnitComponent.IsUsedSkill(skillId))
+            if (!skillUnitComponent.IsUsedSkill(skillType))
             {
-                self.C2M_SkillUse(skillId, targetId);
+                self.C2M_SkillUse(skillType, trackFishUnitId);
                 return;
             }
 
-            SkillUnit skillUnit = skillUnitComponent.Get(skillId);
+            SkillUnit skillUnit = skillUnitComponent.Get(skillType);
 
             if (skillUnit.IsCdEnd())
-                self.C2M_SkillUse(skillId, targetId);
+                self.C2M_SkillUse(skillType, trackFishUnitId);
             else
                 // Battle TODO 后面改文本提示
                 Log.Error("技能冷却中");
         }
 
-        public static void UpdateSkill(this SkillComponent self, long playerUnitId, int skillType,
-                                                                         int skillTime, int skillCdTime)
+        public static void UpdateSkill(this SkillComponent self, M2C_SkillUse message)
         {
             Scene currentScene = self.Parent as Scene;
             UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
-            Unit playerUnit = unitComponent.Get(playerUnitId);
+            Unit playerUnit = unitComponent.Get(message.UnitId);
 
             // 玩家退出渔场会为 null
             if (playerUnit != null && !playerUnit.IsDisposed)
             {
                 // 先更新指定数据, 再更新管理器数据
                 PlayerSkillComponent skillUnitComponent = playerUnit.GetComponent<PlayerSkillComponent>();
-                skillUnitComponent.Set(skillType, skillTime, skillCdTime);
+                skillUnitComponent.Set(message);
             }
 
             // 再更新渔场技能数据
-            if (skillType == SkillType.Ice)
-                self.IceEndTime = skillTime + TimeHelper.ServerNow();
+            if (message.SkillType == SkillType.Ice)
+                self.IceEndTime = message.SkillTime + TimeHelper.ServerNow();
         }
 
-        public static void FixedUpdate(this SkillComponent self)
+        public static void FixedUpdateBeforeFish(this SkillComponent self)
         {
             if (self.IsSkillEnd())
                 self.SkillEnd();
@@ -94,7 +98,7 @@ namespace ET
 
             // 先更新技能数据(PlayerSkillLogicComponent 制作结束事件派发)
             foreach (Unit playerUnit in playerUnitList)
-                playerUnit.GetComponent<PlayerSkillComponent>().FixedUpdate();
+                playerUnit.GetComponent<PlayerSkillComponent>().FixedUpdateBeforeFish();
         }
 
         public static HashSet<Unit> GetPlayerUnitList(this SkillComponent self)

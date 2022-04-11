@@ -56,5 +56,21 @@ namespace ET
                 fishUnitComponent.Info.IsPause = isSkillStart;
             }
         }
+
+        /// <summary> 渔场切换场景处理 </summary>
+        public static void QuickMoveFish(this BattleLogicComponent self)
+        {
+            UnitComponent unitComponent = self.GetUnitComponent();
+            if (unitComponent == null)
+                return;
+
+            HashSet<Unit> fishUnitList = unitComponent.GetFishUnitList();
+            foreach (Unit fishUnit in fishUnitList)
+            {
+                FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+                fishUnitComponent.ResumeMove();
+                fishUnitComponent.SetMoveSpeed(FishConfig.QuickMoveSpeed);
+            }
+        }
     }
 }

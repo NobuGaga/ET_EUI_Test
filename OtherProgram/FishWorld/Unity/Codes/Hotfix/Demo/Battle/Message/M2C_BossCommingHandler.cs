@@ -14,6 +14,7 @@ namespace ET
 			// Battle TODO
 			ReceiveBossComming eventData = new ReceiveBossComming() {
 				BossUnitConfigId = message.CfgId,
+                ZoneScene        = zoneScene,
 			};
 
 			Game.EventSystem.Publish(eventData);

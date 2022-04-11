@@ -21,29 +21,24 @@ namespace ET
 
         public static void PushPool(CannonShootInfo info) => MonoPool.Instance.Recycle(info);
 
-        public static void InitInfo(CannonShootInfo info, Quaternion localRotation,
-                                    Vector2 shootDirection, Vector3 shootPointScreenPos)
+        public static void InitInfo(CannonShootInfo info, Vector3 shootPointScreenPos)
         {
-            info.LocalRotation = localRotation;
-
-            shootDirection.Normalize();
-            info.ShootDirection = shootDirection;
-            
             info.ShootPointScreenPos = shootPointScreenPos;
-
             ref Vector3 shootScreenPosition = ref info.ShootPointScreenPos;
             ref Vector2 shootLocalPosition = ref info.ShootLocalPosition;
             shootLocalPosition.x = shootScreenPosition.x / BulletCameraHelper.WidthRatio;
             shootLocalPosition.y = shootScreenPosition.y / BulletCameraHelper.HeightRatio;
-
-            SetLocalQuaternion(info);
         }
 
-        public static void SetLocalQuaternion(CannonShootInfo info) =>
-                    SetLocalQuaternion(ref info.LocalRotation, ref info.ShootDirection);
+        public static void SetLocalQuaternion(CannonShootInfo info, Vector2 shootDirection)
+        {
+            shootDirection.Normalize();
+            info.ShootDirection = shootDirection;
+            SetLocalQuaternion(ref info.LocalRotation, ref info.ShootDirection);
+        }
 
         public static void SetLocalQuaternion(BulletMoveInfo info) =>
-                            SetLocalQuaternion(ref info.CurrentRotation, ref info.MoveDirection);
+                           SetLocalQuaternion(ref info.CurrentRotation, ref info.MoveDirection);
 
         /// <summary>
         /// 计算炮台或者子弹的旋转, 炮台和子弹公用一个摄像机, 局部坐标系相同

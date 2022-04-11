@@ -16,6 +16,9 @@ namespace ET
         /// </summary>
         public const ushort DefaultMoveSpeed = 1;
 
+        /// <summary> 驱赶鱼移动速度 </summary>
+        public const ushort QuickMoveSpeed = 30;
+
         // Battle Warning 成员变量值类型 GC 标记
         /// <summary> 鱼移除屏幕坐标点 </summary>
         public static Vector3 RemovePoint = new Vector3(-10000, 0, 0);

@@ -85,13 +85,14 @@ namespace ET
         }
     }
 
-    public class UIFisheriesE_exitEventArgs_CameraComponent : AEvent<UIFisheriesE_exitEventArgs>
+    public class UIFisheriesE_exitEventArgs_CameraComponent : AEventAsync<UIFisheries_ExitEventArgs>
     {
-        protected override void Run(UIFisheriesE_exitEventArgs args)
+        protected override async ETTask Run(UIFisheries_ExitEventArgs args)
         {
             UIFisheriesComponent fisheryComponent = args.UIFisheriesComponent;
             CameraComponent cameraComponent = fisheryComponent.ZoneScene().GetComponent<CameraComponent>();
             cameraComponent.StopTransformTween();
+            await ETTask.CompletedTask;
         }
     }
 }

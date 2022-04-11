@@ -2,7 +2,7 @@ namespace ET
 {
 	public partial class C2M_SkillUse
 	{
-		public void Set(int skillId, long targetId)
+		public void Set(int skillId, long trackFishUnitId)
 		{
 			SkillId = skillId;
 
@@ -11,10 +11,10 @@ namespace ET
 
 			TargetId.Clear();
 
-			if (targetId == BulletConfig.DefaultTrackFishUnitId)
+			if (trackFishUnitId == BulletConfig.DefaultTrackFishUnitId)
 				return;
 
-			TargetId.Add(targetId);
+			TargetId.Add(trackFishUnitId);
 		}
 	}
 

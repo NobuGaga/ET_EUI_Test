@@ -14,8 +14,6 @@ namespace ET
             self.MoveDirection = BulletConfig.DefaultMoveDirection;
 
             self.CurrentLocalPos = BulletConfig.RemovePoint;
-
-            self.TrackPosition = BulletMoveDefaultInfo.TrackPosition;
         }
 
         public static void Reset(this FishMoveInfo self)

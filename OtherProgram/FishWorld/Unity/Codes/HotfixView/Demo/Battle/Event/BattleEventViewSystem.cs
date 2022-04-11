@@ -23,20 +23,7 @@ namespace ET
         protected override void Run(PlayerSkillRuning args)
         {
             BattleViewComponent battleViewComponent = args.CurrentScene.GetBattleViewComponent();
-            PlayerComponent playerComponent = args.CurrentScene.ZoneScene().GetComponent<PlayerComponent>();
-
-            switch (args.SkillType)
-            {
-                case SkillType.Ice:
-                    break;
-                case SkillType.Aim:
-                    if (args.PlayerUnitId == playerComponent.MyId)
-                        battleViewComponent.SkillShoot();
-                    break;
-                case SkillType.Laser:
-
-                    break;
-            }
+            battleViewComponent.SkillShoot(args.PlayerUnitId, args.SkillUnit);
         }
     }
 }

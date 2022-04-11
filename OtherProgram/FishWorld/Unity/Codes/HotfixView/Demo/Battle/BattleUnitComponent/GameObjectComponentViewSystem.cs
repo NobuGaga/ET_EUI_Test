@@ -29,8 +29,13 @@ namespace ET
     {
         public static ObjectPoolComponent ObjectPoolComponent(this GameObjectComponent self)
         {
-            Unit unit = self.Parent as Unit;
-            return unit.GetObjectPoolComponent();
+            if (self.Parent is Unit)
+                return (self.Parent as Unit).GetObjectPoolComponent();
+
+            if (self.Parent is SkillUnit)
+                return (self.Parent as SkillUnit).GetObjectPoolComponent();
+
+            return null;
         }
     }
 }
