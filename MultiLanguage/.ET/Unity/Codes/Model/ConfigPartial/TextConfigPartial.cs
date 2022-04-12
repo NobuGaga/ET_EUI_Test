@@ -16,24 +16,21 @@ namespace ET
             foreach (TextConfig config in dict.Values)
                 m_KeyIdDic.Add(config.Key, config.Id);
 
-            if (!Application.isEditor)
+            if (Application.isPlaying)
                 TextConfigHelper.SetGetTextFunction(GetText);
         }
 
         #region 编辑器模式非运行时使用
 
-        private static TextConfigCategory instance;
-
         // 加载 ab 资源并使用其来实例化配置表类(编辑时使用)
         public static void LoadAndInstantiateConfig()
         {
-            if (!Define.IsEditor || !Application.isEditor)
+            if (!Define.IsEditor || Application.isPlaying)
                 return;
 
             Type configType = typeof(TextConfigCategory);
             string configTypeName = configType.Name;
             string configABName = $"config{Define.ABSuffix}";
-            instance = null;
             try
             {
                 string[] assetBundlePaths = Define.GetAssetPathsFromAssetBundle(configABName);
@@ -46,7 +43,6 @@ namespace ET
                     TextAsset textAsset = resource as TextAsset;
                     byte[] configBytes = textAsset.bytes;
                     object category = ProtobufHelper.FromBytes(configType, configBytes, 0, configBytes.Length);
-                    instance = category as TextConfigCategory;
                     return;
                 }
             }
@@ -58,17 +54,16 @@ namespace ET
 
         #endregion
 
-        public static string GetText(string key)
+        public string GetText(string key)
         {
-            var keyIdDic = instance.m_KeyIdDic;
-            if (!keyIdDic.ContainsKey(key))
+            if (!m_KeyIdDic.ContainsKey(key))
                 throw new Exception($"文本配置找不到 Key，配置表名 : { nameof(TextConfig) }，配置 Key : { key }");
 
-            int id = keyIdDic[key];
+            int id = m_KeyIdDic[key];
             TextConfig config = null;
             try
             {
-                config = instance.Get(id);
+                config = Get(id);
             }
             catch (Exception exception)
             {

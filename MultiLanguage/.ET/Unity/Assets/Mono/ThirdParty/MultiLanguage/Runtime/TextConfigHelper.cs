@@ -22,7 +22,7 @@ namespace MultiLanguage
 
         static TextConfigHelper()
         {
-            if (!Application.isEditor)
+            if (Application.isPlaying)
                 return;
             
             m_arguments = new object[] { string.Empty };
@@ -55,7 +55,7 @@ namespace MultiLanguage
         public static string GetText(string key)
         {
 #if UNITY_EDITOR
-            if (!Application.isEditor)
+            if (Application.isPlaying)
                 return RuntimeGetText(key);
 
             m_arguments[0] = key;
