@@ -10,6 +10,9 @@ namespace ET
 		/// <summary> 客户端生成的子弹 ID 计数器 </summary>
 		public long BulletId;
 
+		/// <summary> 上一次发射子弹时间戳(毫秒) </summary>
+		public long LastShootBulletTime;
+
 		/// <summary>
 		/// 客户端生成单次使用的子弹 ID 计数器
 		/// 只增不减, 退出渔场时清零

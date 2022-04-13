@@ -39,7 +39,7 @@ namespace ET
                 return;
             }
 
-            bool isUseModelPool = BattleTestConfig.IsUseModelPool;
+            bool isUseModelPool = BattleConfig.IsUseModelPool;
             skillUnit = self.AddChildWithId<SkillUnit, int, int>(skillType, skillTime, skillCdTime, isUseModelPool);
             self.SkillTypeList.Add(skillType);
 
@@ -113,15 +113,14 @@ namespace ET
                 return;
             }
 
-            var battleLogicComponent = self.DomainScene().GetBattleLogicComponent();
-            UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
+            UnitComponent unitComponent = self.DomainScene().GetComponent<UnitComponent>();
             Unit fishUnit = unitComponent.Get(trackFishUnitId);
 
             if (fishUnit != null && !fishUnit.IsDisposed &&
                 fishUnit.GetComponent<TransformComponent>().IsInScreen)
                 return;
 
-            fishUnit = unitComponent.GetMaxScoreFish();
+            fishUnit = unitComponent.GetMaxScoreFishUnit();
             trackFishUnitId = fishUnit != null ? fishUnit.Id : BulletConfig.DefaultTrackFishUnitId;
         }
     }

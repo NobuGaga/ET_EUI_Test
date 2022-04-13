@@ -26,9 +26,9 @@ namespace ET
         /// <summary> 接收到 Boss 来袭事件 </summary>
         public struct ReceiveBossComming
         {
-            public int   BossUnitConfigId;
             public Scene ZoneScene;
 
+            public int BossUnitConfigId;
         }
 
         /// <summary> 接收到 Fire 事件 </summary>

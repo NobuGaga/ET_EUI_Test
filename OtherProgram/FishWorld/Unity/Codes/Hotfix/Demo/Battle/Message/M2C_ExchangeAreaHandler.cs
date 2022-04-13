@@ -1,4 +1,4 @@
-using ET.EventType;
+// Battle Review Before Boss Node
 
 namespace ET
 {
@@ -8,15 +8,14 @@ namespace ET
 	{
 		protected override async ETTask Run(Session session, M2C_ExchangeArea message)
 		{
-			Scene CurrentScene = session.DomainScene().CurrentScene();
-			FisheryComponent FisheryComponent = CurrentScene.GetComponent<FisheryComponent>();
-			FisheryComponent.AreaId = message.AreaId;
+			Scene currentScene = session.DomainScene().CurrentScene();
+			FisheryComponent fisheryComponent = currentScene.GetComponent<FisheryComponent>();
+			fisheryComponent.AreaId = message.AreaId;
+			fisheryComponent.QuickMoveAllFish();
 
-			CurrentScene.GetBattleLogicComponent().QuickMoveFish();
-
-			Game.EventSystem.Publish(new ReceiveExchangeArea()
+			Game.EventSystem.Publish(new EventType.ReceiveExchangeArea()
 			{
-				FisheryComponent = FisheryComponent,
+				FisheryComponent = fisheryComponent,
 			});
 
 			await ETTask.CompletedTask;

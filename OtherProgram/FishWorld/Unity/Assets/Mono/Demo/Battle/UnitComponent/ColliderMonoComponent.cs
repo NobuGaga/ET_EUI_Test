@@ -71,11 +71,11 @@ namespace ET
             if (selfColliderList == null || otherColliderList == null)
                 return false;
 
-            foreach (ICollider selfCollider in selfColliderList)
+            for (var selfIndex = 0; selfIndex < selfColliderList.Length; selfIndex++)
             {
-                foreach (ICollider otherCollider in otherColliderList)
+                for (var otherIndex = 0; otherIndex < otherColliderList.Length; otherIndex++)
                 {
-                    if (selfCollider.IsCollide(otherCollider))
+                    if (selfColliderList[selfIndex].IsCollide(otherColliderList[otherIndex]))
                         return true;
                 }
             }

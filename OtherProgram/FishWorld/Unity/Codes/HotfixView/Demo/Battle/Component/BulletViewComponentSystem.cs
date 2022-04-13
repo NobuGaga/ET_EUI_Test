@@ -5,6 +5,39 @@ namespace ET
 {
     public static class BulletViewComponentSystem
     {
+        private static bool IsCanSkillShoot(this BattleViewComponent self, bool isShowError)
+        {
+            Scene battleScene = self.Parent as Scene;
+            BattleLogicComponent battleLogicComponent = battleScene.GetComponent<BattleLogicComponent>();
+            ushort battleCode = battleLogicComponent.CheckSelfSkillShootState();
+            bool isCanShoot = battleCode == BattleCodeConfig.Success;
+            if (!isShowError)
+                return isCanShoot;
+
+            switch (battleCode)
+            {
+                // Battle TODO 错误码后面改成读文本表
+                case BattleCodeConfig.UpperLimitBullet:
+                    Log.Error($"发射子弹超出配置表配置上限 : { BulletConfig.ShootMaxBulletCount }");
+                    return isCanShoot;
+                case BattleCodeConfig.NotEnoughMoney:
+                    Log.Error("金币不足");
+                    return isCanShoot;
+            }
+
+            return isCanShoot;
+        }
+
+        private static bool IsCanNormalShoot(this BattleViewComponent self, bool isShowError)
+        {
+            Scene currentScene = self.CurrentScene();
+            SkillComponent skillComponent = currentScene.GetComponent<SkillComponent>();
+            if (skillComponent.IsControlSelfShoot())
+                return false;
+
+            return self.IsCanSkillShoot(isShowError);
+        }
+
         /// <summary> 使用技能射击 </summary>
         public static void SkillShoot(this BattleViewComponent self, long playerUnitId, SkillUnit skillUnit)
         {
@@ -51,39 +84,6 @@ namespace ET
                 self.RotateCannon(ref touchPosX, ref touchPosY, false);
         }
 
-        private static bool IsCanSkillShoot(this BattleViewComponent self, bool isHandle)
-        {
-            Scene battleScene = self.Parent as Scene;
-            BattleLogicComponent battleLogicComponent = battleScene.GetComponent<BattleLogicComponent>();
-            ushort battleCode = battleLogicComponent.CheckSelfSkillShootState();
-            bool isCanShoot = battleCode == BattleCodeConfig.Success;
-            if (!isHandle)
-                return isCanShoot;
-
-            switch (battleCode)
-            {
-                // Battle TODO 错误码后面改成读文本表
-                case BattleCodeConfig.UpperLimitBullet:
-                    Log.Error($"发射子弹超出配置表配置上限 : { BulletConfig.ShootMaxBulletCount }");
-                    return isCanShoot;
-                case BattleCodeConfig.NotEnoughMoney:
-                    Log.Error("金币不足");
-                    return isCanShoot;
-            }
-
-            return isCanShoot;
-        }
-
-        private static bool IsCanNormalShoot(this BattleViewComponent self, bool isHandle)
-        {
-            Scene currentScene = self.CurrentScene();
-            SkillComponent skillComponent = currentScene.GetComponent<SkillComponent>();
-            if (skillComponent.IsControlSelfShoot())
-                return false;
-
-            return self.IsCanSkillShoot(isHandle);
-        }
-
         private static Unit GetMaxScoreFish(this BattleViewComponent self)
         {
             Scene currentScene = self.CurrentScene();
@@ -93,9 +93,8 @@ namespace ET
             if (fishUnit != null)
                 return fishUnit;
 
-            BattleLogicComponent battleLogicComponent = self.Parent.GetComponent<BattleLogicComponent>();
-            UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
-            return unitComponent.GetMaxScoreFish();
+            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
+            return unitComponent.GetMaxScoreFishUnit();
         }
 
         private static void RotateCannon(this BattleViewComponent self, bool isPlayAnimation)
@@ -122,7 +121,8 @@ namespace ET
                                                     ref float touchPosX, ref float touchPosY, bool isPlayAnimation)
         {
             Scene currentScene = self.CurrentScene();
-            Unit playerUnit = UnitHelper.GetPlayUnitBySeatId(currentScene, seatId);
+            var fisheryComponent = currentScene.GetComponent<FisheryComponent>();
+            Unit playerUnit = fisheryComponent.GetPlayerUnit(seatId);
             CannonComponent cannonComponent = playerUnit.GetComponent<CannonComponent>();
             if (isPlayAnimation)
                 cannonComponent.PlayAnimation();

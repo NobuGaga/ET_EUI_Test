@@ -11,7 +11,7 @@ namespace ET
             node.SetParent(self.GetNodeParent());
             node.localScale = Vector3.one;
 
-            bool isUseModelPool = BattleTestConfig.IsUseModelPool;
+            bool isUseModelPool = BattleConfig.IsUseModelPool;
             self.AddComponent<GameObjectComponent, string, Transform>(assetBundlePath, node, isUseModelPool);
 
             self.MoveToRemovePoint();

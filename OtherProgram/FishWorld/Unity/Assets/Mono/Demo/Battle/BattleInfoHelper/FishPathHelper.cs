@@ -1,47 +1,34 @@
-// Battle Review
-
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace ET
 {
-
-    // Path 管理器, 避免反复创建相同的Path
+    /// <summary> 鱼线路径 Path 助手, 避免反复创建相同的Path </summary>
     public static class FishPathHelper
     {
+        /// <summary> 鱼线配置表配置项数量最值 </summary>
+        internal const ushort DefaultPathCount = 128;
 
-        // 鱼线配置表配置项数量最值
-        private const ushort DefaultPathCount = 128;
-        // 鱼线配置表点的个数最值
+        /// <summary> 鱼线配置表点的个数最值 </summary>
         private const ushort DefaultPathPointCount = 64;
 
-        // 首尾补齐点长度
+        /// <summary> 首尾补齐点长度(世界坐标) </summary>
         private const ushort ExpandPosLength = 10;
 
-        private static readonly Dictionary<Int16, FishPathInfo> _pathMap;
-//#if UNITY_EDITOR
+        private static readonly Dictionary<short, FishPathInfo> _pathMap;
 
-//        private static Dictionary<Int16, PathDebug> _debugMap;
-//#endif
         private static readonly List<Vector3> _pathPointCache;
 
         static FishPathHelper()
         {
             _pathMap = new Dictionary<Int16, FishPathInfo>(DefaultPathCount);
-//#if UNITY_EDITOR
-
-//            _debugMap = new Dictionary<Int16, PathDebug>(DefaultPathCount);
-//#endif
             _pathPointCache = new List<Vector3>(DefaultPathPointCount);
         }
 
         public static void Clear()
         {
             _pathMap.Clear();
-//#if UNITY_EDITOR
-//            _debugMap.Clear();
-//#endif
             _pathPointCache.Clear();
         }
 
@@ -59,9 +46,10 @@ namespace ET
             Vector3[] posList = _pathPointCache.ToArray();
             FishPathInfo path = new FishPathInfo(posList);
             _pathMap.Add(roadId, path);
-//#if UNITY_EDITOR
-//            OpenPathDebug(roadId, posList);
-//#endif
+#if UNITY_EDITOR
+
+            BattleDebug.OpenPathDebug(roadId, posList);
+#endif
             return path;
         }
 
@@ -79,7 +67,7 @@ namespace ET
                 return;
             }
             string[] configLineRela = getFishLineRelaList(roadId);
-            VectorStringHelper.TryParseVector3StringArray(configLineRela, _pathPointCache);
+            VectorStringHelper.TryParseVectorStringArray(configLineRela, _pathPointCache);
         }
 
         private static Vector3 GetExpandPos(Vector3 startPos, Vector3 endPos) =>
@@ -101,35 +89,5 @@ namespace ET
             Vector3 lastSecondPathPos = _pathPointCache[_pathPointCache.Count - 2];
             _pathPointCache.Add(GetExpandPos(lastSecondPathPos, lastPathPos));
         }
-
-//#if UNITY_EDITOR
-
-//        // 开启鱼线调试, 使用 Gizmos 画线
-//        private static void OpenPathDebug(Int16 roadId, Vector3[] posList)
-//        {
-//            PathDebug pathDebug;
-//            if (_debugMap.ContainsKey(roadId))
-//            {
-//                pathDebug = _debugMap[roadId];
-//                pathDebug.ClearList();
-//            }
-//            else
-//            {
-//                GameObject go = new GameObject();
-//                go.name = string.Format("PathDebug_{0}", roadId);
-//                pathDebug = go.AddComponent<PathDebug>();
-//                go.transform.SetParent(ReferenceHelper.FishRootNode.transform);
-//                go.transform.SetSiblingIndex(0);
-//                go.transform.localPosition = Vector3.zero;
-//                go.transform.localRotation = Quaternion.identity;
-//                _debugMap.Add(roadId, pathDebug);
-//            }
-
-//            foreach (Vector3 pos in posList)
-//                pathDebug.AddPos(pos);
-
-//            pathDebug.ReCalcRelativePoint();
-//        }
-//#endif
     }
 }

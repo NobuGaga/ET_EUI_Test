@@ -68,8 +68,13 @@ namespace ET
             else if (_tempCircleColliderList.Count == 0)
                 _colliderList.Add(new Sphere(ColliderConfig.FishCamera, Vector3.zero, 1));
             else
-                foreach (CircCollider collider in _tempCircleColliderList)
+            { 
+                for (var index = 0; index < _tempCircleColliderList.Count; index++)
+                {
+                    var collider = _tempCircleColliderList[index];
                     _colliderList.Add(new Sphere(ColliderConfig.FishCamera, Vector3.zero, collider.radius));
+                }
+            }
 
             return _colliderList.CustomToArray();
         }
@@ -88,8 +93,9 @@ namespace ET
                 Debug.LogErrorFormat("模型没有配置碰撞盒 {0}", transform.name);
             }
 
-            foreach (CircCollider collider in _tempCircleColliderList)
+            for (var index = 0; index < _tempCircleColliderList.Count; index++)
             {
+                var collider = _tempCircleColliderList[index];
                 _bonesList.Add(collider.transform);
                 collider.enabled = false;
             }

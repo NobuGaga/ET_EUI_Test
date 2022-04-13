@@ -13,7 +13,9 @@ namespace ET
             BattleLogic.Init();
 
             // 战斗用另外一个对象池组件, 生命周期跟战斗视图组件
-            // 只用来管理鱼跟子弹, 不直接 Add 到 Scene 上是因为 Scene 上面可能已经 Add 了
+            // 只用来管理鱼跟子弹, 不直接 Add 到 Scene 上是因为 CurrentScene 跟 ZoneScene 已经有了
+            // 技能挂载在 UI 界面的节点由 UI 的 ObjectPoolComponent 管理
+            // 挂载到非 UI 界面的节点由 BattleViewComponent 管理
             self.AddComponent<ObjectPoolComponent>();
         }
     }
@@ -23,55 +25,46 @@ namespace ET
     {
         public override void Update(BattleViewComponent self)
         {
+            // Battle Warning
             BattleLogic.Clear();
 
-            // Battle Warning 需要保证 BattleLogicComponent 跟 BattleViewComponent 挂在同一个 Scene 上
-            // 都通过 BattleTestConfig 的标记进行判断
-            var battleLogicComponent = self.Parent.GetComponent<BattleLogicComponent>();
-
-            // Battle TODO 先更新鱼的位置, 再更新子弹的位置(因为子弹需要鱼的位置计算追踪)
-            UpdateSkillBeforeFish(battleLogicComponent);
-            UpdateFishUnitList(battleLogicComponent);
-            UpdateSkillBeforeBullet(battleLogicComponent);
-            UpdateBulletUnitList(battleLogicComponent);
-        }
-
-        private void UpdateSkillBeforeFish(BattleLogicComponent battleLogicComponent)
-        {
-            Scene currentScene = battleLogicComponent.CurrentScene();
-            if (currentScene != null)
-                currentScene.GetComponent<SkillComponent>().FixedUpdateBeforeFish();
-        }
-
-        private void UpdateSkillBeforeBullet(BattleLogicComponent battleLogicComponent)
-        {
-            Scene currentScene = battleLogicComponent.CurrentScene();
-            if (currentScene != null)
-                currentScene.GetComponent<SkillComponent>().UpdateBeforeBullet();
-        }
-
-        private void UpdateFishUnitList(BattleLogicComponent battleLogicComponent)
-        {
-            HashSet<Unit> fishUnitList = GetFishUnitList(battleLogicComponent);
-            if (fishUnitList == null)
-                return;
-
-            foreach (Unit fishUnit in fishUnitList)
-            {
-                if (!fishUnit.GetComponent<BattleUnitLogicComponent>().IsUpdate)
-                    continue;
-
-                fishUnit.FixedUpdate();
-                fishUnit.Update();
-            }
-        }
-
-        private void UpdateBulletUnitList(BattleLogicComponent battleLogicComponent)
-        {
-            Scene currentScene = battleLogicComponent.CurrentScene();
+            Scene currentScene = self.CurrentScene();
             if (currentScene == null)
                 return;
 
+            // Battle Warning 需要保证 BattleLogicComponent 跟 BattleViewComponent 挂在同一个 Scene 上
+            // 都通过 BattleConfig 的标记进行判断
+            var battleLogicComponent = self.Parent.GetComponent<BattleLogicComponent>();
+            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
+
+            // 有序更新, 统一在一个 Update 里进行
+            currentScene?.GetComponent<SkillComponent>().FixedUpdateBeforeFish();
+            UpdateFishUnitList(battleLogicComponent, unitComponent);
+            currentScene?.GetComponent<SkillComponent>().UpdateBeforeBullet();
+            UpdateBulletUnitList(self, currentScene);
+        }
+
+        private void UpdateFishUnitList(BattleLogicComponent battleLogicComponent, UnitComponent unitComponent)
+        {
+            // 帧更新开始将移除鱼列表清除
+            // 在 FishUnitComponent 的 FixedUpdate 里进行增加
+            var removeFishUnitIdList = battleLogicComponent.RemoveUnitIdList;
+            removeFishUnitIdList.Clear();
+            
+            unitComponent.FixedUpdateFishUnitList();
+
+            // 更新完数据后马上把无效数据删除
+            for (var index = removeFishUnitIdList.Count - 1; index >= 0; index--)
+                unitComponent.Remove(removeFishUnitIdList[index]);
+
+            unitComponent.UpdateFishUnitList();
+        }
+
+        private void UpdateBulletUnitList(BattleViewComponent self, Scene currentScene)
+        {
+            // Battle Warning 需要保证 BattleLogicComponent 跟 BattleViewComponent 挂在同一个 Scene 上
+            // 都通过 BattleConfig 的标记进行判断
+            var battleLogicComponent = self.Parent.GetComponent<BattleLogicComponent>();
             BulletLogicComponent bulletLogicComponent = currentScene.GetComponent<BulletLogicComponent>();
             List<long> bulletIdList = bulletLogicComponent.BulletIdList;
             long bulletUnitId;
@@ -88,13 +81,14 @@ namespace ET
 
                 bulletUnit.FixedUpdate();
                 bulletUnit.Update();
-                CheckBulletCollide(battleLogicComponent, bulletUnit);
+                CheckBulletCollide(battleLogicComponent, currentScene, bulletUnit);
             }
         }
 
-        private void CheckBulletCollide(BattleLogicComponent battleLogicComponent, Unit bulletUnit)
+        private void CheckBulletCollide(BattleLogicComponent battleLogicComponent, Scene currentScene, Unit bulletUnit)
         {
-            HashSet<Unit> fishUnitList = GetFishUnitList(battleLogicComponent);
+            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
+            HashSet<Unit> fishUnitList = unitComponent.GetFishUnitList();
             if (fishUnitList == null)
                 return;
 
@@ -136,45 +130,29 @@ namespace ET
             long trackFishUnitId = bulletUnitComponent.GetTrackFishUnitId();
             return trackFishUnitId == BulletConfig.DefaultTrackFishUnitId || trackFishUnitId == fishUnit.Id;
         }
-
-        private HashSet<Unit> GetFishUnitList(BattleLogicComponent battleLogicComponent)
-        {
-            UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
-            if (unitComponent == null)
-                return null;
-
-            return unitComponent.GetFishUnitList();
-        }
-    }
-
-    [ObjectSystem]
-    public class BattleViewComponentDestroySystem : DestroySystem<BattleViewComponent>
-    {
-        public override void Destroy(BattleViewComponent self)
-        {
-            // Battle TODO
-        }
     }
 
     public static class BattleViewComponentSystem
     {
-        /// <summary> 加快获取 CurrentScene 效率, 同 BattleLogicComponent 实现一样 </summary>
+        /// <summary> 加快获取 CurrentScene 效率, 覆盖重写 Entity 的 CurrentScene() </summary>
         public static Scene CurrentScene(this BattleViewComponent self)
         {
-            if (BattleTestConfig.IsAddBattleToZone)
-                // CurrentScene 全局只有一个
-                return self.ZoneScene().CurrentScene();
+            Scene scene = self.Parent as Scene;
+            return BattleConfig.IsAddToCurrentScene ? scene : scene.CurrentScene();
+        }
 
-            return self.DomainScene();
+        /// <summary> 加快获取 ZoneScene 效率, 覆盖重写 Entity 的 ZoneScene() </summary>
+        public static Scene ZoneScene(this BattleViewComponent self)
+        {
+            Scene scene = self.Parent as Scene;
+            return BattleConfig.IsAddToZoneScene ? scene : scene.Parent.Parent as Scene;
         }
 
         /// <summary> 拓展实现 Scene 方法, 方便获取 BattleViewComponent </summary>
         public static BattleViewComponent GetBattleViewComponent(this Scene scene)
         {
-            if (BattleTestConfig.IsAddBattleToZone && scene.SceneType == SceneType.Current)
-                scene = scene.ZoneScene();
-
-            return scene.GetComponent<BattleViewComponent>();
+            Scene battleScene = scene.BattleScene();
+            return battleScene.GetComponent<BattleViewComponent>();
         }
     }
 
@@ -186,7 +164,7 @@ namespace ET
     {
         protected override void Run(AfterCreateZoneScene args)
         {
-            if (BattleTestConfig.IsAddBattleToZone)
+            if (BattleConfig.IsAddToZoneScene)
                 args.ZoneScene.AddComponent<BattleViewComponent>();
         }
     }
@@ -195,7 +173,7 @@ namespace ET
     {
         protected override void Run(AfterCreateCurrentScene args)
         {
-            if (BattleTestConfig.IsAddBattleToCurrent)
+            if (BattleConfig.IsAddToCurrentScene)
                 args.CurrentScene.AddComponent<BattleViewComponent>();
         }
     }

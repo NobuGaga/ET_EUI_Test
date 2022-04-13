@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+// Battle Review Before Boss Node
 
 namespace ET
 {
@@ -9,15 +9,6 @@ namespace ET
         {
             // Battle TODO 暂时写死
             self.RoomType = 1;
-        }
-    }
-
-    [ObjectSystem]
-    public sealed class FisheryComponentDestroySystem : DestroySystem<FisheryComponent>
-    {
-        public override void Destroy(FisheryComponent self)
-        {
-            // Battle TODO
         }
     }
 
@@ -39,38 +30,68 @@ namespace ET
 
         public static int GetSelfSeatId(this FisheryComponent self)
         {
-            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(self.Parent as Scene);
-            return selfPlayerUnit.GetSeatId();
+            var playerComponent = self.Parent.Parent.Parent.GetComponent<PlayerComponent>();
+            return self.GetSeatId(playerComponent.MyId);
+        }
+
+        public static Unit GetPlayerUnit(this FisheryComponent self, int seatId)
+        {
+            Scene currentScene = self.Parent as Scene;
+            
+            var battleLogicComponent = currentScene.GetBattleLogicComponent();
+            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
+            
+            var playerUnitList = unitComponent.GetPlayerUnitList();
+            battleLogicComponent.Result_Unit = null;
+
+            battleLogicComponent.Foreach(playerUnitList, SetFishUnitPauseState, seatId);
+
+            return battleLogicComponent.Result_Unit;
+        }
+
+        private static void SetFishUnitPauseState(Unit playerUnit, int seatId)
+        {
+            var battleLogicComponent = playerUnit.DomainScene().GetBattleLogicComponent();
+            if (battleLogicComponent.Result_Unit != null)
+                return;
+
+            var attributeComponent = playerUnit.GetComponent<NumericComponent>();
+            if (attributeComponent.GetAsInt(NumericType.Pos) == seatId)
+                battleLogicComponent.Result_Unit = playerUnit;
         }
 
         /// <summary> 渔场冰冻技能逻辑处理 </summary>
         /// <param name="isSkillStart">是否开始使用冰冻技能</param>
-        public static void FisheryIceSkill(this BattleLogicComponent self, bool isSkillStart)
+        internal static void FisheryIceSkill(this FisheryComponent self, bool isSkillStart)
         {
-            Scene currentScene = self.CurrentScene();
-            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
-            HashSet<Unit> fishUnitList = unitComponent.GetFishUnitList();
-            foreach (Unit fishUnit in fishUnitList)
-            {
-                FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
-                fishUnitComponent.Info.IsPause = isSkillStart;
-            }
+            var battleLogicComponent = self.DomainScene().GetBattleLogicComponent();
+            UnitComponent unitComponent = self.Parent.GetComponent<UnitComponent>();
+            var fishUnitList = unitComponent.GetFishUnitList();
+            battleLogicComponent.Foreach(fishUnitList, SetFishUnitPauseState, isSkillStart);
+        }
+        
+        private static void SetFishUnitPauseState(Unit fishUnit, bool isPause)
+        {
+            FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+            fishUnitComponent.Info.IsPause = isPause;
         }
 
         /// <summary> 渔场切换场景处理 </summary>
-        public static void QuickMoveFish(this BattleLogicComponent self)
+        internal static void QuickMoveAllFish(this FisheryComponent self)
         {
-            UnitComponent unitComponent = self.GetUnitComponent();
+            UnitComponent unitComponent = self.Parent.GetComponent<UnitComponent>();
             if (unitComponent == null)
                 return;
 
-            HashSet<Unit> fishUnitList = unitComponent.GetFishUnitList();
-            foreach (Unit fishUnit in fishUnitList)
-            {
-                FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
-                fishUnitComponent.ResumeMove();
-                fishUnitComponent.SetMoveSpeed(FishConfig.QuickMoveSpeed);
-            }
+            var fishUnitList = unitComponent.GetFishUnitList();
+            ForeachHelper.Foreach(fishUnitList, QuickMove);
+        }
+
+        private static void QuickMove(Unit fishUnit)
+        {
+            FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+            fishUnitComponent.ResumeMove();
+            fishUnitComponent.SetMoveSpeed(FishConfig.QuickMoveSpeed);
         }
     }
 }

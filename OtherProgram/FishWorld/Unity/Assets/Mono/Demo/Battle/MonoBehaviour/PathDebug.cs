@@ -151,15 +151,10 @@ namespace ET
         public void ReCalcRelativePoint()
         {
             relativePosList.Clear();
-            foreach (var pos in posList)
-            {
-                relativePosList.Add(pos);
-            }
 
             for (int i = 0; i < posList.Count; i++)
-            {
-                relativePosList[i] = transform.TransformPoint(posList[i]);
-            }
+                relativePosList.Add(transform.TransformPoint(posList[i]));
+
             _pathPoint.Clear();
         }
         public void ClearList()

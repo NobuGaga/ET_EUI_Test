@@ -1,19 +1,19 @@
+// Battle Review Before Boss Node
+
 using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace ET
 {
-    /// <summary>
-    /// 用于解析配置表的 Vector3 数据拓展方法
-    /// </summary>
+    /// <summary> 用于解析配置表的 Vector3 数据拓展方法 </summary>
 	public static class VectorStringHelper
     {
         /// <summary> 默认配置表有多少个 VectorString 配置 </summary>
-        private const ushort DefaultVector3ConfigLength = 64;
+        private const ushort DefaultVectorConfigLength = 64;
 
         /// <summary> 默认配置表一个 VectorString 配置字符串长度 </summary>
-        private const ushort DefaultVector3Length = 64;
+        private const ushort DefaultVectorLength = 64;
 
         private static readonly List<Vector3> vectorStringList;
 
@@ -22,8 +22,8 @@ namespace ET
         
         static VectorStringHelper()
         {
-            vectorStringList = new List<Vector3>(DefaultVector3ConfigLength);
-            vectorStringReader = new StringBuilder(DefaultVector3Length);
+            vectorStringList = new List<Vector3>(DefaultVectorConfigLength);
+            vectorStringReader = new StringBuilder(DefaultVectorLength);
         }
 
         public static void Clear()
@@ -34,26 +34,17 @@ namespace ET
 
         #region String Array public Parse
 
-        public static bool TryParseVector3StringArray(string[] vectorStringArray, out Vector3[] vectorArray)
-        {
-            vectorArray = null;
-
-            if (!TryParseVector3StringArray(vectorStringArray, vectorStringList))
-                return false;
-
-            vectorArray = vectorStringList.ToArray();
-            return true;
-        }
-
-        public static bool TryParseVector3StringArray(string[] vectorStringArray, List<Vector3> vectorList)
+        internal static bool TryParseVectorStringArray(string[] vectorStringArray, List<Vector3> vectorList)
         {
             vectorList.Clear();
 
-            foreach (string vectorString in vectorStringArray)
+            string vectorString;
+            for (var index = 0; index < vectorStringArray.Length; index++)
             {
+                vectorString = vectorStringArray[index];
                 try
                 {
-                    if (TryParseVector3(vectorString, out Vector3 vector))
+                    if (TryParseVector(vectorString, out Vector3 vector))
                         vectorList.Add(vector);
                 }
                 catch (System.Exception exception)
@@ -74,7 +65,7 @@ namespace ET
         private const char SplitSymbol = ':';
 
         /// <summary> 这里不定义成拓展方法为了方便外部调用 </summary>
-        public static bool TryParseVector3(string vectorString, out Vector3 vector)
+        public static bool TryParseVector(string vectorString, out Vector3 vector)
         {
             vector = Vector3.zero;
 
@@ -82,16 +73,16 @@ namespace ET
                 return false;
 
             byte vectorFlag = VectorFlagX;
-            ushort splitIndex = 0;
+            int splitIndex = 0;
             int vectorStringLen = vectorString.Length;
-            for (ushort index = splitIndex; index < vectorStringLen; index++)
+            for (var index = splitIndex; index < vectorStringLen; index++)
             {
                 char @char = vectorString[index];
                 if (@char != SplitSymbol)
                     continue;
 
                 vector.SetValue(vectorString, splitIndex, index, vectorFlag);
-                splitIndex = (ushort)(index + 1);
+                splitIndex = index + 1;
                 vectorFlag++;
             }
 
@@ -104,15 +95,13 @@ namespace ET
 
         #region Vector3 private Extention
 
-        /// <summary>
-        /// 通过分隔符设置 Vector3 对应的值, 定义成拓展方法方便内部调用, 访问权限为私有
-        /// </summary>
+        /// <summary> 通过分隔符设置 Vector3 对应的值, 定义成拓展方法方便内部调用, 访问权限为私有 </summary>
         /// <param name="vector">需要修改的 Vector3 </param>
         /// <param name="vectorString">Vector3 字符串</param>
         /// <param name="splitIndex">分隔数值初始索引值</param>
         /// <param name="index">分隔数值终止索引值</param>
         /// <param name="vectorFlag">当前赋值标记位</param>
-        private static void SetValue(this ref Vector3 vector, string vectorString, ushort splitIndex, ushort index, byte vectorFlag)
+        private static void SetValue(this ref Vector3 vector, string vectorString, int splitIndex, int index, byte vectorFlag)
         {
             vectorStringReader.Clear();
             vectorStringReader.Append(vectorString, splitIndex, index - splitIndex);

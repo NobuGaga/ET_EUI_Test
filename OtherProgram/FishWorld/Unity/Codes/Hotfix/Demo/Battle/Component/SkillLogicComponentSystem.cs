@@ -36,14 +36,15 @@ namespace ET
             }
 
             // 当前玩家没有目标则重新寻找目标
-            UnitComponent unitComponent = self.GetUnitComponent();
+            Scene currentScene = self.CurrentScene();
+            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
             if (unitComponent == null)
             {
                 self.UseSkill(skillType, BulletConfig.DefaultTrackFishUnitId);
                 return;
             }
 
-            Unit unit = unitComponent.GetMaxScoreFish();
+            Unit unit = unitComponent.GetMaxScoreFishUnit();
             self.UseSkill(skillType, unit != null ? unit.Id : BulletConfig.DefaultTrackFishUnitId);
         }
 
@@ -92,14 +93,13 @@ namespace ET
             if (self.IsSkillEnd())
                 self.SkillEnd();
 
-            HashSet<Unit> playerUnitList = self.GetPlayerUnitList();
-            if (playerUnitList == null)
-                return;
-
-            // 先更新技能数据(PlayerSkillLogicComponent 制作结束事件派发)
-            foreach (Unit playerUnit in playerUnitList)
-                playerUnit.GetComponent<PlayerSkillComponent>().FixedUpdateBeforeFish();
+            var playerUnitList = self.GetPlayerUnitList();
+            if (playerUnitList != null)
+                ForeachHelper.Foreach(playerUnitList, FixedUpdateSkillBeforeFish);
         }
+
+        private static void FixedUpdateSkillBeforeFish(this Unit playerUnit) =>
+                            playerUnit.GetComponent<PlayerSkillComponent>().FixedUpdateBeforeFish();
 
         public static HashSet<Unit> GetPlayerUnitList(this SkillComponent self)
         {
@@ -143,8 +143,8 @@ namespace ET
             // 后面逻辑通过时间戳是否大于零表示技能是否还在效果时间
             self.IceEndTime = 0;
 
-            BattleLogicComponent battleLogicComponent = currentScene.GetBattleLogicComponent();
-            battleLogicComponent.FisheryIceSkill(false);
+            var fisheryComponent = currentScene.GetComponent<FisheryComponent>();
+            fisheryComponent.FisheryIceSkill(false);
 
             Game.EventSystem.Publish(new FisherySkillEnd
             {

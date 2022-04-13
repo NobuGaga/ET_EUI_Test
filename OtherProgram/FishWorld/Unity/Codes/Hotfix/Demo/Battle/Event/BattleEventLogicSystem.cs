@@ -1,3 +1,5 @@
+// Battle Review Before Boss Node
+
 // 战斗逻辑层事件处理
 
 using ET.EventType;
@@ -11,8 +13,8 @@ namespace ET
             switch (args.Message.SkillType)
             {
                 case SkillType.Ice:
-                    var battleLogicComponent = args.CurrentScene.GetBattleLogicComponent();
-                    battleLogicComponent.FisheryIceSkill(true);
+                    var fisheryComponent = args.CurrentScene.GetComponent<FisheryComponent>();
+                    fisheryComponent.FisheryIceSkill(true);
                     break;
             }
 

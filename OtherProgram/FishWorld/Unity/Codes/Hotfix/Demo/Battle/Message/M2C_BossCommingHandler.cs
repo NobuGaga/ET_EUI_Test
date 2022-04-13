@@ -1,4 +1,4 @@
-using ET.EventType;
+// Battle Review Before Boss Node
 
 namespace ET
 {
@@ -8,16 +8,11 @@ namespace ET
 	{
 		protected override async ETTask Run(Session session, M2C_BossComming message)
 		{
-			Scene zoneScene = session.DomainScene();
-			Scene CurrentScene = zoneScene.CurrentScene();
-
-			// Battle TODO
-			ReceiveBossComming eventData = new ReceiveBossComming() {
+			Game.EventSystem.Publish(new EventType.ReceiveBossComming()
+			{
+				ZoneScene = session.DomainScene(),
 				BossUnitConfigId = message.CfgId,
-                ZoneScene        = zoneScene,
-			};
-
-			Game.EventSystem.Publish(eventData);
+			});
 
 			await ETTask.CompletedTask;
 		}

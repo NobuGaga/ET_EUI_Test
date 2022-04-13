@@ -113,11 +113,11 @@ namespace ET
         public static ushort CheckSelfSkillShootState(this BattleLogicComponent battleLogicComponent)
         {
             Scene currentScene = battleLogicComponent.CurrentScene();
-            var shootInterval = TimeHelper.ServerNow() - battleLogicComponent.LastShootBulletTime;
+            BulletLogicComponent self = currentScene.GetComponent<BulletLogicComponent>();
+            var shootInterval = TimeHelper.ServerNow() - self.LastShootBulletTime;
             if (shootInterval < BulletConfig.ShootBulletInterval)
                 return BattleCodeConfig.ShootIntervalLimit;
 
-            BulletLogicComponent self = currentScene.GetComponent<BulletLogicComponent>();
             if (self.ShootBulletCount >= BulletConfig.ShootMaxBulletCount)
                 return BattleCodeConfig.UpperLimitBullet;
 
@@ -143,7 +143,7 @@ namespace ET
             // 因为发射出去后马上当成已经发生碰撞的子弹
             long bulletUnitId = self.GenerateOneHitBulletId();
 
-            battleLogicComponent.LastShootBulletTime = TimeHelper.ServerNow();
+            self.LastShootBulletTime = TimeHelper.ServerNow();
 
             battleLogicComponent.C2M_Fire(bulletUnitId, screenPosX, screenPosY, cannonStack, trackFishUnitId);
             battleLogicComponent.C2M_Hit(screenPosX, screenPosY, bulletUnitId, trackFishUnitId);
@@ -166,7 +166,7 @@ namespace ET
                 unitInfo.UnitId = unitId;
             }
 
-            bool isUseModelPool = BattleTestConfig.IsUseModelPool;
+            bool isUseModelPool = BattleConfig.IsUseModelPool;
 
             // 保持所有的战斗 Unit 都 Add 到 Current Scene 上, 因为 Unit 只是数据
             Unit unit = self.AddChildWithId<Unit, int>(unitInfo.UnitId, unitInfo.ConfigId, isUseModelPool);
@@ -177,7 +177,7 @@ namespace ET
             self.ShootBulletCount++;
             self.BulletIdList.Add(unitInfo.UnitId);
 
-            battleLogicComponent.LastShootBulletTime = TimeHelper.ServerNow();
+            self.LastShootBulletTime = TimeHelper.ServerNow();
 
             Game.EventSystem.Publish(new AfterUnitCreate() { CurrentScene = currentScene, Unit = unit });
         }
@@ -218,6 +218,8 @@ namespace ET
 
             // 重置自己发射子弹个数
             self.ShootBulletCount = 0;
+
+            self.LastShootBulletTime = 0;
 
             // 不在 Awake 创建, 在定义的时候 new, 在 Destroy 清理, 更改是否使用池的标识时不用改写代码
             self.BulletIdList.Clear();

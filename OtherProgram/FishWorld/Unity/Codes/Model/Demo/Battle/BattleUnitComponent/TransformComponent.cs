@@ -5,6 +5,7 @@ namespace ET
     /// <summary>
     /// 变换组件, 只跑数据逻辑, 真正的设置在 GameObjectComponent 里
     /// 这里存放逻辑相关成员变量, 逻辑数据不在视图层做改变(除了视图层重置 Transform 外)
+    /// Battle TODO 放到 Mono
     /// </summary>
 	public class TransformComponent : Entity, IAwake, IDestroy
     {

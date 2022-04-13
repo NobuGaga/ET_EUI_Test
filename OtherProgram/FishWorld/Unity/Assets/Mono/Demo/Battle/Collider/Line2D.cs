@@ -163,7 +163,7 @@ namespace ET
             Vector3 startWorldPoint = ColliderHelper.GetWorldPoint(ColliderConfig.CannonCamera, ref _drawStartPoint);
             Vector3 endWorldPoint = ColliderHelper.GetWorldPoint(ColliderConfig.CannonCamera, ref _drawEndPoint);
 
-            BattleDebug.AddLineDrawData(startWorldPoint, endWorldPoint);
+            BattleDebug.AddBulletDrawData(startWorldPoint, endWorldPoint);
         }
 #endif
     }

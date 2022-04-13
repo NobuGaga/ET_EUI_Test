@@ -26,10 +26,8 @@ namespace ET
             FishMoveHelper.InitInfo(info, roadId, liveTime, remainTime, offsetPosX, offsetPosY, offsetPosZ);
             self.Info = info;
             self.InitTransform();
-
-            unit.GetComponent<BattleUnitLogicComponent>().IsUpdate = !info.IsMoveEnd;
         }
-    } 
+    }
 
     [ObjectSystem]
     public class FishUnitComponentDestroySystem : DestroySystem<FishUnitComponent>
@@ -41,20 +39,25 @@ namespace ET
         }
     }
 
-    public static class FishUnitComponentSystem
+    internal static class FishUnitComponentSystem
     {
-        public static void FixedUpdate(this FishUnitComponent self)
+        internal static void FixedUpdate(this FishUnitComponent self)
         {
             FishMoveInfo info = self.Info;
             FishMoveHelper.FixedUpdate(info);
             
-            if (info.IsMoveTimeOut())
-                info.NextPos = FishConfig.RemovePoint;
+            if (!info.IsMoveEnd)
+            {
+                self.UpdateTransform();
+                return;
+            }
 
-            self.UpdateTransform();
+            Scene currentScene = self.DomainScene();
+            var battleLogicComponent = currentScene.GetBattleLogicComponent();
+            battleLogicComponent.RemoveUnitIdList.Add(self.Parent.Id);
         }
 
-        public static void InitTransform(this FishUnitComponent self)
+        internal static void InitTransform(this FishUnitComponent self)
         {
             Unit unit = self.Parent as Unit;
             TransformComponent transformComponent = unit.GetComponent<TransformComponent>();
@@ -77,10 +80,10 @@ namespace ET
             return string.Format(FishConfig.NameFormat, unit.ConfigId, unit.Id);
         }
 
-        public static void SetMoveSpeed(this FishUnitComponent self, float moveSpeed) => self.Info.MoveSpeed = moveSpeed;
+        internal static void SetMoveSpeed(this FishUnitComponent self, float moveSpeed) => self.Info.MoveSpeed = moveSpeed;
 
-        public static void PauseMove(this FishUnitComponent self) => self.Info.IsPause = true;
+        internal static void PauseMove(this FishUnitComponent self) => self.Info.IsPause = true;
 
-        public static void ResumeMove(this FishUnitComponent self) => self.Info.IsPause = false;
+        internal static void ResumeMove(this FishUnitComponent self) => self.Info.IsPause = false;
     }
 }

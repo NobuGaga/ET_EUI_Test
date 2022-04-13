@@ -18,8 +18,6 @@ namespace ET
             self.InitTrackPosition();
 
             self.InitTransform();
-
-            unit.GetComponent<BattleUnitLogicComponent>().IsUpdate = true;
         }
     } 
 
@@ -82,8 +80,8 @@ namespace ET
             if (trackFishUnitId == BulletConfig.DefaultTrackFishUnitId)
                 return;
 
-            var battleLogicComponent = self.DomainScene().GetBattleLogicComponent();
-            UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
+            Scene currentScene = self.DomainScene();
+            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
             Unit fishUnit = unitComponent.Get(trackFishUnitId);
             FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
             self.SetTrackDirection(fishUnitComponent.AimPointPosition);

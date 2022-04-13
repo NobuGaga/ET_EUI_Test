@@ -8,8 +8,7 @@ namespace ET
             if (trackFishUnitId == BulletConfig.DefaultTrackFishUnitId)
                 return null;
 
-            var battleLogicComponent = currentScene.GetBattleLogicComponent();
-            UnitComponent unitComponent = battleLogicComponent.GetUnitComponent();
+            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
             Unit fishUnit = unitComponent.Get(trackFishUnitId);
 
             if (fishUnit != null && !fishUnit.IsDisposed && 

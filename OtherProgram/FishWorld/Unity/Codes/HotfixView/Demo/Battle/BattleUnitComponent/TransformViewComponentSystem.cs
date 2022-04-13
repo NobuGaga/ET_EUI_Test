@@ -161,6 +161,9 @@ namespace ET
 
         private static Vector3 GetScreenPoint(this Unit self)
         {
+            if (Application.isEditor)
+                UnityEngine.Profiling.Profiler.BeginSample("TransformViewComponent GetScreenPoint");
+
             GameObjectComponent gameObjectComponent = self.GameObjectComponent();
             Camera camera = self.GetDisplayCamera();
 
@@ -168,7 +171,12 @@ namespace ET
                 return camera.WorldToScreenPoint(gameObjectComponent.Transform.position);
 
             TransformComponent transformComponent = self.TransformComponent();
-            return camera.WorldToScreenPoint(transformComponent.LogicPos);
+            Vector3 point = camera.WorldToScreenPoint(transformComponent.LogicPos);
+
+            if (Application.isEditor)
+                UnityEngine.Profiling.Profiler.BeginSample("TransformViewComponent GetScreenPoint");
+
+            return point;
         }
 
         private static Camera GetDisplayCamera(this Unit self)

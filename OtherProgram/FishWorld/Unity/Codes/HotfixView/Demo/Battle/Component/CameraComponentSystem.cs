@@ -13,13 +13,13 @@ namespace ET
 
             // Battle TODO 先不设置鱼节点变换, 因为主界面场景摄像机写死变换鱼影响到这边逻辑
             Vector3 vector;
-            if (VectorStringHelper.TryParseVector3(vectorString, out vector))
+            if (VectorStringHelper.TryParseVector(vectorString, out vector))
                 self.PlayMovePosition(vector, time);
 
             vectorString = config.CameraParamRotation;
             time = (float)config.CameraRotateTime / FishConfig.MilliSecond;
 
-            if (VectorStringHelper.TryParseVector3(vectorString, out vector))
+            if (VectorStringHelper.TryParseVector(vectorString, out vector))
                 self.PlayRotate(vector, time);
         }
 

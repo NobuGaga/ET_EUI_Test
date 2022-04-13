@@ -1,3 +1,5 @@
+// Battle Review Before Boss Node
+
 // 战斗视图层事件处理
 
 using ET.EventType;
@@ -8,7 +10,8 @@ namespace ET
     {
         protected override void Run(FisherySkillStart args)
         {
-            BattleViewComponent battleViewComponent = args.CurrentScene.GetBattleViewComponent();
+            var battleViewComponent = args.CurrentScene.GetBattleViewComponent();
+
             switch (args.SkillType)
             {
                 case SkillType.Ice:
@@ -22,7 +25,7 @@ namespace ET
     {
         protected override void Run(PlayerSkillRuning args)
         {
-            BattleViewComponent battleViewComponent = args.CurrentScene.GetBattleViewComponent();
+            var battleViewComponent = args.CurrentScene.GetBattleViewComponent();
             battleViewComponent.SkillShoot(args.PlayerUnitId, args.SkillUnit);
         }
     }

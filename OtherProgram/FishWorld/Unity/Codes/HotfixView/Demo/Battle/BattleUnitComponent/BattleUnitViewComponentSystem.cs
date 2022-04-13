@@ -50,7 +50,7 @@ namespace ET
                 return;
 
             Transform node = gameObject.transform;
-            bool isUseModelPool = BattleTestConfig.IsUseModelPool;
+            bool isUseModelPool = BattleConfig.IsUseModelPool;
             unit.AddComponent<GameObjectComponent, string, Transform>(assetBundlePath, node, isUseModelPool);
             unit.InitTransform();
             InitComponent(unit);
@@ -129,16 +129,12 @@ namespace ET
 
         public static ObjectPoolComponent GetObjectPoolComponent(this Unit unit)
         {
+            Scene currentScene = unit.DomainScene();
             UnitType unitType = unit.UnitType;
             if (unitType == UnitType.Player || unitType == UnitType.Player)
-                return unit.DomainScene().GetComponent<ObjectPoolComponent>();
+                return currentScene.GetComponent<ObjectPoolComponent>();
 
-            Scene scene = BattleTestConfig.IsAddBattleToZone ? unit.ZoneScene() : unit.DomainScene();
-            // BattleTestConfig.IsAddBattleToZone 为 true 时, 关闭应用, Zone Scene 为空
-            if (scene == null)
-                return null;
-
-            BattleViewComponent battleViewComponent = scene.GetComponent<BattleViewComponent>();
+            BattleViewComponent battleViewComponent = currentScene.GetBattleViewComponent();
             return battleViewComponent.GetComponent<ObjectPoolComponent>();
         }
     }
