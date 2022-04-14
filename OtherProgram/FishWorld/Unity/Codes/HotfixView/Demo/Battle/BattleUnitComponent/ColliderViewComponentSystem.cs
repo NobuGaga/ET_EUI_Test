@@ -8,9 +8,8 @@ namespace ET
         public override void Awake(ColliderViewComponent self)
         {
             Unit unit = self.Parent as Unit;
-            self.IsBullet = unit.UnitType == UnitType.Bullet;
             GameObjectComponent gameObjectComponent = unit.GetComponent<GameObjectComponent>();
-            int colliderId = self.IsBullet ? BulletConfig.BulletColliderID : unit.ConfigId;
+            int colliderId = unit.UnitType == UnitType.Bullet ? BulletConfig.BulletColliderID : unit.ConfigId;
             self.MonoComponent = ColliderHelper.GetColliderComponent(colliderId,
                                                                      gameObjectComponent.GameObject);
         }
@@ -29,7 +28,7 @@ namespace ET
         {
             Unit unit = self.Parent as Unit;
 
-            if (self.IsBullet)
+            if (unit.UnitType == UnitType.Bullet)
             {
                 BulletUnitComponent bulletUnit = unit.GetComponent<BulletUnitComponent>();
                 BulletMoveInfo info = bulletUnit.Info;
@@ -43,8 +42,8 @@ namespace ET
                 case UnitType.Fish:
                     TransformComponent transformComponent = unit.GetComponent<TransformComponent>();
                     FishUnitComponent fishUnitComponent = unit.GetComponent<FishUnitComponent>();
-                    fishUnitComponent.AimPointPosition = self.MonoComponent.GetFishAimPoint();
-                    ref Vector3 aimPointPos = ref fishUnitComponent.AimPointPosition;
+                    fishUnitComponent.AimPoint.Vector = self.MonoComponent.GetFishAimPoint();
+                    ref Vector3 aimPointPos = ref fishUnitComponent.AimPoint.Vector;
                     transformComponent.IsInScreen = aimPointPos.x > 0 && aimPointPos.y > 0 &&
                                 aimPointPos.x < Screen.width && aimPointPos.y < Screen.height;
                     break;

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+// Battle Review Before Boss Node
 
 namespace ET
 {
@@ -9,16 +9,17 @@ namespace ET
         {
             Scene currentScene = self.CurrentScene();
             UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
-            HashSet<Unit> fishUnitList = unitComponent.GetFishUnitList();
-            foreach (Unit fishUnit in fishUnitList)
-            {
-                AnimatorComponent animatorComponent = fishUnit.GetComponent<AnimatorComponent>();
-                FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
-                if (fishUnitComponent.Info.IsPause)
-                    animatorComponent.PauseAnimator();
-                else
-                    animatorComponent.RunAnimator();
-            }
+            ForeachHelper.Foreach(unitComponent.GetFishUnitList(), SetAnimatorState);
+        }
+
+        private static void SetAnimatorState(Unit fishUnit)
+        {
+            AnimatorComponent animatorComponent = fishUnit.GetComponent<AnimatorComponent>();
+            FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+            if (fishUnitComponent.Info.IsPause)
+                animatorComponent.PauseAnimator();
+            else
+                animatorComponent.RunAnimator();
         }
     }
 }

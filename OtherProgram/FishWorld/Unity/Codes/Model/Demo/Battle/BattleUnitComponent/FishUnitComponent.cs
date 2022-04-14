@@ -21,6 +21,6 @@ namespace ET
         public FishMoveInfo Info;
 
         /// <summary> 瞄准点, 用来定位瞄准技能特效跟, 撒网特效的点(屏幕坐标) </summary>
-        public Vector3 AimPointPosition;
+        public Vector3_Class AimPoint;
     }
 }

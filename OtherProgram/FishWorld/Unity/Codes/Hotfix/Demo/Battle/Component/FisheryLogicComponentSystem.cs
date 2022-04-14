@@ -49,15 +49,15 @@ namespace ET
             return battleLogicComponent.Result_Unit;
         }
 
-        private static void SetFishUnitPauseState(Unit playerUnit, int seatId)
+        private static bool SetFishUnitPauseState(Unit playerUnit, int seatId)
         {
-            var battleLogicComponent = playerUnit.DomainScene().GetBattleLogicComponent();
-            if (battleLogicComponent.Result_Unit != null)
-                return;
-
             var attributeComponent = playerUnit.GetComponent<NumericComponent>();
-            if (attributeComponent.GetAsInt(NumericType.Pos) == seatId)
-                battleLogicComponent.Result_Unit = playerUnit;
+            if (attributeComponent.GetAsInt(NumericType.Pos) != seatId)
+                return true;
+
+            var battleLogicComponent = playerUnit.DomainScene().GetBattleLogicComponent();
+            battleLogicComponent.Result_Unit = playerUnit;
+            return false;
         }
 
         /// <summary> 渔场冰冻技能逻辑处理 </summary>

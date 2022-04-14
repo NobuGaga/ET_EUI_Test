@@ -25,8 +25,7 @@ namespace ET
     {
         public override void Update(BattleViewComponent self)
         {
-            // Battle Warning
-            BattleLogic.Clear();
+            BattleLogic.Update();
 
             Scene currentScene = self.CurrentScene();
             if (currentScene == null)
@@ -41,7 +40,7 @@ namespace ET
             currentScene?.GetComponent<SkillComponent>().FixedUpdateBeforeFish();
             UpdateFishUnitList(battleLogicComponent, unitComponent);
             currentScene?.GetComponent<SkillComponent>().UpdateBeforeBullet();
-            UpdateBulletUnitList(self, currentScene);
+            UpdateBulletUnitList(self, currentScene, unitComponent);
         }
 
         private void UpdateFishUnitList(BattleLogicComponent battleLogicComponent, UnitComponent unitComponent)
@@ -60,19 +59,20 @@ namespace ET
             unitComponent.UpdateFishUnitList();
         }
 
-        private void UpdateBulletUnitList(BattleViewComponent self, Scene currentScene)
+        private void UpdateBulletUnitList(BattleViewComponent self, Scene currentScene, UnitComponent unitComponent)
         {
-            // Battle Warning 需要保证 BattleLogicComponent 跟 BattleViewComponent 挂在同一个 Scene 上
-            // 都通过 BattleConfig 的标记进行判断
             var battleLogicComponent = self.Parent.GetComponent<BattleLogicComponent>();
             BulletLogicComponent bulletLogicComponent = currentScene.GetComponent<BulletLogicComponent>();
+
             List<long> bulletIdList = bulletLogicComponent.BulletIdList;
             long bulletUnitId;
             Unit bulletUnit;
-            for (int index = bulletIdList.Count - 1; index >= 0; index--)
+
+            for (var index = bulletIdList.Count - 1; index >= 0; index--)
             {
                 bulletUnitId = bulletIdList[index];
                 bulletUnit = bulletLogicComponent.GetChild<Unit>(bulletUnitId);
+
                 if (bulletUnit == null)
                 {
                     Log.Error($"private BattleViewComponent.UpdateBulletUnitList bullet is not exist. bulletUnitId = { bulletUnitId }");
@@ -81,54 +81,40 @@ namespace ET
 
                 bulletUnit.FixedUpdate();
                 bulletUnit.Update();
-                CheckBulletCollide(battleLogicComponent, currentScene, bulletUnit);
+
+                if (bulletUnit.GetComponent<ColliderViewComponent>() != null)
+                    battleLogicComponent.Foreach(unitComponent.GetFishUnitList(), IsCollide, bulletUnit);
             }
         }
 
-        private void CheckBulletCollide(BattleLogicComponent battleLogicComponent, Scene currentScene, Unit bulletUnit)
+        private bool IsCollide(Unit fishUnit, Unit bulletUnit, BattleLogicComponent battleLogicComponent)
         {
-            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
-            HashSet<Unit> fishUnitList = unitComponent.GetFishUnitList();
-            if (fishUnitList == null)
-                return;
-
-            var bulletColliderViewCom = bulletUnit.GetComponent<ColliderViewComponent>();
-            if (bulletColliderViewCom == null)
-                return;
-
-            var bulletColliderMonoCom = bulletColliderViewCom.MonoComponent;
-            foreach (Unit fishUnit in fishUnitList)
-            {
-                if (!IsCanCollide(bulletUnit, fishUnit))
-                    continue;
-
-                var colliderViewComponent = fishUnit.GetComponent<ColliderViewComponent>();
-                if (colliderViewComponent == null)
-                    continue;
-
-                var colliderMonoComponent = colliderViewComponent.MonoComponent;
-                if (bulletColliderMonoCom.IsCollide(colliderMonoComponent))
-                {
-                    var bulletUnitCom = bulletUnit.GetComponent<BulletUnitComponent>();
-                    Vector3 screenPosition;
-                    if (bulletUnitCom.IsTrackBullet())
-                    {
-                        var fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
-                        screenPosition = fishUnitComponent.AimPointPosition;
-                    }
-                    else
-                        screenPosition = bulletColliderMonoCom.GetBulletCollidePoint();
-                    battleLogicComponent.Collide(screenPosition.x, screenPosition.y, bulletUnit.Id, fishUnit.Id);
-                    return;
-                }
-            }
-        }
-
-        private bool IsCanCollide(Unit bulletUnit, Unit fishUnit)
-        {
+            var colliderViewComponent = bulletUnit.GetComponent<ColliderViewComponent>();
+            var bulletColliderMonoComponent = colliderViewComponent.MonoComponent;
             var bulletUnitComponent = bulletUnit.GetComponent<BulletUnitComponent>();
             long trackFishUnitId = bulletUnitComponent.GetTrackFishUnitId();
-            return trackFishUnitId == BulletConfig.DefaultTrackFishUnitId || trackFishUnitId == fishUnit.Id;
+            if (trackFishUnitId != BulletConfig.DefaultTrackFishUnitId && trackFishUnitId != fishUnit.Id)
+                return true;
+
+            colliderViewComponent = fishUnit.GetComponent<ColliderViewComponent>();
+            if (colliderViewComponent == null)
+                return true;
+
+            var fishColliderMonoComponent = colliderViewComponent.MonoComponent;
+            if (!bulletColliderMonoComponent.IsCollide(fishColliderMonoComponent))
+                return true;
+
+            Vector3 screenPosition;
+            if (bulletUnitComponent.IsTrackBullet())
+            {
+                var fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+                screenPosition = fishUnitComponent.AimPoint.Vector;
+            }
+            else
+                screenPosition = bulletColliderMonoComponent.GetBulletCollidePoint();
+
+            battleLogicComponent.Collide(screenPosition.x, screenPosition.y, bulletUnit.Id, fishUnit.Id);
+            return false;
         }
     }
 

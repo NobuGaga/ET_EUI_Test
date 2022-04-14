@@ -6,7 +6,7 @@ namespace ET
 	[MessageHandler]
 	public class M2C_HitHandler : AMHandler<M2C_Hit>
 	{
-		protected override async ETTask Run(Session session, M2C_Hit Message)
+		protected override void Run(Session session, M2C_Hit Message)
 		{
 			Scene zoneScene = session.DomainScene();
 			Scene CurrentScene = zoneScene.CurrentScene();
@@ -21,8 +21,6 @@ namespace ET
 			};
 
 			Game.EventSystem.Publish(eventData);
-
-			await ETTask.CompletedTask;
 		}
 	}
 }

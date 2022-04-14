@@ -6,7 +6,7 @@ namespace ET
 	[MessageHandler]
 	public class M2C_RoomInfoHandler : AMHandler<M2C_RoomInfo>
 	{
-		protected override async ETTask Run(Session session, M2C_RoomInfo message)
+		protected override void Run(Session session, M2C_RoomInfo message)
 		{
 			Scene CurrentScene = session.DomainScene().CurrentScene();
 			FisheryComponent fisheryComponent = CurrentScene.GetComponent<FisheryComponent>();
@@ -24,8 +24,6 @@ namespace ET
 			};
 
 			Game.EventSystem.Publish(eventData);
-
-			await ETTask.CompletedTask;
 		}
 	}
 }

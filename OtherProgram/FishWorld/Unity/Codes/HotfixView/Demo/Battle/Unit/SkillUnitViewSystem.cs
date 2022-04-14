@@ -62,7 +62,7 @@ namespace ET
                 return SkillConfig.RemovePoint;
 
             FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
-            return fishUnitComponent.AimPointPosition;
+            return fishUnitComponent.AimPoint.Vector;
         }
 
         public static ObjectPoolComponent GetObjectPoolComponent(this SkillUnit self)

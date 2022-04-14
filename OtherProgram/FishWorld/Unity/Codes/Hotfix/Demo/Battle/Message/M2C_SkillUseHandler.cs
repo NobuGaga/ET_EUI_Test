@@ -5,7 +5,7 @@ namespace ET
     [MessageHandler]
     public class M2C_SkillUseHandler: AMHandler<M2C_SkillUse>
     {
-        protected override async ETTask Run(Session session, M2C_SkillUse message)
+        protected override void Run(Session session, M2C_SkillUse message)
         {
             if (message.Result != ErrorCode.ERR_Success)
                 return;
@@ -20,8 +20,6 @@ namespace ET
                 CurrentScene = currentScene,
                 Message = message,
             });
-
-            await ETTask.CompletedTask;
         }
     }
 }

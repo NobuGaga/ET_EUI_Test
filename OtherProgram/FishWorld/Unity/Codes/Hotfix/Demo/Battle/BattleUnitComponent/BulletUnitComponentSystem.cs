@@ -84,7 +84,7 @@ namespace ET
             UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
             Unit fishUnit = unitComponent.Get(trackFishUnitId);
             FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
-            self.SetTrackDirection(fishUnitComponent.AimPointPosition);
+            self.SetTrackDirection(fishUnitComponent.AimPoint.Vector);
         }
 
         /// <summary> 更新追踪鱼的屏幕坐标 </summary>
@@ -98,8 +98,8 @@ namespace ET
                 return;
             }
 
-            FishUnitComponent fishUnitComponent1 = fishUnit.GetComponent<FishUnitComponent>();
-            self.SetTrackDirection(fishUnitComponent1.AimPointPosition);
+            FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+            self.SetTrackDirection(fishUnitComponent.AimPoint.Vector);
         }
 
         private static void SetTrackDirection(this BulletUnitComponent self, Vector3 trackScreenPos)
@@ -107,7 +107,7 @@ namespace ET
             // 追踪鱼重新计算方向, 在逻辑层设置好追踪屏幕位置
             Unit bulletUnit = self.Parent as Unit;
             TransformComponent transformComponent = bulletUnit.GetComponent<TransformComponent>();
-            ref Vector3 bulletPosition = ref transformComponent.ScreenPos;
+            ref Vector3 bulletPosition = ref transformComponent.Info.ScreenPos;
             ref Vector2 moveDirection = ref self.Info.MoveDirection;
             float moveDirectionX = trackScreenPos.x - bulletPosition.x;
             if (Mathf.Abs(moveDirectionX) > BulletConfig.TrackDirectionFix)

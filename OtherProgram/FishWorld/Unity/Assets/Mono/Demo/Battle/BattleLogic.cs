@@ -25,8 +25,7 @@ namespace ET
             isInit = true;
         }
 
-
-        public static void Clear()
+        public static void Update()
         {
 #if UNITY_EDITOR
 

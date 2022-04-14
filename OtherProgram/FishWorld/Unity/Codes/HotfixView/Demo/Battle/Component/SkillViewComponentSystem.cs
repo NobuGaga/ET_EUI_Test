@@ -1,3 +1,5 @@
+// Battle Review Before Boss Node
+
 using System.Collections.Generic;
 
 namespace ET
@@ -8,8 +10,10 @@ namespace ET
         {
             HashSet<Unit> playerUnitList = self.GetPlayerUnitList();
             if (playerUnitList != null)
-                foreach (Unit playerUnit in playerUnitList)
-                    playerUnit.GetComponent<PlayerSkillComponent>().UpdateBeforeBullet();
+                ForeachHelper.Foreach(playerUnitList, UpdateBeforeBullet);
         }
+
+        private static void UpdateBeforeBullet(this Unit playerUnit) =>
+                            playerUnit.GetComponent<PlayerSkillComponent>().UpdateBeforeBullet();
     }
 }

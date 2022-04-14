@@ -25,6 +25,9 @@ namespace ET
 
             FishMoveHelper.InitInfo(info, roadId, liveTime, remainTime, offsetPosX, offsetPosY, offsetPosZ);
             self.Info = info;
+
+            self.AimPoint = StructureHelper.Pop_Vector3_Class();
+
             self.InitTransform();
         }
     }
@@ -36,6 +39,8 @@ namespace ET
         {
             FishMoveHelper.PushPool(self.Info);
             self.Info = null;
+            StructureHelper.PushPool(self.AimPoint);
+            self.AimPoint = null;
         }
     }
 

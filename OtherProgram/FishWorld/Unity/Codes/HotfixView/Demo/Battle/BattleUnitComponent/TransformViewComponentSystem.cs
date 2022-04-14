@@ -48,7 +48,7 @@ namespace ET
         }
 
         private static void UpdatePos(this Unit self) =>
-                                    self.SetPos(self.TransformComponent().LogicPos);
+                                    self.SetPos(self.TransformComponent().Info.LogicPos);
 
         private static void SetPos(this Unit self, Vector3 pos)
         {
@@ -60,11 +60,11 @@ namespace ET
             transform.position = pos;
             
             TransformComponent transformComponent = self.TransformComponent();
-            transformComponent.LogicLocalPos = transform.localPosition;
+            transformComponent.Info.LogicLocalPos = transform.localPosition;
         }
 
         private static void UpdateLocalPos(this Unit self) =>
-                                self.SetLocalPos(self.TransformComponent().LogicLocalPos);
+                                self.SetLocalPos(self.TransformComponent().Info.LogicLocalPos);
 
         public static void SetLocalPos(this Unit self, Vector3 localPos)
         {
@@ -76,11 +76,11 @@ namespace ET
             transform.localPosition = localPos;
             
             TransformComponent transformComponent = self.TransformComponent();
-            transformComponent.LogicPos = transform.position;
+            transformComponent.Info.LogicPos = transform.position;
         }
 
         private static void UpdateRotation(this Unit self) =>
-                                    self.SetRotation(self.TransformComponent().LogicRotation);
+                                    self.SetRotation(self.TransformComponent().Info.LogicRotation);
 
         private static void SetRotation(this Unit self, Quaternion rotation)
         {
@@ -92,11 +92,11 @@ namespace ET
             transform.rotation = rotation;
 
             TransformComponent transformComponent = self.TransformComponent();
-            transformComponent.LogicLocalRotation = transform.localRotation;
+            transformComponent.Info.LogicLocalRotation = transform.localRotation;
         }
 
         private static void UpdateLocalRotation(this Unit self) =>
-                                self.SetLocalRotation(self.TransformComponent().LogicLocalRotation);
+                                self.SetLocalRotation(self.TransformComponent().Info.LogicLocalRotation);
 
         public static void SetLocalRotation(this Unit self, Quaternion localRotation)
         {
@@ -108,11 +108,11 @@ namespace ET
             transform.localRotation = localRotation;
 
             TransformComponent transformComponent = self.TransformComponent();
-            transformComponent.LogicRotation = transform.rotation;
+            transformComponent.Info.LogicRotation = transform.rotation;
         }
 
         private static void UpdateScale(this Unit self) =>
-                                self.SetScale(self.TransformComponent().LogicScale);
+                                self.SetScale(self.TransformComponent().Info.LogicScale);
 
         private static void SetScale(this Unit self, Vector3 scale)
         {
@@ -122,7 +122,7 @@ namespace ET
         }
 
         private static void UpdateForward(this Unit self) =>
-                                        self.SetForward(self.TransformComponent().LogicForward);
+                                        self.SetForward(self.TransformComponent().Info.LogicForward);
 
         public static void SetForward(this Unit self, Vector3 forward)
         {
@@ -150,10 +150,10 @@ namespace ET
             if (!transformComponent.IsScreenPosDirty)
                 return;
 
-            transformComponent.ScreenPos = self.GetScreenPoint();
+            transformComponent.Info.ScreenPos = self.GetScreenPoint();
             transformComponent.IsScreenPosDirty = false;
 
-            ref Vector3 pos = ref transformComponent.ScreenPos;
+            ref Vector3 pos = ref transformComponent.Info.ScreenPos;
 
             transformComponent.IsInScreen = pos.x > 0 && pos.y > 0 &&
                                             pos.x < Screen.width && pos.y < Screen.height;
@@ -171,7 +171,7 @@ namespace ET
                 return camera.WorldToScreenPoint(gameObjectComponent.Transform.position);
 
             TransformComponent transformComponent = self.TransformComponent();
-            Vector3 point = camera.WorldToScreenPoint(transformComponent.LogicPos);
+            Vector3 point = camera.WorldToScreenPoint(transformComponent.Info.LogicPos);
 
             if (Application.isEditor)
                 UnityEngine.Profiling.Profiler.BeginSample("TransformViewComponent GetScreenPoint");

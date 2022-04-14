@@ -35,11 +35,15 @@ namespace ET
 
 		public int Argument_Integer;
 
+		public Unit Argument_Unit;
+
 		public Unit Result_Unit;
 
 		public Action<Unit, bool> Action_Unit_Bool;
 
-		public Action<Unit, int> Action_Unit_Integer;
+		public Func<Unit, int, bool> BreakFunc_Unit_Integer;
+
+		public Func<Unit, Unit, BattleLogicComponent, bool> BreakFunc_Unit_Unit_Logic;
 
 		#endregion
 	}

@@ -63,7 +63,7 @@ namespace ET
                 var fisheryComponent = currentScene.GetComponent<FisheryComponent>();
                 int seatId = fisheryComponent.GetSeatId(playerUnitId);
                 FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
-                Vector3 screenPosition = fishUnitComponent.AimPointPosition;
+                Vector3 screenPosition = fishUnitComponent.AimPoint.Vector;
                 self.RotateCannon(seatId, ref screenPosition.x, ref screenPosition.y, false);
 
                 if (!isSelf || !self.IsCanSkillShoot(true))
@@ -104,7 +104,7 @@ namespace ET
                 return;
 
             FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
-            Vector3 screenPosition = fishUnitComponent.AimPointPosition;
+            Vector3 screenPosition = fishUnitComponent.AimPoint.Vector;
             self.RotateCannon(ref screenPosition.x, ref screenPosition.y, isPlayAnimation);
         }
 
@@ -156,7 +156,7 @@ namespace ET
                 return;
 
             FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
-            Vector3 screenPosition = fishUnitComponent.AimPointPosition;
+            Vector3 screenPosition = fishUnitComponent.AimPoint.Vector;
             long trackFishUnitId = fishUnit.Id;
             self.CallLogicShootBullet(ref screenPosition.x, ref screenPosition.y, ref trackFishUnitId);
         }

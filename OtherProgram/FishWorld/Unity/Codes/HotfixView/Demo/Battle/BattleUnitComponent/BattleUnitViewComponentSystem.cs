@@ -86,16 +86,12 @@ namespace ET
 
         private void InitComponent(Unit unit)
         {
-            switch (unit.UnitType)
-            {
-                case UnitType.Fish:
-                    unit.AddComponent<ColliderViewComponent>();
-                    unit.AddComponent<AnimatorComponent>();
-                    break;
-                case UnitType.Bullet:
-                    unit.AddComponent<ColliderViewComponent>();
-                    break;
-            }
+            unit.AddComponent<ColliderViewComponent>();
+
+            if (unit.UnitType == UnitType.Bullet)
+                return;
+
+            unit.AddComponent<AnimatorComponent>(BattleConfig.IsUseModelPool).Reset();
         }
     }
 
@@ -110,14 +106,14 @@ namespace ET
         public static void Update(this Unit self)
         {
             TransformComponent transformComponent = self.GetComponent<TransformComponent>();
-            self.SetLocalPos(transformComponent.LogicLocalPos);
+            self.SetLocalPos(transformComponent.Info.LogicLocalPos);
             switch (self.UnitType)
             {
                 case UnitType.Fish:
-                    self.SetForward(transformComponent.LogicForward);
+                    self.SetForward(transformComponent.Info.LogicForward);
                     break;
                 case UnitType.Bullet:
-                    self.SetLocalRotation(transformComponent.LogicLocalRotation);
+                    self.SetLocalRotation(transformComponent.Info.LogicLocalRotation);
                     break;
             }
 

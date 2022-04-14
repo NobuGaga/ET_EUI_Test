@@ -6,7 +6,7 @@ namespace ET
 	[MessageHandler]
 	public class M2C_ExchangeAreaHandler : AMHandler<M2C_ExchangeArea>
 	{
-		protected override async ETTask Run(Session session, M2C_ExchangeArea message)
+		protected override void Run(Session session, M2C_ExchangeArea message)
 		{
 			Scene currentScene = session.DomainScene().CurrentScene();
 			FisheryComponent fisheryComponent = currentScene.GetComponent<FisheryComponent>();
@@ -17,8 +17,6 @@ namespace ET
 			{
 				FisheryComponent = fisheryComponent,
 			});
-
-			await ETTask.CompletedTask;
 		}
 	}
 }

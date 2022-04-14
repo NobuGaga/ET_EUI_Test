@@ -9,7 +9,7 @@ namespace ET
     /// 优化热更层使用 Foreach, 这里用来特殊处理 HashSet 带参数的遍历
     /// 对应遍历对象的无参数拓展在这里使用私有实现
     /// </summary>
-    internal static class BattleLogicComponentForeachSystem
+    public static class BattleLogicComponentForeachSystem
     {
         internal static void Foreach(this BattleLogicComponent self, HashSet<Unit> hashSet,
                                    Action<Unit, bool> action, bool boolArgument)
@@ -22,7 +22,7 @@ namespace ET
             self.Action_Unit_Bool = null;
         }
 
-        private static void Action_Unit_Bool(this Unit unit)
+        private static void Action_Unit_Bool(Unit unit)
         {
             Scene scene = unit.DomainScene();
             BattleLogicComponent self = scene.GetBattleLogicComponent();
@@ -30,21 +30,40 @@ namespace ET
         }
 
         internal static void Foreach(this BattleLogicComponent self, HashSet<Unit> hashSet,
-                                   Action<Unit, int> action, int integerArgument)
+                                   Func<Unit, int, bool> func, int intArgument)
         {
-            self.Action_Unit_Integer = action;
-            self.Argument_Integer = integerArgument;
+            self.BreakFunc_Unit_Integer = func;
+            self.Argument_Integer = intArgument;
 
-            ForeachHelper.Foreach(hashSet, Action_Unit_Integer);
+            ForeachHelper.Foreach(hashSet, BreakFunc_Unit_Integer);
 
-            self.Action_Unit_Integer = null;
+            self.BreakFunc_Unit_Integer = null;
         }
 
-        private static void Action_Unit_Integer(this Unit unit)
+        private static bool BreakFunc_Unit_Integer(Unit unit)
         {
             Scene scene = unit.DomainScene();
             BattleLogicComponent self = scene.GetBattleLogicComponent();
-            self.Action_Unit_Integer(unit, self.Argument_Integer);
+            return self.BreakFunc_Unit_Integer(unit, self.Argument_Integer);
+        }
+
+        public static void Foreach(this BattleLogicComponent self, HashSet<Unit> hashSet,
+                                   Func<Unit, Unit, BattleLogicComponent, bool> func,
+                                   Unit unitArgument)
+        {
+            self.BreakFunc_Unit_Unit_Logic = func;
+            self.Argument_Unit = unitArgument;
+
+            ForeachHelper.Foreach(hashSet, BreakFunc_Unit_Unit_Logic);
+
+            self.BreakFunc_Unit_Unit_Logic = null;
+        }
+
+        private static bool BreakFunc_Unit_Unit_Logic(Unit unit)
+        {
+            Scene scene = unit.DomainScene();
+            BattleLogicComponent self = scene.GetBattleLogicComponent();
+            return self.BreakFunc_Unit_Unit_Logic(unit, self.Argument_Unit, self);
         }
     }
 }

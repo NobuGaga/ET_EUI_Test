@@ -6,7 +6,7 @@ namespace ET
 	[MessageHandler]
 	public class M2C_FireHandler : AMHandler<M2C_Fire>
 	{
-		protected override async ETTask Run(Session session, M2C_Fire message)
+		protected override void Run(Session session, M2C_Fire message)
 		{
 			Scene zoneScene = session.DomainScene();
 			Scene CurrentScene = zoneScene.CurrentScene();
@@ -35,8 +35,6 @@ namespace ET
 				TouchPosY = message.TouchPosY,
 				Message = message,
 			});
-
-			await ETTask.CompletedTask;
 		}
 	}
 }

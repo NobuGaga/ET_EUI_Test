@@ -7,6 +7,7 @@ namespace ET
     {
         public override void Awake(TransformComponent self)
         {
+            self.Info = TransformHelper.PopInfo();
             self.NodeName = TransformDefaultConfig.DefaultName;
             self.ResetTransform();
         }
@@ -15,7 +16,12 @@ namespace ET
     [ObjectSystem]
     public class TransformComponentDestroySystem : DestroySystem<TransformComponent>
     {
-        public override void Destroy(TransformComponent self) => self.NodeName = null;
+        public override void Destroy(TransformComponent self)
+        {
+            TransformHelper.PushPool(self.Info);
+            self.Info = null;
+            self.NodeName = null;
+        }
     }
 
     /// <summary>
@@ -28,37 +34,37 @@ namespace ET
     {
         public static void SetPos(this TransformComponent self, Vector3 Pos)
         {
-            self.LogicPos = Pos;
+            self.Info.LogicPos = Pos;
             self.IsScreenPosDirty = true;
         }
 
         public static void SetLocalPos(this TransformComponent self, Vector3 LocalPos)
         {
-            self.LogicLocalPos = LocalPos;
+            self.Info.LogicLocalPos = LocalPos;
             self.IsScreenPosDirty = true;
         }
 
         public static void SetRotation(this TransformComponent self, Quaternion Rotation)
         {
-            self.LogicRotation = Rotation;
+            self.Info.LogicRotation = Rotation;
             self.IsScreenPosDirty = true;
         }
 
         public static void SetLocalRotation(this TransformComponent self, Quaternion LocalRotation)
         {
-            self.LogicLocalRotation = LocalRotation;
+            self.Info.LogicLocalRotation = LocalRotation;
             self.IsScreenPosDirty = true;
         }
 
         public static void SetScale(this TransformComponent self, Vector3 Scale)
         {
-            self.LogicScale = Scale;
+            self.Info.LogicScale = Scale;
             self.IsScreenPosDirty = true;
         }
 
         public static void SetForward(this TransformComponent self, Vector3 Forward)
         {
-            self.LogicForward = Forward;
+            self.Info.LogicForward = Forward;
             self.IsScreenPosDirty = true;
         }
 
@@ -71,7 +77,7 @@ namespace ET
                 self.SetScale(TransformDefaultConfig.DefaultScale);
 
             self.SetForward(TransformDefaultConfig.DefaultForward);
-            self.ScreenPos = TransformDefaultConfig.DefaultScreenPos;
+            self.Info.ScreenPos = TransformDefaultConfig.DefaultScreenPos;
         }
     }
 }
