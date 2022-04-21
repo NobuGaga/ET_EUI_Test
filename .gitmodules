@@ -4,3 +4,6 @@
 [submodule "ET_framework/ET-EUI"]
 	path = ET_framework/ET-EUI
 	url = https://github.com/zzjfengqing/ET-EUI.git
+[submodule "ThirdParty/Debugger"]
+	path = ThirdParty/Debugger
+	url = https://github.com/FlameskyDexive/Debugger
