@@ -18,6 +18,8 @@ namespace ET
         }
     }
 
+    [FriendClass(typeof(SkillComponent))]
+    [FriendClass(typeof(PlayerSkillComponent))]
     public static class SkillLogicComponentSystem
     {
         public static void UseSkill(this BattleLogicComponent self, int skillType)

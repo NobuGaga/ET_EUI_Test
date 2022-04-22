@@ -8,8 +8,11 @@ namespace ET
     /// <summary> 碰撞体辅助类, 避免反复获取创建相同的碰撞体 </summary>
     public static class ColliderHelper
     {
-        private const ushort DefaultModelColliderCount = 32;
-        private const ushort MaxUpdateEntityCount = 1024;
+        /// <summary> 模型预设碰撞节点上限 </summary>
+        private const ushort DefaultModelColliderCount = 8;
+
+        /// <summary> 渔场最多存在多少个参与碰撞的实体数 </summary>
+        private const ushort MaxUpdateEntityCount = 512;
 
         private static Dictionary<int, ColliderMonoComponent> colliderComponentMap;
 
@@ -46,13 +49,13 @@ namespace ET
             if (colliderComponentMap.ContainsKey(instanceID))
                 return colliderComponentMap[instanceID];
 
-            ColliderMonoComponent colliderComponent = new ColliderMonoComponent(colliderId, gameObject);
-
-            colliderComponent.BonesTransList = GetModelBonesList(gameObject.transform, colliderId != 1);
-            colliderComponent.ColliderList = CreateColliderList(colliderId);
+            var bonesTransformArray = GetModelBonesList(gameObject.transform, colliderId != 1);
+            var colliderArray = CreateColliderList(colliderId);
+            ColliderMonoComponent colliderComponent = new ColliderMonoComponent(colliderId, gameObject,
+                                                                                colliderArray,
+                                                                                bonesTransformArray);
 
             colliderComponentMap.Add(instanceID, colliderComponent);
-
             return colliderComponent;
         }
 
@@ -141,7 +144,7 @@ namespace ET
             switch (cameraType)
             {
                 case ColliderConfig.FishCamera:
-                    return Camera.main.WorldToScreenPoint(worldPoint);
+                    return ReferenceHelper.FishCamera.WorldToScreenPoint(worldPoint);
                 case ColliderConfig.CannonCamera:
                     return ReferenceHelper.CannoCamera.WorldToScreenPoint(worldPoint);
             }
@@ -155,7 +158,7 @@ namespace ET
             switch (cameraType)
             {
                 case ColliderConfig.FishCamera:
-                    return Camera.main.ScreenToWorldPoint(screenPoint);
+                    return ReferenceHelper.FishCamera.ScreenToWorldPoint(screenPoint);
                 case ColliderConfig.CannonCamera:
                     return ReferenceHelper.CannoCamera.ScreenToWorldPoint(screenPoint);
             }

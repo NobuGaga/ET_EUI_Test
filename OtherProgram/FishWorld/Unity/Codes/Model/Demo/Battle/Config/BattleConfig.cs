@@ -10,6 +10,6 @@ namespace ET
 		public static bool IsAddToCurrentScene = !IsAddToZoneScene;
 
 		/// <summary> 是否在创建 Battle Unit 跟 Component 的时候使用池 </summary>
-		public const bool IsUseModelPool = false;
+		public static bool IsUseModelPool = true;
 	}
 }

@@ -13,7 +13,7 @@ namespace ET
         public const ushort BulletUnitConfigId = 0;
 
         /// <summary> 默认子弹追踪的鱼 Unit ID </summary>
-        public const ushort DefaultTrackFishUnitId = 0;
+        public const long DefaultTrackFishUnitId = 0;
 
         /// <summary> 追踪速度方向修正值, 小于这个值则用回之前的速度值 </summary>
         public const float TrackDirectionFix = 0.1f;

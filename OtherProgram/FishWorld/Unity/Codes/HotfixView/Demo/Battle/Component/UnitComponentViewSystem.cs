@@ -13,17 +13,20 @@ namespace ET
                              ForeachHelper.Foreach(self.GetFishUnitList(), BattleViewUnit.Update);
     }
 
+    [FriendClass(typeof(Unit))]
     public class RemoveUnit_UnitComponent : AEvent<RemoveUnit>
     {
         protected override void Run(RemoveUnit args)
         {
             UnitComponent unitComponent = args.CurrentScene.GetComponent<UnitComponent>();
             Unit unit = unitComponent.Get(args.UnitId);
-            if (unit.UnitType != UnitType.Fish)
+            if (unit.Type != UnitType.Fish)
                 return;
 
             AnimatorComponent animatorComponent = unit.GetComponent<AnimatorComponent>();
             animatorComponent.PauseAnimator();
+
+            BattleLogic.Remove(args.UnitId);
         }
     }
 }

@@ -4,6 +4,7 @@ namespace ET
     /// 视图层拓展 CannonComponent 方法
     /// CannonComponent 挂在 Player 类型的 Unit 下
     /// </summary>
+    [FriendClass(typeof(CannonComponent))]
     public static class CannonComponenViewtSystem
     {
         public static void PlayAnimation(this CannonComponent self)

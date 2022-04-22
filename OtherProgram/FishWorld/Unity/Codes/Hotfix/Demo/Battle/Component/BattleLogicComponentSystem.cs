@@ -9,6 +9,7 @@ namespace ET
     {
         public override void Awake(BattleLogicComponent self)
         {
+            BattleLogicComponent.Instance = self;
             self.FireInfo = new C2M_Fire();
             self.HitInfo = new C2M_Hit();
             self.UseSkillInfo = new C2M_SkillUse();
@@ -20,6 +21,7 @@ namespace ET
     {
         public override void Destroy(BattleLogicComponent self)
         {
+            BattleLogicComponent.Instance = null;
             self.FireInfo = null;
             self.HitInfo = null;
             self.UseSkillInfo = null;

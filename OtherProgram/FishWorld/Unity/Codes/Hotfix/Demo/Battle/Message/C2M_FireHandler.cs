@@ -1,5 +1,6 @@
 namespace ET
 {
+    [FriendClass(typeof(BattleLogicComponent))]
 	public static class C2M_FireHandler
 	{
 		public static void C2M_Fire(this BattleLogicComponent self, long bulletUnitId,

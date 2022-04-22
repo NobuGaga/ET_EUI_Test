@@ -19,5 +19,10 @@ namespace ET
 
         /// <summary> 当前子弹局部坐标 </summary>
         public Vector3 CurrentLocalPos;
+
+        /// <summary>
+        /// 屏幕坐标, 暂时只有子弹用到, 放子弹类里, 在 HotfixView 赋值
+        /// </summary>
+        public Vector3 ScreenPos;
     }
 }

@@ -13,9 +13,11 @@ namespace ET
 	/// </summary>
 	public class BattleLogicComponent : Entity, IAwake, IDestroy
 	{
-        #region Network Class
+		public static BattleLogicComponent Instance;
 
-        public C2M_Fire FireInfo;
+		#region Network Class
+
+		public C2M_Fire FireInfo;
 
 		public C2M_Hit HitInfo;
 

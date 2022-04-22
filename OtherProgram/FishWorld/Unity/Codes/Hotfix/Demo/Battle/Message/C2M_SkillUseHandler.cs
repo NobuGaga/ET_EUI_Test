@@ -1,5 +1,6 @@
 namespace ET
 {
+    [FriendClass(typeof(BattleLogicComponent))]
 	public static class C2M_SkillUseHandler
     {
 		public static void C2M_SkillUse(this BattleLogicComponent self, int skillType, long trackFishUnitId)

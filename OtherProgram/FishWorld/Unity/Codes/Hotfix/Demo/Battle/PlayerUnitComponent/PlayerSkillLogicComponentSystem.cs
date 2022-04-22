@@ -20,6 +20,9 @@ namespace ET
                              self.SkillTypeList.Clear();
     }
 
+    [FriendClass(typeof(Unit))]
+    [FriendClass(typeof(FishUnitComponent))]
+    [FriendClass(typeof(PlayerSkillComponent))]
     public static class PlayerSkillLogicComponentSystem
     {
         public static void Set(this PlayerSkillComponent self, M2C_SkillUse message)
@@ -90,9 +93,6 @@ namespace ET
                 if (skillUnit.IsSkillEnd())
                     skillUnit.SkillEnd(playerUnit.Id);
 
-                if (skillUnit.IsInSkill())
-                    skillUnit.FixedUpdateBeforeFish();
-
                 // 技能 CD 结束且技能不生效则移除, 技能 CD 时间戳不被修改
                 if (skillUnit.IsCdEnd() && !skillUnit.IsRunning())
                 {
@@ -116,8 +116,7 @@ namespace ET
             UnitComponent unitComponent = self.DomainScene().GetComponent<UnitComponent>();
             Unit fishUnit = unitComponent.Get(trackFishUnitId);
 
-            if (fishUnit != null && !fishUnit.IsDisposed &&
-                fishUnit.GetComponent<TransformComponent>().IsInScreen)
+            if (fishUnit != null && !fishUnit.IsDisposed && fishUnit.FishUnitComponent.IsInScreen)
                 return;
 
             fishUnit = unitComponent.GetMaxScoreFishUnit();

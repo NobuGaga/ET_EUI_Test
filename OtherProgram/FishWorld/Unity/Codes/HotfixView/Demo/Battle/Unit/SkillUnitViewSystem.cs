@@ -4,6 +4,12 @@ using ET.EventType;
 
 namespace ET
 {
+    [FriendClass(typeof(Unit))]
+    [FriendClass(typeof(SkillUnit))]
+    [FriendClass(typeof(PlayerSkillComponent))]
+    [FriendClass(typeof(FishUnitComponent))]
+    [FriendClass(typeof(GameObjectComponent))]
+    [FriendClass(typeof(UIFisheriesLowerEffectComponent))]
     public static class SkillUnitViewSystem
     {
         public static void AddGameObjectComponent(this SkillUnit self, string assetBundlePath, Transform node)
@@ -61,7 +67,7 @@ namespace ET
             if (fishUnit == null)
                 return SkillConfig.RemovePoint;
 
-            FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+            FishUnitComponent fishUnitComponent = fishUnit.FishUnitComponent;
             return fishUnitComponent.AimPoint.Vector;
         }
 
@@ -126,14 +132,14 @@ namespace ET
             if (args.SkillUnit.SkillType == SkillType.Ice)
                 return;
 
-            InitModel(args.CurrentScene, args.SkillUnit).Coroutine();
+            InitModel(args.SkillUnit).Coroutine();
         }
 
         /// <summary>
         /// 初始化加载技能预设模型
         /// 外部使用 xxx.Coroutine() 调用, 不用等待返回值, 这里异步加载实例化完后逻辑交由
         /// </summary>
-        private async ETTask InitModel(Scene currentScene, SkillUnit unit)
+        private async ETTask InitModel(SkillUnit unit)
         {
             var ret = TryGetAssetPathAndName(unit);
             string assetBundlePath = ret.Item1;
@@ -144,7 +150,7 @@ namespace ET
 
             // 这里会抛出异常
             if (gameObject == null)
-                gameObject = await ObjectInstantiateHelper.InitModel(currentScene, unit, assetBundlePath, assetName);
+                gameObject = await ObjectInstantiateHelper.InitModel(unit, assetBundlePath, assetName);
 
             // Unit 为 null 则已经被释放掉 
             if (gameObject != null)

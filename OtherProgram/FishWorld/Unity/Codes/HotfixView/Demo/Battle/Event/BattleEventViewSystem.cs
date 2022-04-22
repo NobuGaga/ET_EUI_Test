@@ -6,13 +6,13 @@ using ET.EventType;
 
 namespace ET
 {
-    public class BattleEventL2V_FisherySkillStartSystem : AEvent<FisherySkillStart>
+    public class BattleEventL2V_ReceiveSkillUseSystem : AEvent<ReceiveSkillUse>
     {
-        protected override void Run(FisherySkillStart args)
+        protected override void Run(ReceiveSkillUse args)
         {
             var battleViewComponent = args.CurrentScene.GetBattleViewComponent();
 
-            switch (args.SkillType)
+            switch (args.Message.SkillType)
             {
                 case SkillType.Ice:
                     battleViewComponent.FisheryIceSkill();
@@ -21,12 +21,8 @@ namespace ET
         }
     }
 
-    public class BattleEventL2V_FisherySkillRuningSystem : AEvent<PlayerSkillRuning>
+    public class BattleEventL2V_RemoveBulletUnitSystem : AEvent<RemoveBulletUnit>
     {
-        protected override void Run(PlayerSkillRuning args)
-        {
-            var battleViewComponent = args.CurrentScene.GetBattleViewComponent();
-            battleViewComponent.SkillShoot(args.PlayerUnitId, args.SkillUnit);
-        }
+        protected override void Run(RemoveBulletUnit args) => BattleLogic.Remove(args.UnitId);
     }
 }

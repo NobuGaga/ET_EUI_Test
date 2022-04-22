@@ -12,10 +12,16 @@ namespace ET
         public Vector3 LogicScale;
         public Vector3 LogicForward;
 
-        /// <summary>
-        /// 屏幕坐标, 放在 Model 层, 但是计算要在 HotfixView 层进行(因为要用到 Camera)
-        /// 因此赋值在 HotfixView 层进行, 但逻辑执行还是在 Hotfix 里
-        /// </summary>
-        public Vector3 ScreenPos;
+        public void Update(FishMoveInfo info)
+        {
+            LogicLocalPos = info.NextPos;
+            LogicForward = info.NextForward;
+        }
+
+        public void Update(BulletMoveInfo info)
+        {
+            LogicLocalPos = info.CurrentLocalPos;
+            LogicLocalRotation = info.CurrentRotation;
+        }
     }
 }

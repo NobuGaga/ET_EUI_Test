@@ -3,15 +3,17 @@ using UnityEngine;
 namespace ET
 {
     [ObjectSystem]
+    [FriendClass(typeof(Unit))]
     public class ColliderViewComponentAwakeSystem : AwakeSystem<ColliderViewComponent>
     {
         public override void Awake(ColliderViewComponent self)
         {
             Unit unit = self.Parent as Unit;
-            GameObjectComponent gameObjectComponent = unit.GetComponent<GameObjectComponent>();
-            int colliderId = unit.UnitType == UnitType.Bullet ? BulletConfig.BulletColliderID : unit.ConfigId;
-            self.MonoComponent = ColliderHelper.GetColliderComponent(colliderId,
-                                                                     gameObjectComponent.GameObject);
+            var gameObjectComponent = unit.GameObjectComponent as GameObjectComponent;
+            int colliderId = unit.Type == UnitType.Bullet ? BulletConfig.BulletColliderID
+                                                          : unit.ConfigId;
+            self.ColliderMonoComponent = ColliderHelper.GetColliderComponent(colliderId,
+                                                        gameObjectComponent.GameObject);
         }
     } 
 
@@ -19,34 +21,34 @@ namespace ET
     public class ColliderViewComponentDestroySystem : DestroySystem<ColliderViewComponent>
     {
         public override void Destroy(ColliderViewComponent self) =>
-                             self.MonoComponent = null;
+                             self.ColliderMonoComponent = null;
     }
 
+    [FriendClass(typeof(Unit))]
+    [FriendClass(typeof(FishUnitComponent))]
+    [FriendClass(typeof(BulletUnitComponent))]
+    [FriendClass(typeof(ColliderViewComponent))]
     public static class ColliderViewComponentSystem
     {
-        public static void Update(this ColliderViewComponent self)
+        public static void Update(this ColliderViewComponent self, Unit unit)
         {
-            Unit unit = self.Parent as Unit;
-
-            if (unit.UnitType == UnitType.Bullet)
+            if (unit.Type == UnitType.Bullet)
             {
-                BulletUnitComponent bulletUnit = unit.GetComponent<BulletUnitComponent>();
-                BulletMoveInfo info = bulletUnit.Info;
-                self.MonoComponent.SetMoveDirection(info.MoveDirection);
+                var bulletUnitComponent = unit.BulletUnitComponent;
+                BulletMoveInfo info = bulletUnitComponent.Info;
+                self.ColliderMonoComponent.SetMoveDirection(info.MoveDirection);
             }
 
-            self.MonoComponent.UpdateColliderCenter();
+            self.ColliderMonoComponent.UpdateColliderCenter();
 
-            switch (unit.UnitType)
+            if (unit.Type == UnitType.Fish)
             {
-                case UnitType.Fish:
-                    TransformComponent transformComponent = unit.GetComponent<TransformComponent>();
-                    FishUnitComponent fishUnitComponent = unit.GetComponent<FishUnitComponent>();
-                    fishUnitComponent.AimPoint.Vector = self.MonoComponent.GetFishAimPoint();
-                    ref Vector3 aimPointPos = ref fishUnitComponent.AimPoint.Vector;
-                    transformComponent.IsInScreen = aimPointPos.x > 0 && aimPointPos.y > 0 &&
-                                aimPointPos.x < Screen.width && aimPointPos.y < Screen.height;
-                    break;
+                FishUnitComponent fishUnitComponent = unit.FishUnitComponent;
+                fishUnitComponent.AimPoint.Vector = self.ColliderMonoComponent.GetFishAimPoint();
+                Vector3 aimPointPos = fishUnitComponent.AimPoint.Vector;
+                fishUnitComponent.IsInScreen = aimPointPos.x > 0 && aimPointPos.y > 0 &&
+                                               aimPointPos.x < Screen.width &&
+                                               aimPointPos.y < Screen.height;
             }
         }
     }

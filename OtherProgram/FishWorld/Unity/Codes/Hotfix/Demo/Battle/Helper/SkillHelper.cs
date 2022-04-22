@@ -1,5 +1,7 @@
 namespace ET
 {
+    [FriendClass(typeof(Unit))]
+    [FriendClass(typeof(FishUnitComponent))]
     public static class SkillHelper
     {
         /// <summary> 获取追踪鱼 Unit 只有通过合法性检测才会返回非空值</summary>
@@ -11,8 +13,7 @@ namespace ET
             UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
             Unit fishUnit = unitComponent.Get(trackFishUnitId);
 
-            if (fishUnit != null && !fishUnit.IsDisposed && 
-                fishUnit.GetComponent<TransformComponent>().IsInScreen)
+            if (fishUnit != null && !fishUnit.IsDisposed && fishUnit.FishUnitComponent.IsInScreen)
                 return fishUnit;
 
             return null;

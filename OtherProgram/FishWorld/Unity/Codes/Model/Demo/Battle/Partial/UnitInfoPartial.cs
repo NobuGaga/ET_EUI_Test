@@ -4,13 +4,12 @@ namespace ET
 {
 	public partial class UnitInfo
 	{
-		public UnitType UnitType => (UnitType)Type;
-
 		public void InitBulletInfo(int seatId) =>
-			InitBulletInfo(seatId, BulletConfig.DefaultBulletUnitId, BulletConfig.DefaultTrackFishUnitId);
+					InitBulletInfo(seatId, BulletConfig.DefaultBulletUnitId,
+										   BulletConfig.DefaultTrackFishUnitId);
 
 		public void InitBulletInfo(int seatId, long trackFishUnitId) =>
-			InitBulletInfo(seatId, BulletConfig.DefaultBulletUnitId, trackFishUnitId);
+					InitBulletInfo(seatId, BulletConfig.DefaultBulletUnitId, trackFishUnitId);
 
 		/// <summary> 初始化子弹类型的 Unit Info </summary>
 		/// <param name="seatId">座位 ID</param>
@@ -20,7 +19,7 @@ namespace ET
         {
 			UnitId = bulletUnitId;
 			ConfigId = BulletConfig.BulletUnitConfigId;
-			Type = (int)UnitType.Bullet;
+			Type = UnitType.Bullet;
 
 			if (Ks == null)
 				Ks = new List<int>() { NumericType.Pos, NumericType.TrackFishId };

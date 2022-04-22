@@ -9,10 +9,11 @@ namespace ET
     /// 优化热更层使用 Foreach, 这里用来特殊处理 HashSet 带参数的遍历
     /// 对应遍历对象的无参数拓展在这里使用私有实现
     /// </summary>
+    [FriendClass(typeof(BattleLogicComponent))]
     public static class BattleLogicComponentForeachSystem
     {
         internal static void Foreach(this BattleLogicComponent self, HashSet<Unit> hashSet,
-                                   Action<Unit, bool> action, bool boolArgument)
+                                     Action<Unit, bool> action, bool boolArgument)
         {
             self.Action_Unit_Bool = action;
             self.Argument_Bool = boolArgument;
@@ -30,7 +31,7 @@ namespace ET
         }
 
         internal static void Foreach(this BattleLogicComponent self, HashSet<Unit> hashSet,
-                                   Func<Unit, int, bool> func, int intArgument)
+                                     Func<Unit, int, bool> func, int intArgument)
         {
             self.BreakFunc_Unit_Integer = func;
             self.Argument_Integer = intArgument;
@@ -61,8 +62,7 @@ namespace ET
 
         private static bool BreakFunc_Unit_Unit_Logic(Unit unit)
         {
-            Scene scene = unit.DomainScene();
-            BattleLogicComponent self = scene.GetBattleLogicComponent();
+            var self = BattleLogicComponent.Instance;
             return self.BreakFunc_Unit_Unit_Logic(unit, self.Argument_Unit, self);
         }
     }

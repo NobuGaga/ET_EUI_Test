@@ -12,6 +12,11 @@ namespace ET
         }
     }
 
+    [FriendClass(typeof(PlayerComponent))]
+    [FriendClass(typeof(FisheryComponent))]
+    [FriendClass(typeof(BattleLogicComponent))]
+    [FriendClass(typeof(Unit))]
+    [FriendClass(typeof(FishUnitComponent))]
     public static class FisheryLogicComponentSystem
     {
         private static int GetSeatId(this Unit playerUnit)
@@ -72,7 +77,7 @@ namespace ET
         
         private static void SetFishUnitPauseState(Unit fishUnit, bool isPause)
         {
-            FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+            FishUnitComponent fishUnitComponent = fishUnit.FishUnitComponent;
             fishUnitComponent.Info.IsPause = isPause;
         }
 
@@ -89,7 +94,7 @@ namespace ET
 
         private static void QuickMove(Unit fishUnit)
         {
-            FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+            FishUnitComponent fishUnitComponent = fishUnit.FishUnitComponent;
             fishUnitComponent.ResumeMove();
             fishUnitComponent.SetMoveSpeed(FishConfig.QuickMoveSpeed);
         }

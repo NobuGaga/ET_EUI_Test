@@ -22,7 +22,7 @@ namespace ET
 
         static FishPathHelper()
         {
-            _pathMap = new Dictionary<Int16, FishPathInfo>(DefaultPathCount);
+            _pathMap = new Dictionary<short, FishPathInfo>(DefaultPathCount);
             _pathPointCache = new List<Vector3>(DefaultPathPointCount);
         }
 
@@ -32,14 +32,14 @@ namespace ET
             _pathPointCache.Clear();
         }
 
-        public static FishPathInfo GetPath(Int16 roadId)
+        public static FishPathInfo GetPath(short roadId)
         {
             if (_pathMap.ContainsKey(roadId))
                 return _pathMap[roadId];
             return CreatePath(roadId);
         }
 
-        private static FishPathInfo CreatePath(Int16 roadId)
+        private static FishPathInfo CreatePath(short roadId)
         {
             ReadFishLineRela(roadId);
             ExpandPosList();

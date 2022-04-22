@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 namespace ET
 {
+    [FriendClass(typeof(PlayerSkillComponent))]
     public static class PlayerSkillViewComponentSystem
     {
         public static void UpdateBeforeBullet(this PlayerSkillComponent self)

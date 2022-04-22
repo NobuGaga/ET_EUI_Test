@@ -7,6 +7,11 @@ using BattleLogicUnit = ET.BattleUnitLogicComponentSystem;
 namespace ET
 {
     /// <summary> 原 UnitComponent 组件数据逻辑拓展 </summary>
+    [FriendClass(typeof(BattleLogicComponent))]
+    [FriendClass(typeof(Unit))]
+    [FriendClass(typeof(TransformComponent))]
+    [FriendClass(typeof(FishUnitComponent))]
+    [FriendClass(typeof(UnitComponent))]
 	public static class UnitComponentLogicSystem
     {
         internal static HashSet<Unit> GetPlayerUnitList(this UnitComponent self) =>
@@ -19,11 +24,12 @@ namespace ET
 
             // Add BattleUnitLogicComponent 前要对 UnitType 进行赋值
             unit.UnitType = UnitType.Fish;
+            unit.Type = UnitType.Fish;
 
             unit.AddComponent<BattleUnitLogicComponent, UnitInfo>(unitInfo, isUseModelPool);
 
             // 处理完鱼的逻辑后, 判断数据合法性
-            FishUnitComponent fishUnitComponent = unit.GetComponent<FishUnitComponent>();
+            FishUnitComponent fishUnitComponent = unit.FishUnitComponent;
             if (!fishUnitComponent.Info.IsMoveEnd)
                 return unit;
 
@@ -54,8 +60,7 @@ namespace ET
 
         private static void CompareFishScore(this Unit fishUnit)
         {
-            TransformComponent transformComponent = fishUnit.GetComponent<TransformComponent>();
-            if (!transformComponent.IsInScreen)
+            if (!fishUnit.FishUnitComponent.IsInScreen)
                 return;
 
             var attributeComponent = fishUnit.GetComponent<NumericComponent>();

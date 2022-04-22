@@ -15,6 +15,14 @@ namespace ET
             SkillComponent skillComponent = currentScene.GetComponent<SkillComponent>();
             skillComponent.UpdateSkill(message);
 
+            switch (message.SkillType)
+            {
+                case SkillType.Ice:
+                    var fisheryComponent = currentScene.GetComponent<FisheryComponent>();
+                    fisheryComponent.FisheryIceSkill(true);
+                    break;
+            }
+
             Game.EventSystem.Publish(new ReceiveSkillUse()
             {
                 CurrentScene = currentScene,

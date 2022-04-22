@@ -6,6 +6,14 @@ namespace ET
     /// </summary>
     public static class BattleInfoExtension
     {
+        public static void Reset(this TransformInfo self)
+        {
+            self.LogicPos = TransformDefaultConfig.DefaultPosition;
+            self.LogicRotation = TransformDefaultConfig.DefaultRotation;
+            self.LogicScale = TransformDefaultConfig.DefaultScale;
+            self.LogicForward = TransformDefaultConfig.DefaultForward;
+        }
+
         public static void Reset(this BulletMoveInfo self)
         {
             self.CurrentRotation = TransformDefaultConfig.DefaultRotation;
@@ -14,27 +22,15 @@ namespace ET
             self.MoveDirection = BulletConfig.DefaultMoveDirection;
 
             self.CurrentLocalPos = BulletConfig.RemovePoint;
+            self.ScreenPos = TransformDefaultConfig.DefaultScreenPos;
         }
 
+        /// <summary> 使用热更层设定默认数值重置 </summary>
         public static void Reset(this FishMoveInfo self)
         {
-            self.IsPause = false;
-            self.IsMoveEnd = false;
-            
-            self.MoveTime = 0;
-            self.MoveDuration = 0;
-
-            self.OffsetPosX = 0;
-            self.OffsetPosY = 0;
-            self.OffsetPosZ = 0;
-
             self.NextPos = FishConfig.RemovePoint;
             self.NextForward = TransformDefaultConfig.DefaultForward;
-
             self.MoveSpeed = FishConfig.DefaultMoveSpeed;
-
-            self.RoadId = 0;
-            self.IsPathMove = false;
         }
     }
 }

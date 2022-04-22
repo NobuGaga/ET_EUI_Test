@@ -1,5 +1,6 @@
 namespace ET
 {
+    [FriendClass(typeof(AnimatorComponent))]
     internal static class AnimatorComponentViewtSystem
     {
         internal static void Reset(this AnimatorComponent self)

@@ -42,10 +42,19 @@ namespace ET
         }
     }
 
+    [FriendClass(typeof(GlobalComponent))]
+    [FriendClass(typeof(GameObjectComponent))]
+    [FriendClass(typeof(LaserSkillUnitComponent))]
     public static class LaserSkillUnitComponentSystem
     {
         public static void UpdateLaserSkill(this SkillUnit self)
         {
+            var playerSkillLogicComponent = self.Parent as PlayerSkillComponent;
+            Unit playerUnit = playerSkillLogicComponent.Parent as Unit;
+            Scene currentScene = self.DomainScene();
+            var battleViewComponent = currentScene.GetBattleViewComponent();
+            battleViewComponent.SkillShoot(playerUnit.Id, self);
+
             long trackFishUnitId = self.GetTrackFishUnitId();
             if (trackFishUnitId == BulletConfig.DefaultTrackFishUnitId)
             {
@@ -59,7 +68,7 @@ namespace ET
             if (gameObjectComponent == null)
                 return;
 
-            Camera cannonCamera = GlobalComponent.Instance.CannonCamera;
+            Camera cannonCamera = GlobalComponent.Instance.RawCannonCamera;
             Transform shootPointTrans = laserSkillUnitComponent.CannonShootPointNode;
             Vector3 shootScreenPos = cannonCamera.WorldToScreenPoint(shootPointTrans.position);
             gameObjectComponent.Transform.localPosition = CannonHelper.ScreenPointToCannonPosition(shootScreenPos);

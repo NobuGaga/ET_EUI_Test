@@ -9,8 +9,9 @@ namespace ET
         /// 通用加载战斗用预设模型
         /// 外部使用 xxx.Coroutine() 调用, 不用等待返回值
         /// </summary>
-        public static async ETTask<GameObject> InitModel(Scene currentScene, Entity unit, string assetBundlePath, string assetName)
+        public static async ETTask<GameObject> InitModel(Entity unit, string assetBundlePath, string assetName)
         {
+            Scene currentScene = unit.DomainScene();
             GameObject gameObject = await LoadModelPrefab(currentScene, assetBundlePath, assetName);
 
             if (gameObject == null)
@@ -46,11 +47,11 @@ namespace ET
                 ResourcesLoaderComponent resourcesLoaderCom = currentScene.GetComponent<ResourcesLoaderComponent>();
 
                 await resourcesLoaderCom.LoadAsync(assetBundlePath);
+
                 // Battle TODO 后面改用异步
                 GameObject prefab = ResourcesComponent.Instance.GetAsset(assetBundlePath, assetName) as GameObject;
 
-                GameObject go = UnityEngine.Object.Instantiate(prefab);
-                return go;
+                return UnityEngine.Object.Instantiate(prefab);
             }
             catch (Exception exception)
             {

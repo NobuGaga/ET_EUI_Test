@@ -2,6 +2,8 @@
 
 namespace ET
 {
+    [FriendClass(typeof(Unit))]
+    [FriendClass(typeof(FishUnitComponent))]
     public static class FisheryViewComponentSystem
     {
         /// <summary> 渔场冰冻技能视图处理 </summary>
@@ -15,7 +17,7 @@ namespace ET
         private static void SetAnimatorState(Unit fishUnit)
         {
             AnimatorComponent animatorComponent = fishUnit.GetComponent<AnimatorComponent>();
-            FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+            FishUnitComponent fishUnitComponent = fishUnit.FishUnitComponent;
             if (fishUnitComponent.Info.IsPause)
                 animatorComponent.PauseAnimator();
             else

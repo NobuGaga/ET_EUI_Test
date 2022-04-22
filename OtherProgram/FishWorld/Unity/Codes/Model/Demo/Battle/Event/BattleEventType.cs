@@ -12,7 +12,7 @@ namespace ET
             public int RoomId;
 
             /// <summary> 冰冻技能结束时间戳 </summary>
-            public long IceEndTime;
+            public long IceEndTime { get; set; }
 
             public int AreaId;
         }
@@ -83,45 +83,16 @@ namespace ET
 
         #region Logic To View
 
+        public struct RemoveBulletUnit
+        {
+            public Scene CurrentScene;
+
+            public long UnitId;
+        }
+
         public struct AfterCreateSkillUnit
         {
             public Scene CurrentScene;
-
-            public SkillUnit SkillUnit;
-        }
-
-        /// <summary> 渔场技能效果开始事件 </summary>
-        public struct FisherySkillStart
-        {
-            public Scene CurrentScene;
-
-            public int SkillType;
-        }
-
-        /// <summary> 玩家技能效果开始事件 </summary>
-        public struct PlayerSkillStart
-        {
-            public Scene CurrentScene;
-
-            public long PlayerUnitId;
-
-            public int SkillType;
-        }
-
-        /// <summary> 渔场技能使用中事件 </summary>
-        public struct FisherySkillRuning
-        {
-            public Scene CurrentScene;
-
-            public int SkillType;
-        }
-
-        /// <summary> 玩家技能使用中事件 </summary>
-        public struct PlayerSkillRuning
-        {
-            public Scene CurrentScene;
-
-            public long PlayerUnitId;
 
             public SkillUnit SkillUnit;
         }
@@ -130,16 +101,6 @@ namespace ET
         public struct FisherySkillEnd
         {
             public Scene CurrentScene;
-
-            public int SkillType;
-        }
-
-        /// <summary> 玩家技能效果结束事件 </summary>
-        public struct PlayerSkillEnd
-        {
-            public Scene CurrentScene;
-
-            public long PlayerUnitId;
 
             public int SkillType;
         }

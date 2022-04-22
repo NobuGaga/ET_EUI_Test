@@ -3,6 +3,11 @@ using ET.EventType;
 
 namespace ET
 {
+    [FriendClass(typeof(GlobalComponent))]
+    [FriendClass(typeof(PlayerSkillComponent))]
+    [FriendClass(typeof(Unit))]
+    [FriendClass(typeof(FishUnitComponent))]
+    [FriendClass(typeof(CannonComponent))]
     public static class BulletViewComponentSystem
     {
         private static bool IsCanSkillShoot(this BattleViewComponent self, bool isShowError)
@@ -62,9 +67,9 @@ namespace ET
 
                 var fisheryComponent = currentScene.GetComponent<FisheryComponent>();
                 int seatId = fisheryComponent.GetSeatId(playerUnitId);
-                FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+                FishUnitComponent fishUnitComponent = fishUnit.FishUnitComponent;
                 Vector3 screenPosition = fishUnitComponent.AimPoint.Vector;
-                self.RotateCannon(seatId, ref screenPosition.x, ref screenPosition.y, false);
+                CannonShootHelper.PushPool(self.RotateCannon(seatId, ref screenPosition.x, ref screenPosition.y, false));
 
                 if (!isSelf || !self.IsCanSkillShoot(true))
                     return;
@@ -103,7 +108,7 @@ namespace ET
             if (fishUnit == null)
                 return;
 
-            FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+            FishUnitComponent fishUnitComponent = fishUnit.FishUnitComponent;
             Vector3 screenPosition = fishUnitComponent.AimPoint.Vector;
             self.RotateCannon(ref screenPosition.x, ref screenPosition.y, isPlayAnimation);
         }
@@ -114,7 +119,7 @@ namespace ET
             Scene currentScene = self.CurrentScene();
             FisheryComponent fisheryComponent = currentScene.GetComponent<FisheryComponent>();
             int selfSeatId = fisheryComponent.GetSelfSeatId();
-            self.RotateCannon(selfSeatId, ref touchPosX, ref touchPosY, isPlayAnimation);
+            CannonShootHelper.PushPool(self.RotateCannon(selfSeatId, ref touchPosX, ref touchPosY, isPlayAnimation));
         }
 
         private static CannonShootInfo RotateCannon(this BattleViewComponent self, int seatId,
@@ -138,11 +143,12 @@ namespace ET
             // 再通过射击方向计算炮台旋转方向
             // 最后使用旋转完后的炮台射击点位置来设置子弹的初始位置
             CannonShootInfo cannonShootInfo = CannonShootHelper.PopInfo();
-            Vector3 cannonScreenPos = GlobalComponent.Instance.CannonCamera.WorldToScreenPoint(cannonTrans.position);
+            Camera camera = GlobalComponent.Instance.RawCannonCamera;
+            Vector3 cannonScreenPos = camera.WorldToScreenPoint(cannonTrans.position);
             Vector2 shootDirection = new Vector2(touchPosX - cannonScreenPos.x, touchPosY - cannonScreenPos.y);
             CannonShootHelper.SetLocalQuaternion(cannonShootInfo, shootDirection);
             cannonTrans.localRotation = cannonShootInfo.LocalRotation;
-            Vector3 shootScreenPos = GlobalComponent.Instance.CannonCamera.WorldToScreenPoint(shootPointTrans.position);
+            Vector3 shootScreenPos = camera.WorldToScreenPoint(shootPointTrans.position);
             CannonShootHelper.InitInfo(cannonShootInfo, shootScreenPos);
 
             // 返回值方便发射子弹获取炮台信息
@@ -155,7 +161,7 @@ namespace ET
             if (fishUnit == null)
                 return;
 
-            FishUnitComponent fishUnitComponent = fishUnit.GetComponent<FishUnitComponent>();
+            FishUnitComponent fishUnitComponent = fishUnit.FishUnitComponent;
             Vector3 screenPosition = fishUnitComponent.AimPoint.Vector;
             long trackFishUnitId = fishUnit.Id;
             self.CallLogicShootBullet(ref screenPosition.x, ref screenPosition.y, ref trackFishUnitId);

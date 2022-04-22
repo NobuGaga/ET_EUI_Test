@@ -1,3 +1,5 @@
+// Battle Review Before Boss Node
+
 using UnityEngine;
 
 namespace ET
@@ -38,7 +40,20 @@ namespace ET
 
         /// <summary> 鱼线表 ID, 放在这里储存用来获取对应的 FishPath 类 </summary>
         public short RoadId;
+
         /// <summary> 是否通过鱼线控制移动 </summary>
         public bool IsPathMove;
+
+        public FishPathInfo Path;
+
+        /// <summary> 是否到达生命周期时间 </summary>
+        internal bool IsMoveTimeOut => MoveTime > MoveDuration;
+
+        /// <summary> 设置停止移动标识 </summary>
+        internal void StopMove()
+        {
+            IsPause = false;
+            IsMoveEnd = true;
+        }
     }
 }

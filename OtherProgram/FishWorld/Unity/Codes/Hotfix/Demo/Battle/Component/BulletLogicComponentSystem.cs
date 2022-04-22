@@ -14,6 +14,8 @@ namespace ET
         public override void Destroy(BulletLogicComponent self) => self.RemoveAllUnit();
     }
 
+    [FriendClass(typeof(Unit))]
+    [FriendClass(typeof(BulletLogicComponent))]
     public static class BulletLogicComponentSystem
     {
         public static UnitInfo PopUnitInfo(this BulletLogicComponent self, int seatId)
@@ -171,19 +173,23 @@ namespace ET
             // 保持所有的战斗 Unit 都 Add 到 Current Scene 上, 因为 Unit 只是数据
             Unit unit = self.AddChildWithId<Unit, int>(unitInfo.UnitId, unitInfo.ConfigId, isUseModelPool);
             // Add BattleUnitLogicComponent 前要对 UnitType 进行赋值
-            unit.UnitType = unitInfo.UnitType;
+            unit.UnitType = unitInfo.Type;
+            unit.Type = unitInfo.Type;
             unit.AddComponent<BattleUnitLogicComponent, UnitInfo, CannonShootInfo>(unitInfo, cannonShootInfo, isUseModelPool);
 
             self.ShootBulletCount++;
             self.BulletIdList.Add(unitInfo.UnitId);
 
             self.LastShootBulletTime = TimeHelper.ServerNow();
-
-            Game.EventSystem.Publish(new AfterUnitCreate() { CurrentScene = currentScene, Unit = unit });
+            EventType.AfterUnitCreate.Instance.CurrentScene = currentScene;
+            EventType.AfterUnitCreate.Instance.Unit = unit;
+            Game.EventSystem.PublishClass(AfterUnitCreate.Instance);
         }
 
         public static void RemoveUnit(this BulletLogicComponent self, long unitId)
         {
+            Game.EventSystem.Publish(new RemoveBulletUnit() { UnitId = unitId, CurrentScene = self.DomainScene() });
+
             self.ShootBulletCount--;
             
             for (short index = (short)(self.BulletIdList.Count - 1); index >= 0; index--)

@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace ET
 {
+    [FriendClass(typeof(CameraComponent))]
     public static class CameraComponentSystem
     {
         public static void SetTransformByAreaId(this CameraComponent self, int areaId)
@@ -32,7 +33,7 @@ namespace ET
         public static void PlayMovePosition(this CameraComponent self, Vector3 endValue, float duration)
         {
             Transform cameraTrans = self.mainCamera.transform;
-            Transform fishRootTrans = GlobalComponent.Instance.FishRoot;
+            //Transform fishRootTrans = GlobalComponent.Instance.FishRoot;
             //Vector3 fishRootEndValue = endValue - cameraTrans.position + fishRootTrans.position;
 
             if (duration > 0)
@@ -50,7 +51,7 @@ namespace ET
         public static void PlayRotate(this CameraComponent self, Vector3 endValue, float duration)
         {
             Transform cameraTrans = self.mainCamera.transform;
-            Transform fishRootTrans = GlobalComponent.Instance.FishRoot;
+            //Transform fishRootTrans = GlobalComponent.Instance.FishRoot;
             //Vector3 fishRootEndValue = endValue - cameraTrans.eulerAngles + fishRootTrans.eulerAngles;
 
             if (duration > 0)
@@ -75,6 +76,7 @@ namespace ET
         }
     }
 
+    [FriendClass(typeof(FisheryComponent))]
     public class AfterExchangeArea_CameraComponent : AEvent<ReceiveExchangeArea>
     {
         protected override void Run(ReceiveExchangeArea args)
@@ -85,9 +87,9 @@ namespace ET
         }
     }
 
-    public class UIFisheriesE_exitEventArgs_CameraComponent : AEventAsync<UIFisheries_ExitEventArgs>
+    public class UIFisheriesE_exitEventArgs_CameraComponent : AEventAsync<UIFisheriesE_exitEventArgs>
     {
-        protected override async ETTask Run(UIFisheries_ExitEventArgs args)
+        protected override async ETTask Run(UIFisheriesE_exitEventArgs args)
         {
             UIFisheriesComponent fisheryComponent = args.UIFisheriesComponent;
             CameraComponent cameraComponent = fisheryComponent.ZoneScene().GetComponent<CameraComponent>();

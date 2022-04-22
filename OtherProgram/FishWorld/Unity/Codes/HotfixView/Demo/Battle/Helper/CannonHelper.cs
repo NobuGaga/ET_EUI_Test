@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace ET
 {
+    [FriendClass(typeof(CannonComponent))]
     public static class CannonHelper
     {
         public static Transform GetShootPointNode(Scene currentScene, int seatId)

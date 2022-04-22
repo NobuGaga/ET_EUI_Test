@@ -1,102 +1,104 @@
-// Battle Review
+// Battle Review Before Boss Node
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace ET
 {
-    // 模拟 DoTween FishPath
+    /// <summary> 模拟 DoTween FishPath </summary>
     public class FishPathInfo
     {
-        // 缓存 key, 使用整数, 数值越大越精确
-        private const ushort PERC_INT_RESOLUTION = 10000;
-        // 根据时间变换产生的鱼线点的个数, 会很大
+        /// <summary> 缓存 key 精度值, 数值越大越精确 </summary>
+        private const ushort FixPercentInteger = 10000;
+
+        /// <summary> 根据时间变换产生的鱼线点的个数, 会很大 </summary>
         private const ushort DefaultPointCacheCount = 1024;
 
-        // 防止朝向为 0 误差值判断
+        /// <summary> 防止朝向为 0 误差值判断 </summary>
         private const float FixRotationFlag = 0.0001f;
-        private static Vector3 _cachePoint;
 
-        // 缓存鱼线实际根据时间变化产生的坐标点
-        private Dictionary<ushort, Vector3> _percentPosMap;
+        private static Vector3 cachePoint;
 
-        // 缓存鱼线路径点
-        private Vector3[] _posList;
+        /// <summary> 根据时间 delta 变化储存的坐标点 </summary>
+        private Dictionary<ushort, Vector3> timePointMap;
 
-        // 第二个点
-        private Vector3 _secondPos;
-        // TODO 最后两个点相加构成的点, 为了究极延长?
-        private Vector3 _lastTwoPointSum;
+        /// <summary> 鱼线路径点 </summary>
+        private Vector3[] pointArray;
 
-        public FishPathInfo(Vector3[] posList)
+        private Vector3 secondPoint;
+
+        /// <summary>
+        /// 最后延长点
+        /// 跑完鱼线后再跑一遍鱼线(除了不跑最后一个点外)
+        /// 为了增加移除屏幕距离
+        /// </summary>
+        private Vector3 extensionLastPoint;
+
+        public FishPathInfo(Vector3[] pointArray)
         {
-            _percentPosMap = new Dictionary<ushort, Vector3>(DefaultPointCacheCount);
-            _posList = posList;
-            _secondPos = posList[1];
-            int wpsLen = posList.Length;
-            _lastTwoPointSum = posList[wpsLen - 1] + posList[wpsLen - 2];
+            timePointMap = new Dictionary<ushort, Vector3>(DefaultPointCacheCount);
+            this.pointArray = pointArray;
+            secondPoint = pointArray[1];
+            int length = pointArray.Length;
+            extensionLastPoint = pointArray[length - 1] + pointArray[length - 2];
         }
 
-        // 根据时间获取路径点
-        public void SetPoint(float percentFloat, ref Vector3 point)
+        public void SetForward(ref float percentFloat, float nextPosX, float nextPosY, float nextPosZ, ref Vector3 toForward)
         {
-            ushort percentInt = (ushort)System.Math.Floor(percentFloat * PERC_INT_RESOLUTION);
-            if (_percentPosMap.ContainsKey(percentInt))
-            {
-                point = _percentPosMap[percentInt];
-                return;
-            }
+            SetPoint(ref percentFloat, ref cachePoint);
+            float x = cachePoint.x - nextPosX;
+            float y = cachePoint.y - nextPosY;
+            float z = cachePoint.z - nextPosZ;
 
-            if (_posList.Length < 2)
+            // 防止设置朝向为 0
+            if (Math.Abs(z) < FixRotationFlag)
+                z = z > 0 ? FixRotationFlag : -FixRotationFlag;
+
+            toForward.x = x;
+            toForward.y = y;
+            toForward.z = z;
+        }
+
+        /// <summary> 根据时间设置路径点 </summary>
+        public void SetPoint(ref float percentFloat, ref Vector3 point)
+        {
+            if (pointArray.Length < 2)
             {
                 point = Vector3.zero;
                 return;
             }
 
-            int numSections = _posList.Length - 2;
-            ushort tSec = (ushort)System.Math.Floor(percentFloat * numSections);
-            int currPt = numSections - 1;
-            if (currPt > tSec)
-                currPt = tSec;
+            ushort percentInt = (ushort)Math.Floor(percentFloat * FixPercentInteger);
+            if (timePointMap.ContainsKey(percentInt))
+            {
+                point = timePointMap[percentInt];
+                return;
+            }
 
-            float u = percentFloat * numSections - currPt;
+            int sectionLength = pointArray.Length - 2;
+            ushort section = (ushort)Math.Floor(percentFloat * sectionLength);
+            int currentLength = sectionLength - 1;
+            if (currentLength > section) currentLength = section;
 
-            Vector3 a = currPt == 0 ? _secondPos : _posList[currPt];
-            Vector3 b = _posList[currPt + 1];
-            Vector3 c = _posList[currPt + 2];
-            Vector3 d = currPt + 3 >= _posList.Length ? _lastTwoPointSum : _posList[currPt + 3];
+            float u = percentFloat * sectionLength - currentLength;
+
+            Vector3 a = currentLength == 0 ? secondPoint : pointArray[currentLength];
+            Vector3 b = pointArray[currentLength + 1];
+            Vector3 c = pointArray[currentLength + 2];
+            Vector3 d = currentLength + 3 >= pointArray.Length ? extensionLastPoint : pointArray[currentLength + 3];
 
             float u2 = u * u;
             float u3 = u2 * u;
 
-            float x = CalcCatmulRomPointSingle(u, u2, u3, a.x, b.x, c.x, d.x);
-            float y = CalcCatmulRomPointSingle(u, u2, u3, a.y, b.y, c.y, d.y);
-            float z = CalcCatmulRomPointSingle(u, u2, u3, a.z, b.z, c.z, d.z);
+            point.x = CalculateCatmulRomPointSingle(u, u2, u3, a.x, b.x, c.x, d.x);
+            point.y = CalculateCatmulRomPointSingle(u, u2, u3, a.y, b.y, c.y, d.y);
+            point.z = CalculateCatmulRomPointSingle(u, u2, u3, a.z, b.z, c.z, d.z);
 
-            point.x = x;
-            point.y = y;
-            point.z = z;
-            //point.Set(x, y, z);
-
-            _percentPosMap.Add(percentInt, point);
+            timePointMap.Add(percentInt, point);
         }
 
-        public void SetForward(float percentFloat, float nextPosX, float nextPosY, float nextPosZ, ref Vector3 toForward)
-        {
-            SetPoint(percentFloat, ref _cachePoint);
-            float x = _cachePoint.x - nextPosX;
-            float y = _cachePoint.y - nextPosY;
-            float z = _cachePoint.z - nextPosZ;
-            // 防止设置朝向为 0
-            if (System.Math.Abs(z) < FixRotationFlag)
-                z = z > 0 ? FixRotationFlag : -FixRotationFlag;
-            toForward.x = x;
-            toForward.y = y;
-            toForward.z = z;
-            //toForward.Set(x, y, z);
-        }
-
-        private static float CalcCatmulRomPointSingle(float u, float u2, float u3, float a, float b, float c, float d)
+        private static float CalculateCatmulRomPointSingle(float u, float u2, float u3, float a, float b, float c, float d)
         {
             float term1 = (-a + b * 3 - c * 3 + d) * u3;
             float term2 = (a * 2 - b * 5 + c * 4 - d) * u2;

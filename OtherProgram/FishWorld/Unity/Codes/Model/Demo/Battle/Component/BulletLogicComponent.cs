@@ -5,6 +5,7 @@ namespace ET
 	/// <summary>
 	/// 子弹逻辑组件
 	/// </summary>
+	[ChildType(typeof(Unit))]
 	public class BulletLogicComponent : Entity, IAwake, IDestroy//, Battle TODO IUpdate
 	{
 		/// <summary> 客户端生成的子弹 ID 计数器 </summary>
@@ -29,6 +30,6 @@ namespace ET
 		/// <summary> 渔场内存在的子弹 ID 列表, 加快遍历速度 </summary>
 		public List<long> BulletIdList = new List<long>(FisheryConfig.FisheryMaxBulletCount);
 
-		public Stack<long> OneHitBulletIdStack = new Stack<long>(FisheryConfig.FisheryMaxBulletCount);
+		public Stack<long> OneHitBulletIdStack { get; set; } = new Stack<long>(FisheryConfig.FisheryMaxBulletCount);
 	}
 }

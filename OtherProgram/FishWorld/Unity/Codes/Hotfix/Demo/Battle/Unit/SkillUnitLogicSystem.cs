@@ -1,6 +1,3 @@
-using ET.EventType;
-using System.Collections.Generic;
-
 namespace ET
 {
     [ObjectSystem]
@@ -19,6 +16,7 @@ namespace ET
         }
     }
 
+    [FriendClass(typeof(SkillUnit))]
     public static class SkillUnitLogicSystem
     {
         public static long GetPlayerUnitId(this SkillUnit self)
@@ -51,31 +49,12 @@ namespace ET
             self.CdEndTime = skillCdTime + nowServerTime;
         }
 
-        public static void FixedUpdateBeforeFish(this SkillUnit self)
-        {
-            var playerSkillLogicComponent = self.Parent as PlayerSkillComponent;
-            Unit playerUnit = playerSkillLogicComponent.Parent as Unit;
-            Game.EventSystem.Publish(new PlayerSkillRuning
-            {
-                CurrentScene = self.DomainScene(),
-                PlayerUnitId = playerUnit.Id,
-                SkillUnit = self,
-            });
-        }
-
         /// <summary> 技能结束处理 </summary>
         public static void SkillEnd(this SkillUnit self, long playerId)
         {
             // 技能效果时间到了之后情况时间戳, 保证事件只触发一次
             // 后面逻辑通过时间戳是否大于零表示技能是否还在效果时间
             self.SkillEndTime = 0;
-
-            Game.EventSystem.Publish(new PlayerSkillEnd()
-            {
-                CurrentScene = self.DomainScene(),
-                PlayerUnitId = playerId,
-                SkillType = self.SkillType,
-            });
         }
     }
 }

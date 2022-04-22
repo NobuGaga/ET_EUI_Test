@@ -1,5 +1,6 @@
 namespace ET
 {
+    [FriendClass(typeof(BattleLogicComponent))]
 	public static class C2M_HitHandler
     {
 		public static void C2M_Hit(this BattleLogicComponent self, float screenPosX, float screenPosY,

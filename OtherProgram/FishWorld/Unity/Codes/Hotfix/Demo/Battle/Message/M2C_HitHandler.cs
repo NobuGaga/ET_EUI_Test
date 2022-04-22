@@ -14,13 +14,11 @@ namespace ET
 			UnitComponent unitComponent = CurrentScene.GetComponent<UnitComponent>();
 			unitComponent.Remove(Message.FishId);
 
-			KillFish eventData = new KillFish()
+			Game.EventSystem.Publish(new KillFish()
 			{
 				CurrentScene = CurrentScene,
 				Message = Message,
-			};
-
-			Game.EventSystem.Publish(eventData);
+			});
 		}
 	}
 }
