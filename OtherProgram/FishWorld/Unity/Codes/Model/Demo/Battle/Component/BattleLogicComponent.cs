@@ -27,11 +27,7 @@ namespace ET
 
 		#region Foreach Function
 
-		/// <summary>
-		/// 需要移除的 Unit ID List, Unit 容器使用 HashSet, 遍历使用 foreach
-		/// 不能在遍历过程中进行增删, 使用另外一个列表记录, 再遍历列表进行删除
-		/// </summary>
-		public List<long> RemoveUnitIdList = new List<long>(2 ^ 9);
+		public List<long> FishUnitIdList;
 
 		public bool Argument_Bool;
 

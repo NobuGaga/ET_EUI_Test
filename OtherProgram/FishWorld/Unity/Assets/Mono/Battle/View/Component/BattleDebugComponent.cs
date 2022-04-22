@@ -5,12 +5,14 @@ using UnityEngine;
 
 namespace ET
 {
-    internal static class BattleDebug
+    public static class BattleDebugComponent
     {
         private static Dictionary<short, PathDebug> _debugMap = new Dictionary<short, PathDebug>(FishPathHelper.DefaultPathCount);
 
+        internal static void Init() => ReferenceHelper.GizmosCaller += OnDrawGizmosCallBack;
+
         // 开启鱼线调试, 使用 Gizmos 画线
-        public static void OpenPathDebug(short roadId, Vector3[] posList)
+        internal static void OpenPathDebug(short roadId, Vector3[] posList)
         {
             PathDebug pathDebug;
             if (_debugMap.ContainsKey(roadId))
@@ -45,9 +47,9 @@ namespace ET
         }
 
         private static LineDrawData lineDataCache;
-        private static List<LineDrawData> lineDataList = new List<LineDrawData>(2 ^ 9);
+        private static List<LineDrawData> lineDataList = new List<LineDrawData>(ConstHelper.FisheryBulletCount);
 
-        public static void AddBulletDrawData(Vector3 startPoint, Vector3 endPoint)
+        internal static void AddBulletDrawData(Vector3 startPoint, Vector3 endPoint)
         {
             lineDataCache.StartPoint = startPoint;
             lineDataCache.EndPoint = endPoint;
@@ -77,7 +79,7 @@ namespace ET
 
         #endregion
 
-        public static void OnDrawGizmosCallBack() => DrawLineBullet();
+        internal static void OnDrawGizmosCallBack() => DrawLineBullet();
     }
 }
 

@@ -7,28 +7,14 @@ namespace ET
     /// </summary>
     public static class BulletCameraHelper
     {
-        private static Vector2 cannonBorder;
-
-        public static float WidthRatio;
-        public static float HeightRatio;
-
-        /// <summary> 初始化使用传参的形式在 Mono 层调用, 因为要被 Robot 层引用 </summary>
-        public static void Init(int screenWidth, int screenHeight, float orthographicSize)
-        {
-            float ratio = (float)screenWidth / screenHeight;
-
-            cannonBorder.Set(orthographicSize * ratio * 2, orthographicSize * 2);
-
-            WidthRatio = screenWidth / orthographicSize / ratio / 2;
-            HeightRatio = screenHeight / orthographicSize / 2;
-        }
-
         /// <summary> 检查子弹是否跟边界进行碰撞 </summary>
         public static bool CheckCollideBorder(BulletMoveInfo info)
         {
             bool isReflect = false;
             ref Vector3 bulletLocalPos = ref info.CurrentLocalPos;
             ref Vector2 moveDirection = ref info.MoveDirection;
+
+            ref Vector2 cannonBorder = ref ConstHelper.CannonBorder;
 
             if (bulletLocalPos.x < 0 || bulletLocalPos.x > cannonBorder.x)
             {
@@ -47,11 +33,6 @@ namespace ET
             moveDirection.Normalize();
 
             return isReflect;
-        }
-
-        private static void Set(this ref Vector2 self, float x, float y)
-        {
-            self.x = x; self.y = y;
         }
     }
 }

@@ -20,11 +20,11 @@ namespace ET
         public static void InitTransform(this Unit self)
         {
             TransformInfo info = self.TransformComponent.Info;
-            BattleLogic.SetLocalPos(self.Id, info);
+            UnitMonoComponent.SetLocalPos(self.Id, info);
             self.SetPos(info.LogicPos);
             self.SetLocalRotation(info.LogicLocalRotation);
             self.SetRotation(info.LogicRotation);
-            BattleLogic.SetForward(self.Id, info);
+            UnitMonoComponent.SetForward(self.Id, info);
 
             // Battle Warning 使用预设缩放值, 后面看看要不要走配置
             self.SetScale((self.GameObjectComponent as GameObjectComponent).Transform.localScale);

@@ -11,9 +11,6 @@ namespace ET
         /// <summary> 模型预设碰撞节点上限 </summary>
         private const ushort DefaultModelColliderCount = 8;
 
-        /// <summary> 渔场最多存在多少个参与碰撞的实体数 </summary>
-        private const ushort MaxUpdateEntityCount = 512;
-
         private static Dictionary<int, ColliderMonoComponent> colliderComponentMap;
 
         private static List<ICollider> _colliderList;
@@ -25,7 +22,7 @@ namespace ET
 
         static ColliderHelper()
         {
-            colliderComponentMap = new Dictionary<int, ColliderMonoComponent>(MaxUpdateEntityCount);
+            colliderComponentMap = new Dictionary<int, ColliderMonoComponent>(ConstHelper.FisheryUnitCount);
             _colliderList = new List<ICollider>(DefaultModelColliderCount);
             _bonesList = new List<Transform>(DefaultModelColliderCount);
 

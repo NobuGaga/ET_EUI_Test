@@ -40,6 +40,9 @@ namespace ET
 
             unit.UnitId = unitInfo.UnitId;
 
+            unit.UnitType = unitInfo.Type;
+            unit.Type = unitInfo.Type;
+
             bool isUseModelPool = BattleConfig.IsUseModelPool;
             var attributeComponent = unit.AddComponent<NumericComponent>(isUseModelPool);
 

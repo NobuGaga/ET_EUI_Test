@@ -62,13 +62,8 @@ namespace ET
             FishMoveInfo info = self.Info;
             FishMoveHelper.FixedUpdate(info);
 
-            if (info.IsMoveEnd)
-            {
-                BattleLogicComponent.Instance.RemoveUnitIdList.Add(unit.UnitId);
-                return;
-            }
-
-            unit.TransformComponent.Info.Update(info);
+            if (!info.IsMoveEnd)
+                unit.TransformComponent.Info.Update(info);
         }
 
         internal static void SetMoveSpeed(this FishUnitComponent self, float moveSpeed) =>

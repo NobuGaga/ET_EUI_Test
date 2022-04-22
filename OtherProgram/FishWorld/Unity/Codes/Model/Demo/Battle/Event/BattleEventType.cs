@@ -83,11 +83,19 @@ namespace ET
 
         #region Logic To View
 
-        public struct RemoveBulletUnit
+        public class RemoveBulletUnit : DisposeObject
         {
             public Scene CurrentScene;
 
             public long UnitId;
+
+            public static RemoveBulletUnit Instance = new RemoveBulletUnit();
+
+            public override void Dispose()
+            {
+                CurrentScene = null;
+                UnitId = 0;
+            }
         }
 
         public struct AfterCreateSkillUnit

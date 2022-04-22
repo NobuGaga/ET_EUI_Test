@@ -21,8 +21,8 @@ namespace ET
         }
     }
 
-    public class BattleEventL2V_RemoveBulletUnitSystem : AEvent<RemoveBulletUnit>
+    public class BattleEventL2V_RemoveBulletUnitSystem : AEventClass<RemoveBulletUnit>
     {
-        protected override void Run(RemoveBulletUnit args) => BattleLogic.Remove(args.UnitId);
+        protected override void Run(object args) => UnitMonoComponent.Remove((args as RemoveBulletUnit).UnitId);
     }
 }

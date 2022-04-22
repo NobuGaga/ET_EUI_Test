@@ -26,8 +26,8 @@ namespace ET
             info.ShootPointScreenPos = shootPointScreenPos;
             ref Vector3 shootScreenPosition = ref info.ShootPointScreenPos;
             ref Vector2 shootLocalPosition = ref info.ShootLocalPosition;
-            shootLocalPosition.x = shootScreenPosition.x / BulletCameraHelper.WidthRatio;
-            shootLocalPosition.y = shootScreenPosition.y / BulletCameraHelper.HeightRatio;
+            shootLocalPosition.x = shootScreenPosition.x / ConstHelper.CannonCameraWidthRatio;
+            shootLocalPosition.y = shootScreenPosition.y / ConstHelper.CannonCameraHeightRatio;
         }
 
         public static void SetLocalQuaternion(CannonShootInfo info, Vector2 shootDirection)

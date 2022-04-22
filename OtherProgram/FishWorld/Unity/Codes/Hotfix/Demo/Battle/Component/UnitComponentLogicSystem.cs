@@ -22,26 +22,35 @@ namespace ET
             bool isUseModelPool = BattleConfig.IsUseModelPool;
             Unit unit = self.AddChildWithId<Unit, int>(unitInfo.UnitId, unitInfo.ConfigId, isUseModelPool);
 
-            // Add BattleUnitLogicComponent 前要对 UnitType 进行赋值
-            unit.UnitType = UnitType.Fish;
-            unit.Type = UnitType.Fish;
-
             unit.AddComponent<BattleUnitLogicComponent, UnitInfo>(unitInfo, isUseModelPool);
 
             // 处理完鱼的逻辑后, 判断数据合法性
             FishUnitComponent fishUnitComponent = unit.FishUnitComponent;
-            if (!fishUnitComponent.Info.IsMoveEnd)
-                return unit;
+            if (fishUnitComponent.Info.IsMoveEnd)
+            {
+                self.RemoveChild(unit.Id);
+                return null;
+            }
 
-            self.RemoveChild(unit.Id);
-            return null;
+            BattleLogicComponent.Instance.FishUnitIdList.Add(unit.UnitId);
+            return unit;
         }
 
         public static HashSet<Unit> GetFishUnitList(this UnitComponent self) =>
                                     self.GetTypeUnits(UnitType.Fish);
 
-        public static void FixedUpdateFishUnitList(this UnitComponent self) =>
-                           ForeachHelper.Foreach(self.GetFishUnitList(), BattleLogicUnit.FixedUpdate);
+        public static void FixedUpdateFishUnitList(this UnitComponent self, BattleLogicComponent battleLogicComponent)
+        {
+            List<long> fishUnitIdList = battleLogicComponent.FishUnitIdList;
+            for (int index = fishUnitIdList.Count - 1; index >= 0; index--)
+            {
+                Unit fishUnit = self.GetChild<Unit>(fishUnitIdList[index]);
+                fishUnit.FixedUpdate();
+
+                if (fishUnit.FishUnitComponent.Info.IsMoveEnd)
+                    fishUnitIdList.Remove(index);
+            }
+        }
 
         public static Unit GetMaxScoreFishUnit(this UnitComponent self)
         {

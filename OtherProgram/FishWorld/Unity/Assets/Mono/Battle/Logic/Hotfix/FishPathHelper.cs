@@ -48,7 +48,7 @@ namespace ET
             _pathMap.Add(roadId, path);
 #if UNITY_EDITOR
 
-            BattleDebug.OpenPathDebug(roadId, posList);
+            BattleDebugComponent.OpenPathDebug(roadId, posList);
 #endif
             return path;
         }

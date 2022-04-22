@@ -47,10 +47,10 @@ namespace ET
         public FishPathInfo Path;
 
         /// <summary> 是否到达生命周期时间 </summary>
-        internal bool IsMoveTimeOut => MoveTime > MoveDuration;
+        public bool IsMoveTimeOut => MoveTime > MoveDuration;
 
         /// <summary> 设置停止移动标识 </summary>
-        internal void StopMove()
+        public void StopMove()
         {
             IsPause = false;
             IsMoveEnd = true;

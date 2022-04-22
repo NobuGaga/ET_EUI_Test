@@ -1,5 +1,6 @@
 // Battle Review Before Boss Node
 
+using System.Collections.Generic;
 using ET.EventType;
 
 namespace ET
@@ -13,6 +14,8 @@ namespace ET
             self.FireInfo = new C2M_Fire();
             self.HitInfo = new C2M_Hit();
             self.UseSkillInfo = new C2M_SkillUse();
+
+            self.FishUnitIdList = new List<long>(ConstHelper.FisheryUnitCount);
         }
     }
 
@@ -22,9 +25,19 @@ namespace ET
         public override void Destroy(BattleLogicComponent self)
         {
             BattleLogicComponent.Instance = null;
+
             self.FireInfo = null;
             self.HitInfo = null;
             self.UseSkillInfo = null;
+
+            self.FishUnitIdList.Clear();
+            self.FishUnitIdList = null;
+
+            self.Argument_Unit = null;
+            self.Result_Unit = null;
+            self.Action_Unit_Bool = null;
+            self.BreakFunc_Unit_Integer = null;
+            self.BreakFunc_Unit_Unit_Logic = null;
         }
     }
 

@@ -172,23 +172,26 @@ namespace ET
 
             // 保持所有的战斗 Unit 都 Add 到 Current Scene 上, 因为 Unit 只是数据
             Unit unit = self.AddChildWithId<Unit, int>(unitInfo.UnitId, unitInfo.ConfigId, isUseModelPool);
-            // Add BattleUnitLogicComponent 前要对 UnitType 进行赋值
-            unit.UnitType = unitInfo.Type;
-            unit.Type = unitInfo.Type;
+
             unit.AddComponent<BattleUnitLogicComponent, UnitInfo, CannonShootInfo>(unitInfo, cannonShootInfo, isUseModelPool);
 
             self.ShootBulletCount++;
             self.BulletIdList.Add(unitInfo.UnitId);
 
             self.LastShootBulletTime = TimeHelper.ServerNow();
-            EventType.AfterUnitCreate.Instance.CurrentScene = currentScene;
-            EventType.AfterUnitCreate.Instance.Unit = unit;
-            Game.EventSystem.PublishClass(AfterUnitCreate.Instance);
+
+            var publishData = AfterUnitCreate.Instance;
+            publishData.CurrentScene = currentScene;
+            publishData.Unit = unit;
+            Game.EventSystem.PublishClass(publishData);
         }
 
         public static void RemoveUnit(this BulletLogicComponent self, long unitId)
         {
-            Game.EventSystem.Publish(new RemoveBulletUnit() { UnitId = unitId, CurrentScene = self.DomainScene() });
+            var publishData = RemoveBulletUnit.Instance;
+            publishData.CurrentScene = self.DomainScene();
+            publishData.UnitId = unitId;
+            Game.EventSystem.PublishClass(publishData);
 
             self.ShootBulletCount--;
             

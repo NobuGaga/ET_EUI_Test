@@ -9,8 +9,7 @@ namespace ET
     {
         public override void Awake(BattleViewComponent self)
         {
-            // Mono 层方法只能在 View 层调用
-            BattleLogic.Init();
+            BattleMonoComponent.EnterBattle();
 
             // 战斗用另外一个对象池组件, 生命周期跟战斗视图组件
             // 只用来管理鱼跟子弹, 不直接 Add 到 Scene 上是因为 CurrentScene 跟 ZoneScene 已经有了
@@ -23,7 +22,7 @@ namespace ET
     [ObjectSystem]
     public class BattleViewComponentDestroySystem : DestroySystem<BattleViewComponent>
     {
-        public override void Destroy(BattleViewComponent self) => BattleLogic.Clear();
+        public override void Destroy(BattleViewComponent self) => BattleMonoComponent.ExitBattle();
     }
 
     [ObjectSystem]
@@ -38,7 +37,7 @@ namespace ET
     {
         public override void Update(BattleViewComponent self)
         {
-            BattleLogic.Update();
+            BattleDebugComponent.Clear();
 
             Scene currentScene = self.CurrentScene();
             if (currentScene == null)
@@ -58,18 +57,8 @@ namespace ET
 
         private void UpdateFishUnitList(BattleLogicComponent battleLogicComponent, UnitComponent unitComponent)
         {
-            // 帧更新开始将移除鱼列表清除
-            // 在 FishUnitComponent 的 FixedUpdate 里进行增加
-            var removeFishUnitIdList = battleLogicComponent.RemoveUnitIdList;
-            removeFishUnitIdList.Clear();
-            
-            unitComponent.FixedUpdateFishUnitList();
-
-            // 更新完数据后马上把无效数据删除
-            for (var index = removeFishUnitIdList.Count - 1; index >= 0; index--)
-                unitComponent.Remove(removeFishUnitIdList[index]);
-
-            unitComponent.UpdateFishUnitList();
+            unitComponent.FixedUpdateFishUnitList(battleLogicComponent);
+            unitComponent.UpdateFishUnitList(battleLogicComponent);
         }
 
         private void UpdateBulletUnitList(BattleViewComponent self, Scene currentScene, UnitComponent unitComponent)

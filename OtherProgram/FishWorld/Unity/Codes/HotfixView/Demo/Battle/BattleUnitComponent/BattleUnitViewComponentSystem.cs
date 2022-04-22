@@ -59,7 +59,7 @@ namespace ET
             unit.InitTransform();
             InitComponent(unit);
 
-            BattleLogic.Add(unit.Id, node);
+            UnitMonoComponent.Add(unit.Id, node);
         }
 
         private ValueTuple<string, string> TryGetAssetPathAndName(Unit unit)
@@ -115,11 +115,11 @@ namespace ET
         {
             ref long unitId = ref self.UnitId;
             TransformInfo info = self.TransformComponent.Info;
-            BattleLogic.SetLocalPos(unitId, info);
+            UnitMonoComponent.SetLocalPos(unitId, info);
             switch (self.Type)
             {
                 case UnitType.Fish:
-                    BattleLogic.SetForward(unitId, info);
+                    UnitMonoComponent.SetForward(unitId, info);
                     break;
                 case UnitType.Bullet:
                     self.SetLocalRotation(info.LogicLocalRotation);
