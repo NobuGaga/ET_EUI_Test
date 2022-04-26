@@ -12,7 +12,6 @@ namespace ET
             self.FishUnitComponent = null;
             self.BulletUnitComponent = null;
             self.GameObjectComponent = null;
-            self.ColliderViewComponent = null;
         }
     }
 }

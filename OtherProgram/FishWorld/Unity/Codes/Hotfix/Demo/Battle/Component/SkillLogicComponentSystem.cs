@@ -18,6 +18,8 @@ namespace ET
         }
     }
 
+    [FriendClass(typeof(BattleLogicComponent))]
+    [FriendClass(typeof(Unit))]
     [FriendClass(typeof(SkillComponent))]
     [FriendClass(typeof(PlayerSkillComponent))]
     public static class SkillLogicComponentSystem
@@ -25,12 +27,12 @@ namespace ET
         public static void UseSkill(this BattleLogicComponent self, int skillType)
         {
             // 优先使用当前玩家的追踪目标
-            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(self.CurrentScene());
+            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(self.CurrentScene);
             if (selfPlayerUnit != null && !selfPlayerUnit.IsDisposed)
             {
                 var playerSkillComponent = selfPlayerUnit.GetComponent<PlayerSkillComponent>();
                 long trackFishUnitId = playerSkillComponent.TrackFishUnitId;
-                if (trackFishUnitId != BulletConfig.DefaultTrackFishUnitId)
+                if (trackFishUnitId != ConstHelper.DefaultTrackFishUnitId)
                 {
                     self.UseSkill(skillType, trackFishUnitId);
                     return;
@@ -38,21 +40,21 @@ namespace ET
             }
 
             // 当前玩家没有目标则重新寻找目标
-            Scene currentScene = self.CurrentScene();
+            Scene currentScene = self.CurrentScene;
             UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
             if (unitComponent == null)
             {
-                self.UseSkill(skillType, BulletConfig.DefaultTrackFishUnitId);
+                self.UseSkill(skillType, ConstHelper.DefaultTrackFishUnitId);
                 return;
             }
 
             Unit unit = unitComponent.GetMaxScoreFishUnit();
-            self.UseSkill(skillType, unit != null ? unit.Id : BulletConfig.DefaultTrackFishUnitId);
+            self.UseSkill(skillType, unit != null ? unit.Id : ConstHelper.DefaultTrackFishUnitId);
         }
 
         private static void UseSkill(this BattleLogicComponent self, int skillType, long trackFishUnitId)
         {
-            Scene currentScene = self.CurrentScene();
+            Scene currentScene = self.CurrentScene;
             Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
             PlayerSkillComponent skillUnitComponent = selfPlayerUnit.GetComponent<PlayerSkillComponent>();
 
@@ -92,29 +94,31 @@ namespace ET
 
         public static void FixedUpdateBeforeFish(this SkillComponent self)
         {
-            if (self.IsSkillEnd())
-                self.SkillEnd();
+            var battleLogicComponent = BattleLogicComponent.Instance;
+            Scene currentScene = battleLogicComponent.CurrentScene;
+            if (self.IceEndTime > 0 && TimeHelper.ServerNow() >= self.IceEndTime)
+            {
+                // 技能效果时间到了之后情况时间戳, 保证事件只触发一次
+                // 后面逻辑通过时间戳是否大于零表示技能是否还在效果时间
+                self.IceEndTime = 0;
 
-            var playerUnitList = self.GetPlayerUnitList();
+                var fisheryComponent = currentScene.GetComponent<FisheryComponent>();
+                fisheryComponent.FisheryIceSkill(false);
+
+                Game.EventSystem.Publish(new FisherySkillEnd
+                {
+                    CurrentScene = currentScene,
+                    SkillType = SkillType.Ice,
+                });
+            }
+
+            var playerUnitList = battleLogicComponent.UnitComponent.GetPlayerUnitList();
             if (playerUnitList != null)
                 ForeachHelper.Foreach(playerUnitList, FixedUpdateSkillBeforeFish);
         }
 
         private static void FixedUpdateSkillBeforeFish(this Unit playerUnit) =>
-                            playerUnit.GetComponent<PlayerSkillComponent>().FixedUpdateBeforeFish();
-
-        public static HashSet<Unit> GetPlayerUnitList(this SkillComponent self)
-        {
-            Scene currentScene = self.Parent as Scene;
-            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
-            if (unitComponent == null)
-                return null;
-
-            return unitComponent.GetPlayerUnitList();
-        }
-
-        /// <summary> 技能效果是否存在 </summary>
-        private static bool IsRunning(this SkillComponent self) => self.IceEndTime > 0;
+                            playerUnit.PlayerSkillComponent.FixedUpdateBeforeFish();
 
         /// <summary> 是否由技能控制自己的玩家射击 </summary>
         public static bool IsControlSelfShoot(this SkillComponent self)
@@ -131,28 +135,6 @@ namespace ET
                 return true;
 
             return false;
-        }
-
-        /// <summary> 技能效果是否结束 </summary>
-        private static bool IsSkillEnd(this SkillComponent self) =>
-                            self.IsRunning() && TimeHelper.ServerNow() >= self.IceEndTime;
-
-        private static void SkillEnd(this SkillComponent self)
-        {
-            Scene currentScene = self.Parent as Scene;
-
-            // 技能效果时间到了之后情况时间戳, 保证事件只触发一次
-            // 后面逻辑通过时间戳是否大于零表示技能是否还在效果时间
-            self.IceEndTime = 0;
-
-            var fisheryComponent = currentScene.GetComponent<FisheryComponent>();
-            fisheryComponent.FisheryIceSkill(false);
-
-            Game.EventSystem.Publish(new FisherySkillEnd
-            {
-                CurrentScene = currentScene,
-                SkillType = SkillType.Ice,
-            });
         }
     }
 }

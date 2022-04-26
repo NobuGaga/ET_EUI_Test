@@ -24,5 +24,8 @@ namespace ET
         /// 屏幕坐标, 暂时只有子弹用到, 放子弹类里, 在 HotfixView 赋值
         /// </summary>
         public Vector3 ScreenPos;
+
+        /// <summary> 子弹追踪的鱼 Unit ID </summary>
+        public long TrackFishUnitId;
     }
 }

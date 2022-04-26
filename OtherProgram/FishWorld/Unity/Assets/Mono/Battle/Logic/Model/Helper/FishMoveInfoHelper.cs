@@ -5,16 +5,32 @@ using UnityEngine;
 namespace ET
 {
     /// <summary>
-    /// 鱼移动辅助类, 对应 ILRuntime 层 FishMoveComponent 调用方法
-    /// 用于处理复杂的计算
+    /// 鱼移动数据 Mono 组件类, 对应热更层 FishUnitComponent 持有跟调用
+    /// 用于处理复杂的鱼线计算
     /// 私有方法使用静态拓展, 公有方法使用传参
     /// </summary>
-    public static class FishMoveHelper
+    public static class FishMoveInfoHelper
     {
-        public static FishMoveInfo PopInfo() =>
-                                   MonoPool.Instance.Fetch(typeof(FishMoveInfo)) as FishMoveInfo;
+        public static FishMoveInfo PopInfo(long unitId)
+        {
+            var unit = UnitMonoComponent.Instance.Get<FishMonoUnit>(unitId);
+            var info = unit.FishMoveInfo;
+            if (info != null)
+                return info;
 
-        public static void PushPool(FishMoveInfo info) => MonoPool.Instance.Recycle(info);
+            info = MonoPool.Instance.Fetch(typeof(FishMoveInfo)) as FishMoveInfo;
+            unit.FishMoveInfo = info;
+            return info;
+        }
+
+        public static void PushPool(long unitId, FishMoveInfo info)
+        {
+            var unit = UnitMonoComponent.Instance.Get<FishMonoUnit>(unitId);
+            if (unit != null)
+                unit.FishMoveInfo = null;
+
+            MonoPool.Instance.Recycle(info);
+        }
 
         /// <summary> 使用服务器数据初始化移动数据 </summary>
         /// <param name="info">移动数据</param>
@@ -25,7 +41,7 @@ namespace ET
         /// <param name="offsetPosY">初始位置偏移值 Y</param>
         /// <param name="offsetPosZ">初始位置偏移值 Z</param>
         public static void InitInfo(FishMoveInfo info, short roadId, long liveTime, uint remainTime,
-                                                       float offsetPosX, float offsetPosY, float offsetPosZ)
+                                                float offsetPosX, float offsetPosY, float offsetPosZ)
         {
             // int 最大值在 20+ 天左右
             info.MoveDuration = remainTime;
@@ -56,11 +72,11 @@ namespace ET
 
             float nextTime = (float)info.MoveTime / info.MoveDuration;
             CheckNextTimeValid(ref nextTime);
-            info.SetForward(ref nextTime);
+            SetForward(info, ref nextTime);
 
             nextTime = (float)(info.MoveTime + TimeHelper.ClinetDeltaFrameTime()) / info.MoveDuration;
             CheckNextTimeValid(ref nextTime);
-            info.SetNextPosition(ref nextTime);
+            SetNextPosition(info, ref nextTime);
         }
 
         public static void FixedUpdate(FishMoveInfo info)
@@ -83,18 +99,18 @@ namespace ET
 
             float nextTime = (float)info.MoveTime / info.MoveDuration;
             CheckNextTimeValid(ref nextTime);
-            info.SetForward(ref nextTime);
-            info.SetNextPosition(ref nextTime);
+            SetForward(info, ref nextTime);
+            SetNextPosition(info, ref nextTime);
         }
 
-        private static void SetForward(this FishMoveInfo info, ref float percentFloat)
+        private static void SetForward(FishMoveInfo info, ref float percentFloat)
         {
             ref Vector3 nextPos = ref info.NextPos;
             info.Path.SetForward(ref percentFloat, nextPos.x - info.OffsetPosX, nextPos.y - info.OffsetPosY,
-                                               nextPos.z - info.OffsetPosZ, ref info.NextForward);
+                                                   nextPos.z - info.OffsetPosZ, ref info.NextForward);
         }
 
-        private static void SetNextPosition(this FishMoveInfo info, ref float percentFloat)
+        private static void SetNextPosition(FishMoveInfo info, ref float percentFloat)
         {
             ref Vector3 nextPos = ref info.NextPos;
             info.Path.SetPoint(ref percentFloat, ref nextPos);

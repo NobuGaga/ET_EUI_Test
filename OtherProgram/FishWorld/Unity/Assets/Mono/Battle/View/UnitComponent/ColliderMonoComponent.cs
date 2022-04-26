@@ -52,22 +52,23 @@ namespace ET
         {
             for (int index = 0; index < colliderArray.Length; index++)
             {
-                ref ICollider collider = ref colliderArray[index];
+                ICollider collider = colliderArray[index];
                 Vector3 boneWorldPosition = bonesTransformArray[index].position;
 
-                // Battle Warning Sphere 会修改 boneWorldPosition 的值
-                // 这里后面执行的逻辑不能使用 boneWorldPosition
-                collider.Update(ref boneWorldPosition, scale);
+                if (!(collider is Line2D))
+                {
+                    // Battle Warning Sphere 会修改 boneWorldPosition 的值
+                    // 这里后面执行的逻辑不能使用 boneWorldPosition
+                    collider.Update(ref boneWorldPosition, scale);
+                    continue;
+                }
 
-//                if (colliderId == 1 && collider is Line2D)
-//                {
-//                    Line2D line = (Line2D)collider;
-//                    line.Update(ref boneWorldPosition, scale, ref moveDirection);
-//#if UNITY_EDITOR
-//                    line.AddLineDrawData();
-//#endif
-//                    collider = line;
-//                }
+                Line2D line = collider as Line2D;
+                line.Update(ref boneWorldPosition, scale, ref moveDirection);
+#if UNITY_EDITOR
+
+                line.AddLineDrawData();
+#endif
             }
         }
 

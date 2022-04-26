@@ -9,5 +9,9 @@ namespace ET
 	public class BattleUnitViewComponent : Entity, IAwake, IDestroy
 	{
 		public Transform NodeParent;
+
+		public string AssetBundlePath;
+
+		public GameObject PrefabObject;
 	}
 }

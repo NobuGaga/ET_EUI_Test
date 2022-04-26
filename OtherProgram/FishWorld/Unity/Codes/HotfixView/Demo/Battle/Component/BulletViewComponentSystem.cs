@@ -4,16 +4,16 @@ using ET.EventType;
 namespace ET
 {
     [FriendClass(typeof(GlobalComponent))]
+    [FriendClass(typeof(BattleLogicComponent))]
     [FriendClass(typeof(PlayerSkillComponent))]
     [FriendClass(typeof(Unit))]
     [FriendClass(typeof(FishUnitComponent))]
     [FriendClass(typeof(CannonComponent))]
     public static class BulletViewComponentSystem
     {
-        private static bool IsCanSkillShoot(this BattleViewComponent self, bool isShowError)
+        private static bool IsCanSkillShoot(bool isShowError)
         {
-            Scene battleScene = self.Parent as Scene;
-            BattleLogicComponent battleLogicComponent = battleScene.GetComponent<BattleLogicComponent>();
+            var battleLogicComponent = BattleLogicComponent.Instance;
             ushort battleCode = battleLogicComponent.CheckSelfSkillShootState();
             bool isCanShoot = battleCode == BattleCodeConfig.Success;
             if (!isShowError)
@@ -33,48 +33,49 @@ namespace ET
             return isCanShoot;
         }
 
-        private static bool IsCanNormalShoot(this BattleViewComponent self, bool isShowError)
-        {
-            Scene currentScene = self.CurrentScene();
-            SkillComponent skillComponent = currentScene.GetComponent<SkillComponent>();
-            if (skillComponent.IsControlSelfShoot())
-                return false;
-
-            return self.IsCanSkillShoot(isShowError);
-        }
-
         /// <summary> 使用技能射击 </summary>
         public static void SkillShoot(this BattleViewComponent self, long playerUnitId, SkillUnit skillUnit)
         {
-            PlayerComponent playerComponent = self.ZoneScene().GetComponent<PlayerComponent>();
+            var battleLogicComponent = BattleLogicComponent.Instance;
+            Scene currentScene = battleLogicComponent.CurrentScene;
+            var playerComponent = battleLogicComponent.ZoneScene.GetComponent<PlayerComponent>();
             bool isSelf = playerUnitId == playerComponent.MyId;
 
             if (skillUnit.SkillType == SkillType.Aim && isSelf)
             {
-                if (self.IsCanSkillShoot(true))
-                    self.CallLogicShootBullet();
+                Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
+                var playerSkillComponent = selfPlayerUnit.PlayerSkillComponent;
+                Unit fishUnit = SkillHelper.GetTrackFishUnit(playerSkillComponent.TrackFishUnitId);
+                if (fishUnit == null)
+                    fishUnit = battleLogicComponent.UnitComponent.GetMaxScoreFishUnit();
+
+                if (fishUnit == null)
+                    return;
+                
+                var fishUnitComponent = fishUnit.FishUnitComponent;
+                Vector3 screenPosition = fishUnitComponent.ScreenInfo.AimPoint;
+                if (IsCanSkillShoot(true))
+                    self.CallLogicShootBullet(ref screenPosition.x, ref screenPosition.y, ref fishUnit.UnitId);
                 else
-                    self.RotateCannon(false);
+                    RotateCannon(ref screenPosition.x, ref screenPosition.y, false);
             }
             else if (skillUnit.SkillType == SkillType.Laser)
             {
-                Scene currentScene = self.CurrentScene();
                 var playerSkillComponent = skillUnit.Parent as PlayerSkillComponent;
                 long trackFishUnitId = playerSkillComponent.TrackFishUnitId;
-                Unit fishUnit = SkillHelper.GetTrackFishUnit(currentScene, trackFishUnitId);
+                Unit fishUnit = SkillHelper.GetTrackFishUnit(trackFishUnitId);
                 if (fishUnit == null)
                     return;
 
                 var fisheryComponent = currentScene.GetComponent<FisheryComponent>();
                 int seatId = fisheryComponent.GetSeatId(playerUnitId);
-                FishUnitComponent fishUnitComponent = fishUnit.FishUnitComponent;
-                Vector3 screenPosition = fishUnitComponent.AimPoint.Vector;
-                CannonShootHelper.PushPool(self.RotateCannon(seatId, ref screenPosition.x, ref screenPosition.y, false));
+                var fishUnitComponent = fishUnit.FishUnitComponent;
+                Vector3 screenPosition = fishUnitComponent.ScreenInfo.AimPoint;
+                CannonShootHelper.PushPool(RotateCannon(ref seatId, ref screenPosition.x, ref screenPosition.y, false));
 
-                if (!isSelf || !self.IsCanSkillShoot(true))
+                if (!isSelf || !IsCanSkillShoot(true))
                     return;
 
-                var battleLogicComponent = currentScene.GetBattleLogicComponent();
                 int cannonStack = 1;
                 battleLogicComponent.Shoot_C2M_Bullet(screenPosition.x, screenPosition.y, cannonStack, trackFishUnitId);
             }
@@ -83,59 +84,43 @@ namespace ET
         /// <summary> 输入触控操作 </summary>
         public static void InputTouch(this BattleViewComponent self, ref float touchPosX, ref float touchPosY)
         {
-            if (self.IsCanNormalShoot(true))
-                self.CallLogicShootBullet(ref touchPosX, ref touchPosY);
-            else
-                self.RotateCannon(ref touchPosX, ref touchPosY, false);
-        }
-
-        private static Unit GetMaxScoreFish(this BattleViewComponent self)
-        {
-            Scene currentScene = self.CurrentScene();
-            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
-            var playerSkillComponent = selfPlayerUnit.GetComponent<PlayerSkillComponent>();
-            Unit fishUnit = SkillHelper.GetTrackFishUnit(currentScene, playerSkillComponent.TrackFishUnitId);
-            if (fishUnit != null)
-                return fishUnit;
-
-            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
-            return unitComponent.GetMaxScoreFishUnit();
-        }
-
-        private static void RotateCannon(this BattleViewComponent self, bool isPlayAnimation)
-        {
-            Unit fishUnit = self.GetMaxScoreFish();
-            if (fishUnit == null)
+            Scene currentScene = BattleLogicComponent.Instance.CurrentScene;
+            var skillComponent = currentScene.GetComponent<SkillComponent>();
+            if (skillComponent.IsControlSelfShoot())
+            {
+                RotateCannon(ref touchPosX, ref touchPosY, false);
                 return;
+            }
 
-            FishUnitComponent fishUnitComponent = fishUnit.FishUnitComponent;
-            Vector3 screenPosition = fishUnitComponent.AimPoint.Vector;
-            self.RotateCannon(ref screenPosition.x, ref screenPosition.y, isPlayAnimation);
+            if (IsCanSkillShoot(true))
+            {
+                long trackFishUnitId = ConstHelper.DefaultTrackFishUnitId;
+                self.CallLogicShootBullet(ref touchPosX, ref touchPosY, ref trackFishUnitId);
+            }
+            else
+                RotateCannon(ref touchPosX, ref touchPosY, false);
         }
 
-        private static void RotateCannon(this BattleViewComponent self, ref float touchPosX, ref float touchPosY,
-                                        bool isPlayAnimation)
+        private static void RotateCannon(ref float touchPosX, ref float touchPosY, bool isPlayAnimation)
         {
-            Scene currentScene = self.CurrentScene();
-            FisheryComponent fisheryComponent = currentScene.GetComponent<FisheryComponent>();
+            Scene currentScene = BattleLogicComponent.Instance.CurrentScene;
+            var fisheryComponent = currentScene.GetComponent<FisheryComponent>();
             int selfSeatId = fisheryComponent.GetSelfSeatId();
-            CannonShootHelper.PushPool(self.RotateCannon(selfSeatId, ref touchPosX, ref touchPosY, isPlayAnimation));
+            CannonShootHelper.PushPool(RotateCannon(ref selfSeatId, ref touchPosX, ref touchPosY, isPlayAnimation));
         }
 
-        private static CannonShootInfo RotateCannon(this BattleViewComponent self, int seatId,
-                                                    ref float touchPosX, ref float touchPosY, bool isPlayAnimation)
+        private static CannonShootInfo RotateCannon(ref int seatId, ref float touchPosX, ref float touchPosY, bool isPlayAnimation)
         {
-            Scene currentScene = self.CurrentScene();
+            Scene currentScene = BattleLogicComponent.Instance.CurrentScene;
             var fisheryComponent = currentScene.GetComponent<FisheryComponent>();
             Unit playerUnit = fisheryComponent.GetPlayerUnit(seatId);
-            CannonComponent cannonComponent = playerUnit.GetComponent<CannonComponent>();
+            var cannonComponent = playerUnit.GetComponent<CannonComponent>();
             if (isPlayAnimation)
                 cannonComponent.PlayAnimation();
 
-            GameObjectComponent gameObjectComponent = cannonComponent.Cannon.GetComponent<GameObjectComponent>();
-            Transform cannonTrans = gameObjectComponent.GameObject.transform;
-            ReferenceCollector collector = cannonTrans.gameObject.GetComponent<ReferenceCollector>();
-            Transform shootPointTrans = collector.Get<GameObject>("shoot_point").transform;
+            var gameObjectComponent = cannonComponent.Cannon.GetComponent<GameObjectComponent>();
+            var cannonTransform = gameObjectComponent.GameObject.transform;
+            var collector = cannonTransform.gameObject.GetComponent<ReferenceCollector>();
 
             // 在视图层获取屏幕坐标, 不放到 Mono 层因为 Mono 层的 Helper 类不能调用 Unity 的东西
             // 因为 Robot 工程有引用, 所以视图层的赋值操作需要在这里进行
@@ -144,60 +129,34 @@ namespace ET
             // 最后使用旋转完后的炮台射击点位置来设置子弹的初始位置
             CannonShootInfo cannonShootInfo = CannonShootHelper.PopInfo();
             Camera camera = GlobalComponent.Instance.RawCannonCamera;
-            Vector3 cannonScreenPos = camera.WorldToScreenPoint(cannonTrans.position);
-            Vector2 shootDirection = new Vector2(touchPosX - cannonScreenPos.x, touchPosY - cannonScreenPos.y);
-            CannonShootHelper.SetLocalQuaternion(cannonShootInfo, shootDirection);
-            cannonTrans.localRotation = cannonShootInfo.LocalRotation;
-            Vector3 shootScreenPos = camera.WorldToScreenPoint(shootPointTrans.position);
+            Vector3 cannonScreenPos = camera.WorldToScreenPoint(cannonTransform.position);
+            CannonShootHelper.SetLocalQuaternion(cannonShootInfo, touchPosX - cannonScreenPos.x,
+                                                                  touchPosY - cannonScreenPos.y);
+            cannonTransform.localRotation = cannonShootInfo.LocalRotation;
+            var shootPointTransform = collector.Get<GameObject>("shoot_point").transform;
+            Vector3 shootScreenPos = camera.WorldToScreenPoint(shootPointTransform.position);
             CannonShootHelper.InitInfo(cannonShootInfo, shootScreenPos);
 
             // 返回值方便发射子弹获取炮台信息
             return cannonShootInfo;
         }
 
-        private static void CallLogicShootBullet(this BattleViewComponent self)
-        {
-            Unit fishUnit = self.GetMaxScoreFish();
-            if (fishUnit == null)
-                return;
-
-            FishUnitComponent fishUnitComponent = fishUnit.FishUnitComponent;
-            Vector3 screenPosition = fishUnitComponent.AimPoint.Vector;
-            long trackFishUnitId = fishUnit.Id;
-            self.CallLogicShootBullet(ref screenPosition.x, ref screenPosition.y, ref trackFishUnitId);
-        }
-
         private static void CallLogicShootBullet(this BattleViewComponent self, ref float touchPosX,
-                                                ref float touchPosY)
+                                                 ref float touchPosY, ref long trackFishUnitId)
         {
-            long trackFishUnitId = BulletConfig.DefaultTrackFishUnitId;
-            self.CallLogicShootBullet(ref touchPosX, ref touchPosY, ref trackFishUnitId);
-        }
-
-        private static void CallLogicShootBullet(this BattleViewComponent self, ref float touchPosX,
-                                                ref float touchPosY, ref long trackFishUnitId)
-        {
-            Scene currentScene = self.CurrentScene();
-            FisheryComponent fisheryComponent = currentScene.GetComponent<FisheryComponent>();
+            Scene currentScene = BattleLogicComponent.Instance.CurrentScene;
+            var fisheryComponent = currentScene.GetComponent<FisheryComponent>();
             int selfSeatId = fisheryComponent.GetSelfSeatId();
-            UnitInfo unitInfo = self.CallLogicShootBullet(selfSeatId, ref touchPosX, ref touchPosY, ref trackFishUnitId);
-            int cannonStack = 1;
+            var bulletLogicComponent = currentScene.GetComponent<BulletLogicComponent>();
+            UnitInfo unitInfo = bulletLogicComponent.PopUnitInfo(selfSeatId, trackFishUnitId);
+            self.CallLogicShootBullet(unitInfo, ref touchPosX, ref touchPosY);
+
             unitInfo.TryGetTrackFishUnitId(out trackFishUnitId);
-            BattleLogicComponent battleLogicComponent = currentScene.GetBattleLogicComponent();
 
             // Battle TODO 自己发射子弹发送协议, 后面把整个触控交互逻辑判断放到逻辑层
             // Battle TODO 炮倍, 暂时写死
-            battleLogicComponent.C2M_Fire(unitInfo.UnitId, touchPosX, touchPosY, cannonStack, trackFishUnitId);
-        }
-
-        private static UnitInfo CallLogicShootBullet(this BattleViewComponent self, int seatId, ref float touchPosX,
-                                                     ref float touchPosY, ref long trackFishUnitId)
-        {
-            Scene currentScene = self.CurrentScene();
-            BulletLogicComponent bulletLogicComponent = currentScene.GetComponent<BulletLogicComponent>();
-            UnitInfo unitInfo = bulletLogicComponent.PopUnitInfo(seatId, trackFishUnitId);
-            self.CallLogicShootBullet(unitInfo, ref touchPosX, ref touchPosY);
-            return unitInfo;
+            int cannonStack = 1;
+            BattleLogicComponent.Instance.C2M_Fire(unitInfo.UnitId, touchPosX, touchPosY, cannonStack, trackFishUnitId);
         }
 
         /// <summary> 通知战斗逻辑发射子弹, 这里做一些视图层的处理然后再把数据传到逻辑层 </summary>
@@ -207,19 +166,17 @@ namespace ET
             int seatId = unitInfo.GetSeatId();
 
             // 需要在视图层初始化炮台信息后传到逻辑层, 再由逻辑层使用数据
-            CannonShootInfo cannonShootInfo = self.RotateCannon(seatId, ref touchPosX, ref touchPosY, true);
-
-            BattleLogicComponent battleLogicComponent = self.Parent.GetComponent<BattleLogicComponent>();
-            battleLogicComponent.ShootBullet(unitInfo, cannonShootInfo);
+            CannonShootInfo cannonShootInfo = RotateCannon(ref seatId, ref touchPosX, ref touchPosY, true);
+            BattleLogicComponent.Instance.ShootBullet(unitInfo, cannonShootInfo);
         }
     }
 
-    public class AfterShoot_BattleViewComponent : AEvent<ReceiveFire>
+    public class AfterShoot_BattleViewComponent : AEventClass<ReceiveFire>
     {
-        protected override void Run(ReceiveFire args)
+        protected override void Run(object obj)
         {
-            BattleViewComponent battleViewComponent = args.CurrentScene.GetBattleViewComponent();
-            battleViewComponent.CallLogicShootBullet(args.UnitInfo, ref args.TouchPosX, ref args.TouchPosY);
+            var args = obj as ReceiveFire;
+            BattleViewComponent.Instance.CallLogicShootBullet(args.UnitInfo, ref args.TouchPosX, ref args.TouchPosY);
         }
     }
 }

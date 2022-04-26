@@ -9,7 +9,7 @@ namespace ET
         {
             Unit unit = self.Parent as Unit;
 
-            FishMoveInfo info = FishMoveHelper.PopInfo();
+            FishMoveInfo info = FishMoveInfoHelper.PopInfo(unit.UnitId);
             info.Reset();
 
             // 这里用 var 看起来不像 NumericComponent 组件 = =
@@ -25,12 +25,11 @@ namespace ET
             float offsetPosY = (float)attributeComponent[NumericType.PositionY] / FishConfig.ServerOffsetScale;
             float offsetPosZ = (float)attributeComponent[NumericType.PositionZ] / FishConfig.ServerOffsetScale;
 
-            FishMoveHelper.InitInfo(info, roadId, liveTime, remainTime, offsetPosX, offsetPosY, offsetPosZ);
-            self.Info = info;
+            FishMoveInfoHelper.InitInfo(info, roadId, liveTime, remainTime, offsetPosX, offsetPosY, offsetPosZ);
+            self.MoveInfo = info;
 
-            self.AimPoint = StructureHelper.Pop_Vector3_Class();
-
-            self.IsInScreen = false;
+            self.ScreenInfo = FishScreenInfoHelper.PopInfo(unit.UnitId);
+            self.ScreenInfo.IsInScreen = false;
 
             var transformComponent = unit.TransformComponent;
             transformComponent.NodeName = string.Format(FishConfig.NameFormat, unit.ConfigId, unit.UnitId);
@@ -43,11 +42,13 @@ namespace ET
     {
         public override void Destroy(FishUnitComponent self)
         {
-            FishMoveHelper.PushPool(self.Info);
-            self.Info = null;
+            var moveInfo = self.MoveInfo;
+            self.MoveInfo = null;
+            FishMoveInfoHelper.PushPool(self.Parent.Id, moveInfo);
 
-            StructureHelper.PushPool(self.AimPoint);
-            self.AimPoint = null;
+            var screenInfo = self.ScreenInfo;
+            self.ScreenInfo = null;
+            FishScreenInfoHelper.PushPool(self.Parent.Id, screenInfo);
         }
     }
 
@@ -59,18 +60,18 @@ namespace ET
     {
         internal static void FixedUpdate(this FishUnitComponent self, Unit unit)
         {
-            FishMoveInfo info = self.Info;
-            FishMoveHelper.FixedUpdate(info);
+            FishMoveInfo info = self.MoveInfo;
+            FishMoveInfoHelper.FixedUpdate(info);
 
             if (!info.IsMoveEnd)
                 unit.TransformComponent.Info.Update(info);
         }
 
         internal static void SetMoveSpeed(this FishUnitComponent self, float moveSpeed) =>
-                             self.Info.MoveSpeed = moveSpeed;
+                             self.MoveInfo.MoveSpeed = moveSpeed;
 
-        internal static void PauseMove(this FishUnitComponent self) => self.Info.IsPause = true;
+        internal static void PauseMove(this FishUnitComponent self) => self.MoveInfo.IsPause = true;
 
-        internal static void ResumeMove(this FishUnitComponent self) => self.Info.IsPause = false;
+        internal static void ResumeMove(this FishUnitComponent self) => self.MoveInfo.IsPause = false;
     }
 }

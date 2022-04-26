@@ -1,19 +1,20 @@
 // Battle Review Before Boss Node
 
-using System.Collections.Generic;
-
 namespace ET
 {
+    [FriendClass(typeof(BattleLogicComponent))]
+    [FriendClass(typeof(UnitComponent))]
+    [FriendClass(typeof(Unit))]
     public static class SkillViewComponentSystem
     {
         public static void UpdateBeforeBullet(this SkillComponent self)
         {
-            HashSet<Unit> playerUnitList = self.GetPlayerUnitList();
+            var playerUnitList = BattleLogicComponent.Instance.UnitComponent.GetPlayerUnitList();
             if (playerUnitList != null)
                 ForeachHelper.Foreach(playerUnitList, UpdateBeforeBullet);
         }
 
         private static void UpdateBeforeBullet(this Unit playerUnit) =>
-                            playerUnit.GetComponent<PlayerSkillComponent>().UpdateBeforeBullet();
+                            playerUnit.PlayerSkillComponent.UpdateBeforeBullet();
     }
 }

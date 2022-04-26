@@ -4,6 +4,7 @@ using ET.EventType;
 
 namespace ET
 {
+    [FriendClass(typeof(BattleLogicComponent))]
     [FriendClass(typeof(Unit))]
     [FriendClass(typeof(SkillUnit))]
     [FriendClass(typeof(PlayerSkillComponent))]
@@ -18,7 +19,8 @@ namespace ET
             node.localScale = Vector3.one;
 
             bool isUseModelPool = BattleConfig.IsUseModelPool;
-            self.AddComponent<GameObjectComponent, string, Transform>(assetBundlePath, node, isUseModelPool);
+            self.GameObjectComponent = self.AddComponent<GameObjectComponent, string, Transform>
+                                                        (assetBundlePath, node, isUseModelPool);
 
             self.MoveToRemovePoint();
 
@@ -49,9 +51,11 @@ namespace ET
 
         public static void MoveToRemovePoint(this SkillUnit self)
         {
-            var gameObjectComponent = self.GetComponent<GameObjectComponent>();
-            if (gameObjectComponent != null)
-                gameObjectComponent.Transform.localPosition = SkillConfig.RemovePoint;
+            var gameObjectComponent = self.GameObjectComponent;
+            if (gameObjectComponent == null)
+                return;
+
+            (gameObjectComponent as GameObjectComponent).Transform.localPosition = SkillConfig.RemovePoint;
         }
 
         public static long GetTrackFishUnitId(this SkillUnit self)
@@ -62,13 +66,11 @@ namespace ET
 
         public static Vector3 GetTrackPosition(this SkillUnit self)
         {
-            long trackFishUnitId = self.GetTrackFishUnitId();
-            Unit fishUnit = SkillHelper.GetTrackFishUnit(self.DomainScene(), trackFishUnitId);
+            Unit fishUnit = SkillHelper.GetTrackFishUnit(self.GetTrackFishUnitId());
             if (fishUnit == null)
                 return SkillConfig.RemovePoint;
 
-            FishUnitComponent fishUnitComponent = fishUnit.FishUnitComponent;
-            return fishUnitComponent.AimPoint.Vector;
+            return fishUnit.FishUnitComponent.ScreenInfo.AimPoint;
         }
 
         public static ObjectPoolComponent GetObjectPoolComponent(this SkillUnit self)
@@ -81,7 +83,7 @@ namespace ET
                         return uiComponent.GetComponent<ObjectPoolComponent>();
                     return null;
                 case SkillType.Laser:
-                    var battleViewComponent = self.DomainScene().GetBattleViewComponent();
+                    var battleViewComponent = BattleViewComponent.Instance;
                     return battleViewComponent.GetComponent<ObjectPoolComponent>();
                 default:
                     return null;
@@ -104,7 +106,7 @@ namespace ET
         public static void UpdatePosition(this SkillUnit self)
         {
             long trackFishUnitId = self.GetTrackFishUnitId();
-            if (trackFishUnitId == BulletConfig.DefaultTrackFishUnitId)
+            if (trackFishUnitId == ConstHelper.DefaultTrackFishUnitId)
             {
                 self.MoveToRemovePoint();
                 return;
@@ -118,9 +120,11 @@ namespace ET
             }
 
             Vector3 uiPos = UIHelper.ScreenPosToUI(trackPosition.x, trackPosition.y);
-            var gameObjectComponent = self.GetComponent<GameObjectComponent>();
-            if (gameObjectComponent != null)
-                gameObjectComponent.Transform.localPosition = uiPos;
+            var gameObjectComponent = self.GameObjectComponent;
+            if (gameObjectComponent == null)
+                return;
+
+            (gameObjectComponent as GameObjectComponent).Transform.localPosition = uiPos;
         }
     }
 
@@ -153,8 +157,11 @@ namespace ET
                 gameObject = await ObjectInstantiateHelper.InitModel(unit, assetBundlePath, assetName);
 
             // Unit 为 null 则已经被释放掉 
-            if (gameObject != null)
-                unit.AddGameObjectComponent(assetBundlePath, gameObject.transform);
+            if (gameObject == null)
+                return;
+
+            gameObject = UnityEngine.Object.Instantiate(gameObject);
+            unit.AddGameObjectComponent(assetBundlePath, gameObject.transform);
         }
 
         private ValueTuple<string, string> TryGetAssetPathAndName(SkillUnit unit)

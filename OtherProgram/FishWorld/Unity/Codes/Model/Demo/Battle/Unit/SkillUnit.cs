@@ -18,5 +18,7 @@ namespace ET
 
         /// <summary> 技能冷却结束时间戳 </summary>
         public long CdEndTime;
+
+        public Entity GameObjectComponent;
     }
 }

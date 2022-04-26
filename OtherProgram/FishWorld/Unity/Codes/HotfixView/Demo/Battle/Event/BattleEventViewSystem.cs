@@ -6,13 +6,13 @@ using ET.EventType;
 
 namespace ET
 {
-    public class BattleEventL2V_ReceiveSkillUseSystem : AEvent<ReceiveSkillUse>
+    public class BattleEventL2V_ReceiveSkillUseSystem : AEventClass<ReceiveSkillUse>
     {
-        protected override void Run(ReceiveSkillUse args)
+        protected override void Run(object args)
         {
-            var battleViewComponent = args.CurrentScene.GetBattleViewComponent();
+            var battleViewComponent = BattleViewComponent.Instance;
 
-            switch (args.Message.SkillType)
+            switch ((args as ReceiveSkillUse).Message.SkillType)
             {
                 case SkillType.Ice:
                     battleViewComponent.FisheryIceSkill();
@@ -23,6 +23,6 @@ namespace ET
 
     public class BattleEventL2V_RemoveBulletUnitSystem : AEventClass<RemoveBulletUnit>
     {
-        protected override void Run(object args) => UnitMonoComponent.Remove((args as RemoveBulletUnit).UnitId);
+        protected override void Run(object args) => TransformMonoHelper.Remove((args as RemoveBulletUnit).UnitId);
     }
 }

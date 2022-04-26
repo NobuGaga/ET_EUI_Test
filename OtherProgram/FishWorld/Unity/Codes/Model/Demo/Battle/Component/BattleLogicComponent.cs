@@ -1,7 +1,6 @@
 // Battle Review Before Boss Node
 
 using System;
-using System.Collections.Generic;
 
 namespace ET
 {
@@ -15,6 +14,12 @@ namespace ET
 	{
 		public static BattleLogicComponent Instance;
 
+		public Scene CurrentScene;
+
+		public Scene ZoneScene;
+
+		public UnitComponent UnitComponent;
+
 		#region Network Class
 
 		public C2M_Fire FireInfo;
@@ -27,21 +32,15 @@ namespace ET
 
 		#region Foreach Function
 
-		public List<long> FishUnitIdList;
-
 		public bool Argument_Bool;
 
 		public int Argument_Integer;
-
-		public Unit Argument_Unit;
 
 		public Unit Result_Unit;
 
 		public Action<Unit, bool> Action_Unit_Bool;
 
 		public Func<Unit, int, bool> BreakFunc_Unit_Integer;
-
-		public Func<Unit, Unit, BattleLogicComponent, bool> BreakFunc_Unit_Unit_Logic;
 
 		#endregion
 	}

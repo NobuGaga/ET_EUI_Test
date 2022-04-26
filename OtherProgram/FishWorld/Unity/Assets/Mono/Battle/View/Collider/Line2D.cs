@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace ET
 {
-    public struct Line2DOffset
+    public class Line2DOffset
     {
         public float Start;
         public float End;
@@ -13,7 +13,7 @@ namespace ET
         }
     }
 
-    public struct Line2D : ICollider
+    public class Line2D : ICollider
     {
         /// <summary> 摄像机类型(固定值) </summary>
         private ushort cameraType;

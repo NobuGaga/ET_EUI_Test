@@ -6,7 +6,7 @@ namespace ET
 	{
 		public void InitBulletInfo(int seatId) =>
 					InitBulletInfo(seatId, BulletConfig.DefaultBulletUnitId,
-										   BulletConfig.DefaultTrackFishUnitId);
+										   ConstHelper.DefaultTrackFishUnitId);
 
 		public void InitBulletInfo(int seatId, long trackFishUnitId) =>
 					InitBulletInfo(seatId, BulletConfig.DefaultBulletUnitId, trackFishUnitId);
@@ -36,8 +36,6 @@ namespace ET
 				Vs.Add(seatId);
 				Vs.Add(trackFishUnitId);
 			}
-
-			name = null;
         }
 
 		private bool CheckAttributeListValid()
@@ -83,7 +81,7 @@ namespace ET
 
 		public bool TryGetTrackFishUnitId(out long trackFishUnitId)
 		{
-			trackFishUnitId = BulletConfig.DefaultTrackFishUnitId;
+			trackFishUnitId = ConstHelper.DefaultTrackFishUnitId;
 			return TryGetAttribute(ref trackFishUnitId, NumericType.TrackFishId);
 		}
 
@@ -98,11 +96,6 @@ namespace ET
 
 			if (Vs != null)
 				Vs.Clear();
-
-			if (SkillList != null)
-				SkillList.Clear();
-
-			name = null;
 		}
 	}
 }

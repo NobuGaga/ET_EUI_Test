@@ -7,8 +7,9 @@ namespace ET
     {
         public override void Awake(TransformComponent self)
         {
-            self.Info = TransformHelper.PopInfo();
+            self.Info = TransformInfoHelper.PopInfo(self.Parent.Id);
             self.Info.Reset();
+
             self.NodeName = TransformDefaultConfig.DefaultName;
         }
     }
@@ -18,8 +19,10 @@ namespace ET
     {
         public override void Destroy(TransformComponent self)
         {
-            TransformHelper.PushPool(self.Info);
+            TransformInfo info = self.Info;
             self.Info = null;
+            TransformInfoHelper.PushPool(self.Parent.Id, info);
+
             self.NodeName = null;
         }
     }

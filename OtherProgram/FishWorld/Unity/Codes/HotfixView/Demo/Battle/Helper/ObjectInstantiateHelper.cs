@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace ET
 {
+    [FriendClass(typeof(BattleViewComponent))]
     public static class ObjectInstantiateHelper
     {
         /// <summary>
@@ -21,11 +22,7 @@ namespace ET
             }
 
             if (unit.IsDisposed)
-            {
-                // Battle Warning 异步加载完回来如果 Unit 已经被销毁则直接销毁 gameObject
-                UnityEngine.Object.Destroy(gameObject);
                 return null;
-            }
 
             return gameObject;
         }
@@ -48,10 +45,7 @@ namespace ET
 
                 await resourcesLoaderCom.LoadAsync(assetBundlePath);
 
-                // Battle TODO 后面改用异步
-                GameObject prefab = ResourcesComponent.Instance.GetAsset(assetBundlePath, assetName) as GameObject;
-
-                return UnityEngine.Object.Instantiate(prefab);
+                return ResourcesComponent.Instance.GetAsset(assetBundlePath, assetName) as GameObject;
             }
             catch (Exception exception)
             {

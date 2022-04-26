@@ -4,29 +4,36 @@ namespace ET
 {
     [ObjectSystem]
 	[FriendClass(typeof(Unit))]
-    public class FishUnitLogicComponentAwakeSystem : AwakeSystem<BattleUnitLogicComponent, UnitInfo>
+    public class FishUnitLogicComponentAwakeSystem : AwakeSystem<Unit, int, UnitInfo>
     {
         // 添加通用数据或者组件
         // 在 AddChild 的时候根据传入参数调用相应的 IAake 方法
-        public override void Awake(BattleUnitLogicComponent self, UnitInfo unitInfo)
+        public override void Awake(Unit self, int configId, UnitInfo unitInfo)
         {
-            Unit unit = self.Awake(unitInfo);
-            unit.FishUnitComponent = unit.AddComponent<FishUnitComponent>(BattleConfig.IsUseModelPool);
+            UnitMonoComponent.Instance.AddFishUnit(unitInfo.UnitId);
+
+            self.Awake(unitInfo);
+
+            self.ConfigId = configId;
+            self.FishUnitComponent = self.AddComponent<FishUnitComponent>(BattleConfig.IsUseModelPool);
         }
     }
 
     [ObjectSystem]
 	[FriendClass(typeof(Unit))]
-	public class BulletUnitLogicComponentAwakeSystem : AwakeSystem<BattleUnitLogicComponent, UnitInfo,
+	public class BulletUnitLogicComponentAwakeSystem : AwakeSystem<Unit, UnitInfo,
                                                                    CannonShootInfo>
     {
         // 添加通用数据或者组件
         // 在 AddChild 的时候根据传入参数调用相应的 IAake 方法
-        public override void Awake(BattleUnitLogicComponent self, UnitInfo unitInfo,
-                                   CannonShootInfo cannonShootInfo)
+        public override void Awake(Unit self, UnitInfo unitInfo, CannonShootInfo cannonShootInfo)
         {
-            Unit unit = self.Awake(unitInfo);
-            unit.BulletUnitComponent = unit.AddComponent<BulletUnitComponent, CannonShootInfo>
+            UnitMonoComponent.Instance.AddBulletUnit(unitInfo.UnitId);
+
+            self.Awake(unitInfo);
+
+            self.ConfigId = BulletConfig.BulletColliderID;
+            self.BulletUnitComponent = self.AddComponent<BulletUnitComponent, CannonShootInfo>
                                                         (cannonShootInfo, BattleConfig.IsUseModelPool);
         }
     }
@@ -34,17 +41,15 @@ namespace ET
     [FriendClass(typeof(Unit))]
     public static class BattleUnitLogicComponentSystem
     {
-        internal static Unit Awake(this BattleUnitLogicComponent self, UnitInfo unitInfo)
+        internal static void Awake(this Unit self, UnitInfo unitInfo)
         {
-            Unit unit = self.Parent as Unit;
+            self.UnitId = unitInfo.UnitId;
 
-            unit.UnitId = unitInfo.UnitId;
-
-            unit.UnitType = unitInfo.Type;
-            unit.Type = unitInfo.Type;
+            self.UnitType = unitInfo.Type;
+            self.Type = unitInfo.Type;
 
             bool isUseModelPool = BattleConfig.IsUseModelPool;
-            var attributeComponent = unit.AddComponent<NumericComponent>(isUseModelPool);
+            var attributeComponent = self.AddComponent<NumericComponent>(isUseModelPool);
 
             // 改用 var 以免 UnitInfo 改变后要修改别的地方代码
             var attributeTypes = unitInfo.Ks;
@@ -52,12 +57,10 @@ namespace ET
 
             if (unitInfo.Ks != null && unitInfo.Vs != null && unitInfo.Ks.Count == unitInfo.Vs.Count)
                 for (var i = 0; i < attributeTypes.Count; i++)
-                    attributeComponent.Set(attributeTypes[i], attributeValues[i]);
+                    attributeComponent.SetNoEvent(attributeTypes[i], attributeValues[i]);
 
-            unit.AttributeComponent = attributeComponent;
-            unit.TransformComponent = unit.AddComponent<TransformComponent>(isUseModelPool);
-
-            return unit;
+            self.AttributeComponent = attributeComponent;
+            self.TransformComponent = self.AddComponent<TransformComponent>(isUseModelPool);
         }
 
         public static void FixedUpdate(this Unit self)

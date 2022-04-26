@@ -20,11 +20,11 @@ namespace ET
         public static void InitTransform(this Unit self)
         {
             TransformInfo info = self.TransformComponent.Info;
-            UnitMonoComponent.SetLocalPos(self.Id, info);
-            self.SetPos(info.LogicPos);
-            self.SetLocalRotation(info.LogicLocalRotation);
-            self.SetRotation(info.LogicRotation);
-            UnitMonoComponent.SetForward(self.Id, info);
+            self.SetLocalPos(info.LocalPosition);
+            self.SetPos(info.WorldPosition);
+            self.SetLocalRotation(info.LocalRotation);
+            self.SetRotation(info.Rotation);
+            self.SetForward(info.Forward);
 
             // Battle Warning 使用预设缩放值, 后面看看要不要走配置
             self.SetScale((self.GameObjectComponent as GameObjectComponent).Transform.localScale);
@@ -43,7 +43,19 @@ namespace ET
             Transform transform = gameObjectComponent.Transform;
             transform.position = pos;
             
-            self.TransformComponent.Info.LogicLocalPos = transform.localPosition;
+            self.TransformComponent.Info.LocalPosition = transform.localPosition;
+        }
+
+        private static void SetLocalPos(this Unit self, Vector3 localPos)
+        {
+            GameObjectComponent gameObjectComponent = self.GameObjectComponent as GameObjectComponent;
+            if (gameObjectComponent == null)
+                return;
+
+            Transform transform = gameObjectComponent.Transform;
+            transform.localPosition = localPos;
+
+            self.TransformComponent.Info.WorldPosition = transform.position;
         }
 
         private static void SetRotation(this Unit self, Quaternion rotation)
@@ -55,7 +67,7 @@ namespace ET
             Transform transform = gameObjectComponent.Transform;
             transform.rotation = rotation;
 
-            self.TransformComponent.Info.LogicLocalRotation = transform.localRotation;
+            self.TransformComponent.Info.LocalRotation = transform.localRotation;
         }
 
         public static void SetLocalRotation(this Unit self, Quaternion localRotation)
@@ -67,7 +79,14 @@ namespace ET
             Transform transform = gameObjectComponent.Transform;
             transform.localRotation = localRotation;
 
-            self.TransformComponent.Info.LogicRotation = transform.rotation;
+            self.TransformComponent.Info.Rotation = transform.rotation;
+        }
+
+        private static void SetForward(this Unit self, Vector3 forward)
+        {
+            GameObjectComponent gameObjectComponent = self.GameObjectComponent as GameObjectComponent;
+            if (gameObjectComponent != null)
+                gameObjectComponent.Transform.forward = forward;
         }
 
         private static void SetScale(this Unit self, Vector3 scale)
@@ -86,7 +105,7 @@ namespace ET
             if (gameObjectComponent != null)
                 info.ScreenPos = camera.WorldToScreenPoint(gameObjectComponent.Transform.position);
             else
-                info.ScreenPos = camera.WorldToScreenPoint(bulletUnit.TransformComponent.Info.LogicPos);
+                info.ScreenPos = camera.WorldToScreenPoint(bulletUnit.TransformComponent.Info.WorldPosition);
         }
 
         private static void SetParent(this Unit self, Transform parent, bool isKeepMoveState = true)

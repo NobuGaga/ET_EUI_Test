@@ -21,7 +21,7 @@ namespace ET
 
 			FishId.Clear();
 
-			if (trackFishUnitId != BulletConfig.DefaultTrackFishUnitId)
+			if (trackFishUnitId != ConstHelper.DefaultTrackFishUnitId)
 				FishId.Add(trackFishUnitId);
 		}
 	}
@@ -39,7 +39,7 @@ namespace ET
 				if (FishId != null && FishId.Count > 0)
 					return FishId[0];
 
-				return BulletConfig.DefaultTrackFishUnitId;
+				return ConstHelper.DefaultTrackFishUnitId;
 			}
 		}
 	}

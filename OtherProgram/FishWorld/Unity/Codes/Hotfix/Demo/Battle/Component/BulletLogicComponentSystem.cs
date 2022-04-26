@@ -14,8 +14,9 @@ namespace ET
         public override void Destroy(BulletLogicComponent self) => self.RemoveAllUnit();
     }
 
-    [FriendClass(typeof(Unit))]
+    [FriendClass(typeof(BattleLogicComponent))]
     [FriendClass(typeof(BulletLogicComponent))]
+    [FriendClass(typeof(Unit))]
     public static class BulletLogicComponentSystem
     {
         public static UnitInfo PopUnitInfo(this BulletLogicComponent self, int seatId)
@@ -104,7 +105,7 @@ namespace ET
         public static ushort CheckSelfNormalShootState(this BattleLogicComponent battleLogicComponent)
         {
             // 优先级搞得在前面先判断, 后面复杂了在根据 Code 定义优先级来调用
-            Scene currentScene = battleLogicComponent.CurrentScene();
+            Scene currentScene = battleLogicComponent.CurrentScene;
             SkillComponent skillComponent = currentScene.GetComponent<SkillComponent>();
             if (skillComponent.IsControlSelfShoot())
                 return BattleCodeConfig.SkillControl;
@@ -114,7 +115,7 @@ namespace ET
 
         public static ushort CheckSelfSkillShootState(this BattleLogicComponent battleLogicComponent)
         {
-            Scene currentScene = battleLogicComponent.CurrentScene();
+            Scene currentScene = battleLogicComponent.CurrentScene;
             BulletLogicComponent self = currentScene.GetComponent<BulletLogicComponent>();
             var shootInterval = TimeHelper.ServerNow() - self.LastShootBulletTime;
             if (shootInterval < BulletConfig.ShootBulletInterval)
@@ -137,7 +138,7 @@ namespace ET
         public static void Shoot_C2M_Bullet(this BattleLogicComponent battleLogicComponent, float screenPosX,
                                             float screenPosY, int cannonStack, long trackFishUnitId)
         {
-            Scene currentScene = battleLogicComponent.CurrentScene();
+            Scene currentScene = battleLogicComponent.CurrentScene;
             BulletLogicComponent self = currentScene.GetComponent<BulletLogicComponent>();
 
             // 生成一个不跟普通子弹重复的 ID
@@ -159,7 +160,7 @@ namespace ET
         public static void ShootBullet(this BattleLogicComponent battleLogicComponent,
                                             UnitInfo unitInfo, CannonShootInfo cannonShootInfo)
         {
-            Scene currentScene = battleLogicComponent.CurrentScene();
+            Scene currentScene = battleLogicComponent.CurrentScene;
             BulletLogicComponent self = currentScene.GetComponent<BulletLogicComponent>();
 
             if (unitInfo.UnitId == BulletConfig.DefaultBulletUnitId)
@@ -171,9 +172,8 @@ namespace ET
             bool isUseModelPool = BattleConfig.IsUseModelPool;
 
             // 保持所有的战斗 Unit 都 Add 到 Current Scene 上, 因为 Unit 只是数据
-            Unit unit = self.AddChildWithId<Unit, int>(unitInfo.UnitId, unitInfo.ConfigId, isUseModelPool);
-
-            unit.AddComponent<BattleUnitLogicComponent, UnitInfo, CannonShootInfo>(unitInfo, cannonShootInfo, isUseModelPool);
+            Unit unit = self.AddChildWithId<Unit, UnitInfo, CannonShootInfo>(unitInfo.UnitId, unitInfo,
+                                                                             cannonShootInfo, isUseModelPool);
 
             self.ShootBulletCount++;
             self.BulletIdList.Add(unitInfo.UnitId);
@@ -192,6 +192,8 @@ namespace ET
             publishData.CurrentScene = self.DomainScene();
             publishData.UnitId = unitId;
             Game.EventSystem.PublishClass(publishData);
+
+            UnitMonoComponent.Instance.Remove(unitId);
 
             self.ShootBulletCount--;
             

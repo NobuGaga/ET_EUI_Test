@@ -32,7 +32,7 @@ namespace ET
         }
 
         /// <summary> 接收到 Fire 事件 </summary>
-        public struct ReceiveFire
+        public class ReceiveFire : DisposeObject
         {
             public Scene CurrentScene;
 
@@ -43,14 +43,31 @@ namespace ET
             public float TouchPosY;
 
             public M2C_Fire Message;
+
+            public static ReceiveFire Instance = new ReceiveFire();
+
+            public override void Dispose()
+            {
+                CurrentScene = null;
+                UnitInfo = null;
+                Message = null;
+            }
         }
 
         /// <summary> 接收到 Use Skill 事件 </summary>
-        public struct ReceiveSkillUse
+        public class ReceiveSkillUse : DisposeObject
         {
             public Scene CurrentScene;
 
             public M2C_SkillUse Message;
+
+            public static ReceiveSkillUse Instance = new ReceiveSkillUse();
+
+            public override void Dispose()
+            {
+                CurrentScene = null;
+                Message = null;
+            }
         }
 
         #endregion
@@ -58,7 +75,7 @@ namespace ET
         #region Logic To UI
 
         /// <summary> 子弹跟鱼发生碰撞事件 </summary>
-        public struct BulletCollideFish
+        public class BulletCollideFish : DisposeObject
         {
             public Scene CurrentScene;
 
@@ -69,14 +86,26 @@ namespace ET
             public long PlayerUnitId;
             
             public long FishUnitId;
+
+            public static BulletCollideFish Instance = new BulletCollideFish();
+
+            public override void Dispose() => CurrentScene = null;
         }
 
         /// <summary> 击杀鱼事件 </summary>
-        public struct KillFish
+        public class KillFish : DisposeObject
         {
             public Scene CurrentScene;
 
             public M2C_Hit Message;
+
+            public static KillFish Instance = new KillFish();
+
+            public override void Dispose()
+            {
+                CurrentScene = null;
+                Message = null;
+            }
         }
 
         #endregion

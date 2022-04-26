@@ -27,14 +27,13 @@ namespace ET
 
 			UnitInfo UnitInfo = bulletLogicComponent.PopUnitInfo(seatId, message.BulletId, message.TrackFishUnitId);
 
-			Game.EventSystem.Publish(new ReceiveFire()
-			{
-				CurrentScene = CurrentScene,
-				UnitInfo = UnitInfo,
-				TouchPosX = message.TouchPosX,
-				TouchPosY = message.TouchPosY,
-				Message = message,
-			});
+			var publishData = ReceiveFire.Instance;
+			publishData.CurrentScene = CurrentScene;
+			publishData.UnitInfo = UnitInfo;
+			publishData.TouchPosX = message.TouchPosX;
+			publishData.TouchPosY = message.TouchPosY;
+			publishData.Message = message;
+			Game.EventSystem.PublishClass(publishData);
 		}
 	}
 }

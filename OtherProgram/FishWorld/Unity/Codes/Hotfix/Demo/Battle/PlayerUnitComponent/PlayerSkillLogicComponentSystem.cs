@@ -9,7 +9,7 @@ namespace ET
         public override void Awake(PlayerSkillComponent self)
         {
             self.IsAutoShoot = false;
-            self.TrackFishUnitId = BulletConfig.DefaultTrackFishUnitId;
+            self.TrackFishUnitId = ConstHelper.DefaultTrackFishUnitId;
         }
     }
 
@@ -21,6 +21,7 @@ namespace ET
     }
 
     [FriendClass(typeof(Unit))]
+    [FriendClass(typeof(SkillUnit))]
     [FriendClass(typeof(FishUnitComponent))]
     [FriendClass(typeof(PlayerSkillComponent))]
     public static class PlayerSkillLogicComponentSystem
@@ -31,7 +32,7 @@ namespace ET
             int skillTime = message.SkillTime;
             int skillCdTime = message.SkillCDTime;
 
-            self.TrackFishUnitId = BulletConfig.DefaultTrackFishUnitId;
+            self.TrackFishUnitId = ConstHelper.DefaultTrackFishUnitId;
             if (message.TargetId != null && message.TargetId.Count > 0)
                 self.TrackFishUnitId = message.TargetId[0];
 
@@ -73,25 +74,25 @@ namespace ET
         public static SkillUnit Get(this PlayerSkillComponent self, int skillType)
         {
             SkillUnit skillUnit = self.GetChild<SkillUnit>(skillType);
-            if (skillUnit != null)
-                return skillUnit;
+            if (skillUnit == null)
+                Log.Error($"PlayerSkillComponent.Get skillType = { skillType }, is null");
 
-            Log.Error($"PlayerSkillComponent.Get skillType = { skillType }, is null");
-            return null;
+            return skillUnit;
         }
 
         public static void FixedUpdateBeforeFish(this PlayerSkillComponent self)
         {
-            Unit playerUnit = self.Parent as Unit;
-            List<long> skillTypeList = self.SkillTypeList;
+            List<int> skillTypeList = self.SkillTypeList;
             for (int index = skillTypeList.Count - 1; index >= 0 ; index--)
             {
                 long skillType = skillTypeList[index];
                 SkillUnit skillUnit = self.GetChild<SkillUnit>(skillType);
 
                 // 触发一次修改技能结束时间戳当标识
-                if (skillUnit.IsSkillEnd())
-                    skillUnit.SkillEnd(playerUnit.Id);
+                if (skillUnit.IsRunning() && TimeHelper.ServerNow() >= skillUnit.SkillEndTime)
+                    // 技能效果时间到了之后情况时间戳, 保证事件只触发一次
+                    // 后面逻辑通过时间戳是否大于零表示技能是否还在效果时间
+                    skillUnit.SkillEndTime = 0;
 
                 // 技能 CD 结束且技能不生效则移除, 技能 CD 时间戳不被修改
                 if (skillUnit.IsCdEnd() && !skillUnit.IsRunning())
@@ -109,18 +110,18 @@ namespace ET
             ref long trackFishUnitId = ref self.TrackFishUnitId;
             if (!self.IsInSkill(SkillType.Aim) && !self.IsInSkill(SkillType.Laser))
             {
-                trackFishUnitId = BulletConfig.DefaultTrackFishUnitId;
+                trackFishUnitId = ConstHelper.DefaultTrackFishUnitId;
                 return;
             }
 
             UnitComponent unitComponent = self.DomainScene().GetComponent<UnitComponent>();
             Unit fishUnit = unitComponent.Get(trackFishUnitId);
 
-            if (fishUnit != null && !fishUnit.IsDisposed && fishUnit.FishUnitComponent.IsInScreen)
+            if (fishUnit != null && !fishUnit.IsDisposed && fishUnit.FishUnitComponent.ScreenInfo.IsInScreen)
                 return;
 
             fishUnit = unitComponent.GetMaxScoreFishUnit();
-            trackFishUnitId = fishUnit != null ? fishUnit.Id : BulletConfig.DefaultTrackFishUnitId;
+            trackFishUnitId = fishUnit != null ? fishUnit.Id : ConstHelper.DefaultTrackFishUnitId;
         }
     }
 }

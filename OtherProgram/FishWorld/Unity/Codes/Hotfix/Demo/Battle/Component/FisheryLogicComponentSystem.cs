@@ -41,10 +41,8 @@ namespace ET
 
         public static Unit GetPlayerUnit(this FisheryComponent self, int seatId)
         {
-            Scene currentScene = self.Parent as Scene;
-            
-            var battleLogicComponent = currentScene.GetBattleLogicComponent();
-            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
+            var battleLogicComponent = BattleLogicComponent.Instance;
+            UnitComponent unitComponent = battleLogicComponent.UnitComponent;
             
             var playerUnitList = unitComponent.GetPlayerUnitList();
             battleLogicComponent.Result_Unit = null;
@@ -60,7 +58,7 @@ namespace ET
             if (attributeComponent.GetAsInt(NumericType.Pos) != seatId)
                 return true;
 
-            var battleLogicComponent = playerUnit.DomainScene().GetBattleLogicComponent();
+            var battleLogicComponent = BattleLogicComponent.Instance;
             battleLogicComponent.Result_Unit = playerUnit;
             return false;
         }
@@ -69,16 +67,15 @@ namespace ET
         /// <param name="isSkillStart">是否开始使用冰冻技能</param>
         internal static void FisheryIceSkill(this FisheryComponent self, bool isSkillStart)
         {
-            var battleLogicComponent = self.DomainScene().GetBattleLogicComponent();
             UnitComponent unitComponent = self.Parent.GetComponent<UnitComponent>();
             var fishUnitList = unitComponent.GetFishUnitList();
-            battleLogicComponent.Foreach(fishUnitList, SetFishUnitPauseState, isSkillStart);
+            BattleLogicComponent.Instance.Foreach(fishUnitList, SetFishUnitPauseState, isSkillStart);
         }
         
         private static void SetFishUnitPauseState(Unit fishUnit, bool isPause)
         {
             FishUnitComponent fishUnitComponent = fishUnit.FishUnitComponent;
-            fishUnitComponent.Info.IsPause = isPause;
+            fishUnitComponent.MoveInfo.IsPause = isPause;
         }
 
         /// <summary> 渔场切换场景处理 </summary>

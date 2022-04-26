@@ -52,11 +52,11 @@ namespace ET
             var playerSkillLogicComponent = self.Parent as PlayerSkillComponent;
             Unit playerUnit = playerSkillLogicComponent.Parent as Unit;
             Scene currentScene = self.DomainScene();
-            var battleViewComponent = currentScene.GetBattleViewComponent();
+            var battleViewComponent = BattleViewComponent.Instance;
             battleViewComponent.SkillShoot(playerUnit.Id, self);
 
             long trackFishUnitId = self.GetTrackFishUnitId();
-            if (trackFishUnitId == BulletConfig.DefaultTrackFishUnitId)
+            if (trackFishUnitId == ConstHelper.DefaultTrackFishUnitId)
             {
                 self.MoveToRemovePoint();
                 return;

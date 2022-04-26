@@ -12,23 +12,13 @@ namespace ET
 			Scene zoneScene = session.DomainScene();
 			Scene CurrentScene = zoneScene.CurrentScene();
 
-			long fishUnitId = Message.FishId;
-			var fishUnitIdList = BattleLogicComponent.Instance.FishUnitIdList;
-			for (int index = 0; index < fishUnitIdList.Count; index++)
-				if (fishUnitIdList[index] == fishUnitId)
-                {
-					fishUnitIdList.RemoveAt(index);
-					break;
-                }
+			var publishData = KillFish.Instance;
+			publishData.CurrentScene = CurrentScene;
+			publishData.Message = Message;
+			Game.EventSystem.PublishClass(publishData);
 
 			UnitComponent unitComponent = CurrentScene.GetComponent<UnitComponent>();
-			unitComponent.Remove(fishUnitId);
-
-			Game.EventSystem.Publish(new KillFish()
-			{
-				CurrentScene = CurrentScene,
-				Message = Message,
-			});
+			unitComponent.Remove(Message.FishId);
 		}
 	}
 }

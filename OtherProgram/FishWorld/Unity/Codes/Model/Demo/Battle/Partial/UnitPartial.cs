@@ -3,7 +3,7 @@ namespace ET
     /// <summary>
     /// 拓展 Unit 类, 只有战斗才会有的组件跟接口
     /// </summary>
-    public partial class Unit : IDestroy
+    public partial class Unit : IAwake<int, UnitInfo>, IAwake<UnitInfo, CannonShootInfo>, IDestroy
     {
         public long UnitId;
 
@@ -18,8 +18,10 @@ namespace ET
 
         public BulletUnitComponent BulletUnitComponent;
 
+        public PlayerSkillComponent PlayerSkillComponent;
+
         public Entity GameObjectComponent;
 
-        public Entity ColliderViewComponent;
+        public Entity BattleUnitViewComponent;
     }
 }

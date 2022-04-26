@@ -30,10 +30,11 @@ namespace ET
             shootLocalPosition.y = shootScreenPosition.y / ConstHelper.CannonCameraHeightRatio;
         }
 
-        public static void SetLocalQuaternion(CannonShootInfo info, Vector2 shootDirection)
+        public static void SetLocalQuaternion(CannonShootInfo info, float shootDirectionX, float shootDirectionY)
         {
-            shootDirection.Normalize();
-            info.ShootDirection = shootDirection;
+            info.ShootDirection.x = shootDirectionX;
+            info.ShootDirection.y = shootDirectionY;
+            info.ShootDirection.Normalize();
             SetLocalQuaternion(ref info.LocalRotation, ref info.ShootDirection);
         }
 

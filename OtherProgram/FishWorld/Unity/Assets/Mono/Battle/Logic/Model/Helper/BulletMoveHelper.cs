@@ -9,10 +9,26 @@ namespace ET
     /// </summary>
     public static class BulletMoveHelper
     {
-        public static BulletMoveInfo PopInfo() =>
-                                    MonoPool.Instance.Fetch(typeof(BulletMoveInfo)) as BulletMoveInfo;
+        public static BulletMoveInfo PopInfo(long unitId)
+        {
+            var unit = UnitMonoComponent.Instance.Get<BulletMonoUnit>(unitId);
+            var info = unit.BulletMoveInfo;
+            if (info != null)
+                return info;
 
-        public static void PushPool(BulletMoveInfo info) => MonoPool.Instance.Recycle(info);
+            info = MonoPool.Instance.Fetch(typeof(BulletMoveInfo)) as BulletMoveInfo;
+            unit.BulletMoveInfo = info;
+            return info;
+        }
+
+        public static void PushPool(long unitId, BulletMoveInfo info)
+        {
+            var unit = UnitMonoComponent.Instance.Get<BulletMonoUnit>(unitId);
+            if (unit != null)
+                unit.BulletMoveInfo = null;
+
+            MonoPool.Instance.Recycle(info);
+        }
 
         public static void InitInfo(BulletMoveInfo bulletMoveInfo, CannonShootInfo cannonShootInfo)
         {

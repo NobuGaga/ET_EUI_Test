@@ -26,7 +26,7 @@ namespace ET
         private static void Action_Unit_Bool(Unit unit)
         {
             Scene scene = unit.DomainScene();
-            BattleLogicComponent self = scene.GetBattleLogicComponent();
+            BattleLogicComponent self = BattleLogicComponent.Instance;
             self.Action_Unit_Bool(unit, self.Argument_Bool);
         }
 
@@ -44,26 +44,8 @@ namespace ET
         private static bool BreakFunc_Unit_Integer(Unit unit)
         {
             Scene scene = unit.DomainScene();
-            BattleLogicComponent self = scene.GetBattleLogicComponent();
+            BattleLogicComponent self = BattleLogicComponent.Instance;
             return self.BreakFunc_Unit_Integer(unit, self.Argument_Integer);
-        }
-
-        public static void Foreach(this BattleLogicComponent self, HashSet<Unit> hashSet,
-                                   Func<Unit, Unit, BattleLogicComponent, bool> func,
-                                   Unit unitArgument)
-        {
-            self.BreakFunc_Unit_Unit_Logic = func;
-            self.Argument_Unit = unitArgument;
-
-            ForeachHelper.Foreach(hashSet, BreakFunc_Unit_Unit_Logic);
-
-            self.BreakFunc_Unit_Unit_Logic = null;
-        }
-
-        private static bool BreakFunc_Unit_Unit_Logic(Unit unit)
-        {
-            var self = BattleLogicComponent.Instance;
-            return self.BreakFunc_Unit_Unit_Logic(unit, self.Argument_Unit, self);
         }
     }
 }

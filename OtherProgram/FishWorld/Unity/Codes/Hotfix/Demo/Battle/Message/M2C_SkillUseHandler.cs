@@ -23,11 +23,10 @@ namespace ET
                     break;
             }
 
-            Game.EventSystem.Publish(new ReceiveSkillUse()
-            {
-                CurrentScene = currentScene,
-                Message = message,
-            });
+            var publishData = ReceiveSkillUse.Instance;
+            publishData.CurrentScene = currentScene;
+            publishData.Message = message;
+            Game.EventSystem.PublishClass(publishData);
         }
     }
 }

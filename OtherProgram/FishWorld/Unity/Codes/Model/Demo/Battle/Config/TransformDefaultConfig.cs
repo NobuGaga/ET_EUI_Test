@@ -8,7 +8,6 @@ namespace ET
         // Battle Warning 成员变量值类型 GC 标记
         public static Vector3 DefaultPosition = Vector3.zero;
         public static Quaternion DefaultRotation = Quaternion.identity;
-        public static Vector3 DefaultScale = new Vector3(0.1f, 0.1f, 0.1f);
         public static Vector3 DefaultForward = Vector3.forward;
         
         /// <summary> 默认屏幕坐标, 设置一个不会参与碰撞的位置 </summary>

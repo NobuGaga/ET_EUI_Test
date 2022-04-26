@@ -17,6 +17,6 @@ namespace ET
         /// </summary>
         public long TrackFishUnitId;
 
-        public List<long> SkillTypeList = new List<long>();
+        public List<int> SkillTypeList = new List<int>();
     }
 }

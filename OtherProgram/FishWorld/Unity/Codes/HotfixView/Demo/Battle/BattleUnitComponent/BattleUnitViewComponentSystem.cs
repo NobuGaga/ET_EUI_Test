@@ -4,24 +4,22 @@ using UnityEngine;
 namespace ET
 {
     [ObjectSystem]
+    [FriendClass(typeof(BattleViewComponent))]
     [FriendClass(typeof(Unit))]
+    [FriendClass(typeof(GameObjectComponent))]
     public class BattleUnitViewComponentAwakeSystem : AwakeSystem<BattleUnitViewComponent>
     {
         public override void Awake(BattleUnitViewComponent self)
         {
             Unit unit = self.Parent as Unit;
+            unit.BattleUnitViewComponent = self;
 
-            switch (unit.Type)
-            {
-                case UnitType.Fish:
-                    self.NodeParent = ReferenceHelper.FishRootNode.transform;
-                    break;
-                case UnitType.Bullet:
-                    self.NodeParent = ReferenceHelper.BulletRootNode.transform;
-                    break;
-            }
+            if (unit.Type == UnitType.Fish)
+                self.NodeParent = ReferenceHelper.FishRootNode.transform;
+            else if (unit.Type == UnitType.Bullet)
+                self.NodeParent = ReferenceHelper.BulletRootNode.transform;
 
-            InitModel(unit).Coroutine();
+            InitModel(self, unit).Coroutine();
         }
 
         /// <summary>
@@ -30,13 +28,12 @@ namespace ET
         /// (缓存池在 ZoneScene 或者是 Current Scene)
         /// 外部使用 xxx.Coroutine() 调用, 不用等待返回值
         /// </summary>
-        private async ETTask InitModel(Unit unit)
+        private async ETTask InitModel(BattleUnitViewComponent self, Unit unit)
         {
             // Battle Warning 原逻辑将 Asset Bundle Name 加进 ObjectPool 里作为 Key, 而不是使用加载的 Asset Name
             // 如果是同一个 AssetBundle 里有不同的预设资源则会有问题, 目前模型资源是一个 AssetBundle 里一个预设
             // UI 资源可能多个预设在同一个 AssetBundle 里, ObjectPoolComponent 则不可使用
             // 使用 Asset Bundle Name 拼接 Asset Name 或者是别的方法
-
             var ret = TryGetAssetPathAndName(unit);
             string assetBundlePath = ret.Item1;
             string assetName = ret.Item2;
@@ -52,14 +49,16 @@ namespace ET
             if (gameObject == null)
                 return;
 
-            Transform node = gameObject.transform;
-            bool isUseModelPool = BattleConfig.IsUseModelPool;
-            unit.GameObjectComponent = unit.AddComponent<GameObjectComponent, string, Transform>(assetBundlePath,
-                                                                                                 node, isUseModelPool);
-            unit.InitTransform();
-            InitComponent(unit);
+            self.AssetBundlePath = assetBundlePath;
+            self.PrefabObject = gameObject;
 
-            UnitMonoComponent.Add(unit.Id, node);
+            if (unit == null || unit.IsDisposed)
+                return;
+
+            if (unit.Type == UnitType.Fish)
+                BattleViewComponent.Instance.InstantiateFishStack.Push(unit.UnitId);
+            else if (unit.Type == UnitType.Bullet)
+                unit.InstantiateGameObject();
         }
 
         private ValueTuple<string, string> TryGetAssetPathAndName(Unit unit)
@@ -89,46 +88,46 @@ namespace ET
 
             return new ValueTuple<string, string>(assetBundlePath, assetName);
         }
-
-        private void InitComponent(Unit unit)
-        {
-            unit.ColliderViewComponent = unit.AddComponent<ColliderViewComponent>();
-
-            if (unit.Type == UnitType.Bullet)
-                return;
-
-            unit.AddComponent<AnimatorComponent>(BattleConfig.IsUseModelPool).Reset();
-        }
     }
 
     [ObjectSystem]
     public class BattleUnitViewComponentDestroySystem : DestroySystem<BattleUnitViewComponent>
     {
-        public override void Destroy(BattleUnitViewComponent self) => self.NodeParent = null;
+        public override void Destroy(BattleUnitViewComponent self)
+        {
+            self.NodeParent = null;
+            self.AssetBundlePath = null;
+            self.PrefabObject = null;
+        }
     }
 
     [FriendClass(typeof(Unit))]
     [FriendClass(typeof(TransformComponent))]
-    public static class UnitViewComponentSystem
+    [FriendClass(typeof(BattleUnitViewComponent))]
+    public static class UnitViewSystem
     {
-        public static void Update(this Unit self)
+        public static void InstantiateGameObject(this Unit unit)
         {
-            ref long unitId = ref self.UnitId;
-            TransformInfo info = self.TransformComponent.Info;
-            UnitMonoComponent.SetLocalPos(unitId, info);
-            switch (self.Type)
-            {
-                case UnitType.Fish:
-                    UnitMonoComponent.SetForward(unitId, info);
-                    break;
-                case UnitType.Bullet:
-                    self.SetLocalRotation(info.LogicLocalRotation);
-                    self.UpdateScreenPosition();
-                    break;
-            }
+            var battleUnitViewComponent = unit.BattleUnitViewComponent as BattleUnitViewComponent;
+            var gameObject = UnityEngine.Object.Instantiate(battleUnitViewComponent.PrefabObject);
 
-            var colliderViewComponent = self.ColliderViewComponent as ColliderViewComponent;
-            colliderViewComponent?.Update(self);
+            battleUnitViewComponent.PrefabObject = null;
+
+            Transform node = gameObject.transform;
+            bool isUseModelPool = BattleConfig.IsUseModelPool;
+            unit.GameObjectComponent = unit.AddComponent<GameObjectComponent, string, Transform>(
+                                                         battleUnitViewComponent.AssetBundlePath, node, isUseModelPool);
+
+            battleUnitViewComponent.AssetBundlePath = null;
+
+            unit.InitTransform();
+            BattleMonoUnit monoUnit = UnitMonoComponent.Instance.Get(unit.UnitId);
+            monoUnit.ColliderMonoComponent = ColliderHelper.AddColliderComponent(unit.ConfigId, gameObject);
+
+            if (unit.Type == UnitType.Fish)
+                unit.AddComponent<AnimatorComponent>(BattleConfig.IsUseModelPool).Reset();
+
+            TransformMonoHelper.Add(unit.Id, node);
         }
 
         public static ObjectPoolComponent GetObjectPoolComponent(this Unit unit)
@@ -138,7 +137,7 @@ namespace ET
             if (unitType == UnitType.Player || unitType == UnitType.Player)
                 return currentScene.GetComponent<ObjectPoolComponent>();
 
-            BattleViewComponent battleViewComponent = currentScene.GetBattleViewComponent();
+            BattleViewComponent battleViewComponent = BattleViewComponent.Instance;
             return battleViewComponent.GetComponent<ObjectPoolComponent>();
         }
     }

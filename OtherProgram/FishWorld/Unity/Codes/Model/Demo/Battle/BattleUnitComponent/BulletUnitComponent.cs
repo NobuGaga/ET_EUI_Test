@@ -7,8 +7,5 @@ namespace ET
         /// 子弹参与移动数据传输消息体, 传给 Mono 层然后直接修改里面的值
         /// </summary>
         public BulletMoveInfo Info;
-
-        /// <summary> 子弹追踪的鱼 Unit ID </summary>
-        public long TrackFishUnitId;
     }
 }

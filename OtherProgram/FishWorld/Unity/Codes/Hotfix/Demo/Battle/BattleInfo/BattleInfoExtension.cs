@@ -8,10 +8,9 @@ namespace ET
     {
         public static void Reset(this TransformInfo self)
         {
-            self.LogicPos = TransformDefaultConfig.DefaultPosition;
-            self.LogicRotation = TransformDefaultConfig.DefaultRotation;
-            self.LogicScale = TransformDefaultConfig.DefaultScale;
-            self.LogicForward = TransformDefaultConfig.DefaultForward;
+            self.WorldPosition = TransformDefaultConfig.DefaultPosition;
+            self.Rotation = TransformDefaultConfig.DefaultRotation;
+            self.Forward = TransformDefaultConfig.DefaultForward;
         }
 
         public static void Reset(this BulletMoveInfo self)

@@ -7,12 +7,9 @@ namespace ET
     {
         public static void UpdateBeforeBullet(this PlayerSkillComponent self)
         {
-            List<long> skillTypeList = self.SkillTypeList;
+            List<int> skillTypeList = self.SkillTypeList;
             for (ushort index = 0; index < skillTypeList.Count; index++)
-            {
-                SkillUnit skillUnit = self.Get((int)skillTypeList[index]);
-                skillUnit.UpdateBeforeBullet();
-            }
+                self.Get(skillTypeList[index])?.UpdateBeforeBullet();
         }
     }
 }

@@ -1,5 +1,3 @@
-// Battle Review
-
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -40,7 +38,7 @@ namespace ET
             _tempCircleColliderList.Clear();
         }
 
-        public static ColliderMonoComponent GetColliderComponent(int colliderId, GameObject gameObject)
+        public static ColliderMonoComponent AddColliderComponent(int colliderId, GameObject gameObject)
         {
             int instanceID = gameObject.GetInstanceID();
             if (colliderComponentMap.ContainsKey(instanceID))
@@ -54,6 +52,15 @@ namespace ET
 
             colliderComponentMap.Add(instanceID, colliderComponent);
             return colliderComponent;
+        }
+
+        public static ColliderMonoComponent GetColliderComponent(Transform transform)
+        {
+            int instanceID = transform.gameObject.GetInstanceID();
+            if (colliderComponentMap.ContainsKey(instanceID))
+                return colliderComponentMap[instanceID];
+
+            throw new System.Exception($"ColliderMonoComponent.Get not exist GameObject. instanceID = { instanceID }");
         }
 
         private static ICollider[] CreateColliderList(int colliderId)

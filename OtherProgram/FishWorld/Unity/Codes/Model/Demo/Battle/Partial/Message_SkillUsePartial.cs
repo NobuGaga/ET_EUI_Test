@@ -11,7 +11,7 @@ namespace ET
 
 			TargetId.Clear();
 
-			if (trackFishUnitId == BulletConfig.DefaultTrackFishUnitId)
+			if (trackFishUnitId == ConstHelper.DefaultTrackFishUnitId)
 				return;
 
 			TargetId.Add(trackFishUnitId);

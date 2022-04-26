@@ -13,22 +13,22 @@ namespace ET
     {
         public override void Awake(BulletUnitComponent self, CannonShootInfo cannonShootInfo)
         {
-            BulletMoveInfo bulletMoveInfo = BulletMoveHelper.PopInfo();
+            Unit bulletUnit = self.Parent as Unit;
+            BulletMoveInfo bulletMoveInfo = BulletMoveHelper.PopInfo(bulletUnit.UnitId);
             bulletMoveInfo.Reset();
 
             BulletMoveHelper.InitInfo(bulletMoveInfo, cannonShootInfo);
             CannonShootHelper.PushPool(cannonShootInfo);
             self.Info = bulletMoveInfo;
 
-            Unit bulletUnit = self.Parent as Unit;
-            self.TrackFishUnitId = bulletUnit.AttributeComponent[NumericType.TrackFishId];
-            ref long trackFishUnitId = ref self.TrackFishUnitId;
+            self.Info.TrackFishUnitId = bulletUnit.AttributeComponent[NumericType.TrackFishId];
+            ref long trackFishUnitId = ref self.Info.TrackFishUnitId;
 
-            if (trackFishUnitId != BulletConfig.DefaultTrackFishUnitId)
+            if (trackFishUnitId != ConstHelper.DefaultTrackFishUnitId)
             {
                 var unitComponent = self.DomainScene().GetComponent<UnitComponent>();
                 Unit fishUnit = unitComponent.Get(trackFishUnitId);
-                self.SetTrackDirection(fishUnit.FishUnitComponent.AimPoint.Vector);
+                self.SetTrackDirection(fishUnit.FishUnitComponent.ScreenInfo.AimPoint);
             }
 
             bulletUnit.TransformComponent.NodeName = string.Format(BulletConfig.NameFormat, bulletUnit.UnitId);
@@ -41,8 +41,9 @@ namespace ET
     {
         public override void Destroy(BulletUnitComponent self)
         {
-            BulletMoveHelper.PushPool(self.Info);
+            var info = self.Info;
             self.Info = null;
+            BulletMoveHelper.PushPool(self.Parent.Id, info);
         }
     }
 
@@ -54,21 +55,21 @@ namespace ET
     {
         internal static void FixedUpdate(this BulletUnitComponent self, Unit unit)
         {
-            if (self.TrackFishUnitId != BulletConfig.DefaultTrackFishUnitId)
-            {
-                Unit fishUnit = SkillHelper.GetTrackFishUnit(unit.DomainScene(), self.TrackFishUnitId);
-                if (fishUnit == null)
-                {
-                    unit.AttributeComponent.Set(NumericType.TrackFishId, BulletConfig.DefaultTrackFishUnitId);
-                    self.TrackFishUnitId = BulletConfig.DefaultTrackFishUnitId;
-                }
-                else
-                    self.SetTrackDirection(fishUnit.FishUnitComponent.AimPoint.Vector);
-            }
+            //if (self.TrackFishUnitId != BulletConfig.DefaultTrackFishUnitId)
+            //{
+            //    Unit fishUnit = SkillHelper.GetTrackFishUnit(unit.DomainScene(), self.TrackFishUnitId);
+            //    if (fishUnit == null)
+            //    {
+            //        unit.AttributeComponent.Set(NumericType.TrackFishId, BulletConfig.DefaultTrackFishUnitId);
+            //        self.TrackFishUnitId = BulletConfig.DefaultTrackFishUnitId;
+            //    }
+            //    else
+            //        self.SetTrackDirection(fishUnit.FishUnitComponent.ScreenInfo.AimPoint);
+            //}
             
-            BulletMoveInfo info = self.Info;
-            BulletMoveHelper.FixedUpdate(info);
-            unit.TransformComponent.Info.Update(info);
+            //BulletMoveInfo info = self.Info;
+            //BulletMoveHelper.FixedUpdate(info);
+            //unit.TransformComponent.Info.Update(info);
         }
 
         internal static void SetTrackDirection(this BulletUnitComponent self, Vector3 trackScreenPos)
@@ -77,11 +78,11 @@ namespace ET
             BulletMoveInfo info = self.Info;
             Vector2 moveDirection = info.MoveDirection;
             float moveDirectionX = trackScreenPos.x - info.ScreenPos.x;
-            if (Mathf.Abs(moveDirectionX) > BulletConfig.TrackDirectionFix)
+            if (Mathf.Abs(moveDirectionX) > ConstHelper.TrackDirectionFix)
                 moveDirection.x = moveDirectionX;
 
             float moveDirectionY = trackScreenPos.y - info.ScreenPos.y;
-            if (Mathf.Abs(moveDirectionY) > BulletConfig.TrackDirectionFix)
+            if (Mathf.Abs(moveDirectionY) > ConstHelper.TrackDirectionFix)
                 moveDirection.y = moveDirectionY;
 
             moveDirection.Normalize();
