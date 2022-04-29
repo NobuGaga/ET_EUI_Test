@@ -62,13 +62,5 @@ namespace ET
             self.AttributeComponent = attributeComponent;
             self.TransformComponent = self.AddComponent<TransformComponent>(isUseModelPool);
         }
-
-        public static void FixedUpdate(this Unit self)
-        {
-            if (self.Type == UnitType.Fish)
-                self.FishUnitComponent.FixedUpdate(self);
-            else if (self.Type == UnitType.Bullet)
-                self.BulletUnitComponent.FixedUpdate(self);
-        }
     }
 }

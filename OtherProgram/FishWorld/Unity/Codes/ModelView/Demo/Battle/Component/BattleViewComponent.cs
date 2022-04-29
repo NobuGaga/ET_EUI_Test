@@ -14,5 +14,14 @@ namespace ET
 
 		/// <summary> 实例化鱼 GameObject Unit ID 队列 </summary>
 		public Stack<long> InstantiateFishStack = new Stack<long>(ConstHelper.FisheryUnitCount);
+
+		/// <summary> 上一次自动刷鱼时间戳(毫秒) </summary>
+		public long LastCreateFishTime;
+
+		/// <summary> 上一次自动刷鱼鱼组列表索引 </summary>
+		public ushort AutoCreateFishGroupIndex;
+
+		/// <summary> GM 协议消息结构体 </summary>
+		public C2M_GM C2M_GM;
 	}
 }

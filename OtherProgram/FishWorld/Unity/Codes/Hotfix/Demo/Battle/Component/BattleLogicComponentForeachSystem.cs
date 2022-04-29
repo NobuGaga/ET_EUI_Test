@@ -25,7 +25,6 @@ namespace ET
 
         private static void Action_Unit_Bool(Unit unit)
         {
-            Scene scene = unit.DomainScene();
             BattleLogicComponent self = BattleLogicComponent.Instance;
             self.Action_Unit_Bool(unit, self.Argument_Bool);
         }
@@ -43,7 +42,6 @@ namespace ET
 
         private static bool BreakFunc_Unit_Integer(Unit unit)
         {
-            Scene scene = unit.DomainScene();
             BattleLogicComponent self = BattleLogicComponent.Instance;
             return self.BreakFunc_Unit_Integer(unit, self.Argument_Integer);
         }

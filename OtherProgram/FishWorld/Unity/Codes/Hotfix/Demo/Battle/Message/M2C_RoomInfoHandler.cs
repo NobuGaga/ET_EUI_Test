@@ -4,15 +4,17 @@ namespace ET
 {
 	/// <summary> 进入房间接收协议 </summary>
 	[MessageHandler]
+	[FriendClass(typeof(BattleLogicComponent))]
 	[FriendClass(typeof(SkillComponent))]
 	[FriendClass(typeof(FisheryComponent))]
 	public class M2C_RoomInfoHandler : AMHandler<M2C_RoomInfo>
 	{
 		protected override void Run(Session session, M2C_RoomInfo message)
 		{
-			Scene CurrentScene = session.DomainScene().CurrentScene();
+			var battleLogicComponent= BattleLogicComponent.Instance;
+			Scene CurrentScene = battleLogicComponent.CurrentScene;
 			FisheryComponent fisheryComponent = CurrentScene.GetComponent<FisheryComponent>();
-			SkillComponent skillComponent = CurrentScene.GetComponent<SkillComponent>();
+			var skillComponent = battleLogicComponent.SkillComponent;
 
 			fisheryComponent.RoomType = message.RoomId;
 			skillComponent.IceEndTime = message.IceTime;

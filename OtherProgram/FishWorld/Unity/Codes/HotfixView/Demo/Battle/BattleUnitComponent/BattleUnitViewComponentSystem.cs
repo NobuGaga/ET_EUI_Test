@@ -35,24 +35,23 @@ namespace ET
             // UI 资源可能多个预设在同一个 AssetBundle 里, ObjectPoolComponent 则不可使用
             // 使用 Asset Bundle Name 拼接 Asset Name 或者是别的方法
             var ret = TryGetAssetPathAndName(unit);
-            string assetBundlePath = ret.Item1;
+            self.AssetBundlePath = ret.Item1;
             string assetName = ret.Item2;
 
-            ObjectPoolComponent objectPoolComponent = unit.GetObjectPoolComponent();
-            GameObject gameObject = objectPoolComponent?.PopObject(assetBundlePath);
+            var objectPoolComponent = unit.GetObjectPoolComponent();
+            GameObject gameObject = objectPoolComponent?.PopObject(self.AssetBundlePath);
 
-            // 这里会抛出异常
-            if (gameObject == null)
-                gameObject = await ObjectInstantiateHelper.InitModel(unit, assetBundlePath, assetName);
-
-            // Unit 已经被释放掉
-            if (gameObject == null)
+            if (gameObject != null)
+            {
+                unit.InitViewComponent(gameObject);
                 return;
+            }
 
-            self.AssetBundlePath = assetBundlePath;
+            gameObject = await ObjectInstantiateHelper.LoadModelPrefab(self.AssetBundlePath, assetName);
             self.PrefabObject = gameObject;
 
-            if (unit == null || unit.IsDisposed)
+            // Unit 已经被释放掉
+            if (gameObject == null || unit == null || unit.IsDisposed)
                 return;
 
             if (unit.Type == UnitType.Fish)
@@ -101,43 +100,48 @@ namespace ET
         }
     }
 
+    [FriendClass(typeof(BattleLogicComponent))]
     [FriendClass(typeof(Unit))]
     [FriendClass(typeof(TransformComponent))]
     [FriendClass(typeof(BattleUnitViewComponent))]
     public static class UnitViewSystem
     {
-        public static void InstantiateGameObject(this Unit unit)
+        internal static void InstantiateGameObject(this Unit self)
         {
-            var battleUnitViewComponent = unit.BattleUnitViewComponent as BattleUnitViewComponent;
+            var battleUnitViewComponent = self.BattleUnitViewComponent as BattleUnitViewComponent;
             var gameObject = UnityEngine.Object.Instantiate(battleUnitViewComponent.PrefabObject);
-
-            battleUnitViewComponent.PrefabObject = null;
-
-            Transform node = gameObject.transform;
-            bool isUseModelPool = BattleConfig.IsUseModelPool;
-            unit.GameObjectComponent = unit.AddComponent<GameObjectComponent, string, Transform>(
-                                                         battleUnitViewComponent.AssetBundlePath, node, isUseModelPool);
-
-            battleUnitViewComponent.AssetBundlePath = null;
-
-            unit.InitTransform();
-            BattleMonoUnit monoUnit = UnitMonoComponent.Instance.Get(unit.UnitId);
-            monoUnit.ColliderMonoComponent = ColliderHelper.AddColliderComponent(unit.ConfigId, gameObject);
-
-            if (unit.Type == UnitType.Fish)
-                unit.AddComponent<AnimatorComponent>(BattleConfig.IsUseModelPool).Reset();
-
-            TransformMonoHelper.Add(unit.Id, node);
+            self.InitViewComponent(gameObject);
         }
 
-        public static ObjectPoolComponent GetObjectPoolComponent(this Unit unit)
+        internal static void InitViewComponent(this Unit self, GameObject gameObject)
         {
-            Scene currentScene = unit.DomainScene();
-            int unitType = unit.Type;
-            if (unitType == UnitType.Player || unitType == UnitType.Player)
-                return currentScene.GetComponent<ObjectPoolComponent>();
+            var battleUnitViewComponent = self.BattleUnitViewComponent as BattleUnitViewComponent;
+            Transform node = gameObject.transform;
+            bool isUseModelPool = BattleConfig.IsUseModelPool;
+            self.GameObjectComponent = self.AddComponent<GameObjectComponent, string, Transform>(
+                                                         battleUnitViewComponent.AssetBundlePath, node, isUseModelPool);
 
-            BattleViewComponent battleViewComponent = BattleViewComponent.Instance;
+            self.InitTransform();
+            BattleMonoUnit monoUnit = UnitMonoComponent.Instance.Get(self.UnitId);
+            monoUnit.ColliderMonoComponent = ColliderHelper.AddColliderComponent(self.ConfigId, gameObject);
+
+            if (self.Type == UnitType.Fish)
+                self.AddComponent<AnimatorComponent>(BattleConfig.IsUseModelPool).Reset();
+
+            TransformMonoHelper.Add(self.Id, node);
+        }
+
+        internal static ObjectPoolComponent GetObjectPoolComponent(this Unit unit)
+        {
+            var battleLogicComponent = BattleLogicComponent.Instance;
+            int unitType = unit.Type;
+            if (unitType == UnitType.Player || unitType == UnitType.Cannon)
+            {
+                Scene currentScene = battleLogicComponent.CurrentScene;
+                return currentScene.GetComponent<ObjectPoolComponent>();
+            }
+
+            var battleViewComponent = BattleViewComponent.Instance;
             return battleViewComponent.GetComponent<ObjectPoolComponent>();
         }
     }

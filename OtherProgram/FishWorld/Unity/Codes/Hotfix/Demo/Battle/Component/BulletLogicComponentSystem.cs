@@ -100,23 +100,9 @@ namespace ET
             return BulletConfig.BulletIdFix * seatId * 10;
         }
 
-        ///<summary> 检查自己玩家是否可以进行普通射击 </summary>
-        /// <returns> 战斗编码, 用于视图层处理 </returns>
-        public static ushort CheckSelfNormalShootState(this BattleLogicComponent battleLogicComponent)
-        {
-            // 优先级搞得在前面先判断, 后面复杂了在根据 Code 定义优先级来调用
-            Scene currentScene = battleLogicComponent.CurrentScene;
-            SkillComponent skillComponent = currentScene.GetComponent<SkillComponent>();
-            if (skillComponent.IsControlSelfShoot())
-                return BattleCodeConfig.SkillControl;
-
-            return battleLogicComponent.CheckSelfSkillShootState();
-        }
-
         public static ushort CheckSelfSkillShootState(this BattleLogicComponent battleLogicComponent)
         {
-            Scene currentScene = battleLogicComponent.CurrentScene;
-            BulletLogicComponent self = currentScene.GetComponent<BulletLogicComponent>();
+            var self = battleLogicComponent.BulletLogicComponent;
             var shootInterval = TimeHelper.ServerNow() - self.LastShootBulletTime;
             if (shootInterval < BulletConfig.ShootBulletInterval)
                 return BattleCodeConfig.ShootIntervalLimit;
@@ -124,7 +110,7 @@ namespace ET
             if (self.ShootBulletCount >= BulletConfig.ShootMaxBulletCount)
                 return BattleCodeConfig.UpperLimitBullet;
 
-            Unit playerUnit = UnitHelper.GetMyUnitFromZoneScene(battleLogicComponent.ZoneScene());
+            Unit playerUnit = UnitHelper.GetMyUnitFromZoneScene(battleLogicComponent.ZoneScene);
             var attributeComponent = playerUnit.GetComponent<NumericComponent>();
             int coin = attributeComponent.GetAsInt(NumericType.Coin);
             int cannonStack = attributeComponent.GetAsInt(NumericType.CannonStack);
@@ -138,8 +124,7 @@ namespace ET
         public static void Shoot_C2M_Bullet(this BattleLogicComponent battleLogicComponent, float screenPosX,
                                             float screenPosY, int cannonStack, long trackFishUnitId)
         {
-            Scene currentScene = battleLogicComponent.CurrentScene;
-            BulletLogicComponent self = currentScene.GetComponent<BulletLogicComponent>();
+            var self = battleLogicComponent.BulletLogicComponent;
 
             // 生成一个不跟普通子弹重复的 ID
             // 然后只做时间间隔的刷新, 不加入子弹碰撞列表中
@@ -161,7 +146,7 @@ namespace ET
                                             UnitInfo unitInfo, CannonShootInfo cannonShootInfo)
         {
             Scene currentScene = battleLogicComponent.CurrentScene;
-            BulletLogicComponent self = currentScene.GetComponent<BulletLogicComponent>();
+            BulletLogicComponent self = battleLogicComponent.BulletLogicComponent;
 
             if (unitInfo.UnitId == BulletConfig.DefaultBulletUnitId)
             {
@@ -189,7 +174,7 @@ namespace ET
         public static void RemoveUnit(this BulletLogicComponent self, long unitId)
         {
             var publishData = RemoveBulletUnit.Instance;
-            publishData.CurrentScene = self.DomainScene();
+            publishData.CurrentScene = BattleLogicComponent.Instance.CurrentScene;
             publishData.UnitId = unitId;
             Game.EventSystem.PublishClass(publishData);
 

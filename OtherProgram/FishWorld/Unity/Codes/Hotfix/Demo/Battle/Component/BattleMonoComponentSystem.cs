@@ -14,12 +14,11 @@ namespace ET
             Scene currentScene = self.CurrentScene;
 
             // 子弹的移除都是本地客户端判定是否碰撞来进行
-            BulletLogicComponent bulletLogicComponent = currentScene.GetComponent<BulletLogicComponent>();
+            BulletLogicComponent bulletLogicComponent = self.BulletLogicComponent;
             Unit bulletUnit = bulletLogicComponent.GetChild<Unit>(bulletUnitId);
             var attributeComponent = bulletUnit.GetComponent<NumericComponent>();
             int seatId = attributeComponent.GetAsInt(NumericType.Pos);
-            var fisheryComponent = currentScene.GetComponent<FisheryComponent>();
-            Unit playerUnit = fisheryComponent.GetPlayerUnit(seatId);
+            Unit playerUnit = FisheryHelper.GetPlayerUnit(seatId);
             long playerUnitId = playerUnit.Id;
             Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
 
@@ -39,8 +38,7 @@ namespace ET
 
         public static void RemoveFishUnit(long fishUnitId)
         {
-            Scene currentScene = BattleLogicComponent.Instance.CurrentScene;
-            var unitComponent = currentScene.GetComponent<UnitComponent>();
+            var unitComponent = BattleLogicComponent.Instance.UnitComponent;
             unitComponent?.Remove(fishUnitId);
         }
     }

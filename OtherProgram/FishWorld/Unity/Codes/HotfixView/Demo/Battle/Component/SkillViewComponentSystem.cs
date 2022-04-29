@@ -4,17 +4,18 @@ namespace ET
 {
     [FriendClass(typeof(BattleLogicComponent))]
     [FriendClass(typeof(UnitComponent))]
+    [FriendClass(typeof(SkillComponent))]
     [FriendClass(typeof(Unit))]
-    public static class SkillViewComponentSystem
+    public static class SkillViewHelper
     {
-        public static void UpdateBeforeBullet(this SkillComponent self)
+        public static void UpdateBeforeBullet()
         {
-            var playerUnitList = BattleLogicComponent.Instance.UnitComponent.GetPlayerUnitList();
+            var battleLogicComponent = BattleLogicComponent.Instance;
+            var unitComponent = battleLogicComponent.UnitComponent;
+            var skillComponent = battleLogicComponent.SkillComponent;
+            var playerUnitList = unitComponent.GetPlayerUnitList();
             if (playerUnitList != null)
-                ForeachHelper.Foreach(playerUnitList, UpdateBeforeBullet);
+                ForeachHelper.Foreach(playerUnitList, skillComponent.UpdateBeforeBullet);
         }
-
-        private static void UpdateBeforeBullet(this Unit playerUnit) =>
-                            playerUnit.PlayerSkillComponent.UpdateBeforeBullet();
     }
 }

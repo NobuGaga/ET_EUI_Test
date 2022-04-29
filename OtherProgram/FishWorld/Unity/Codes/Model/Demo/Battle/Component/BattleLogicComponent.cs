@@ -20,7 +20,13 @@ namespace ET
 
 		public UnitComponent UnitComponent;
 
+		public BulletLogicComponent BulletLogicComponent;
+
+		public SkillComponent SkillComponent;
+
 		#region Network Class
+
+		public SessionComponent SessionComponent;
 
 		public C2M_Fire FireInfo;
 

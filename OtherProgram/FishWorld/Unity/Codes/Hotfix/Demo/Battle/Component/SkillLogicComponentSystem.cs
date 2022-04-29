@@ -1,12 +1,17 @@
 using ET.EventType;
-using System.Collections.Generic;
 
 namespace ET
 {
     [ObjectSystem]
+    [FriendClass(typeof(Unit))]
     public sealed class SkillComponentAwakeSystem : AwakeSystem<SkillComponent>
     {
-        public override void Awake(SkillComponent self) => self.IceEndTime = 0;
+        public override void Awake(SkillComponent self)
+        {
+            self.IceEndTime = 0;
+            self.FixedUpdateBeforeFish = (Unit playerUnit) =>
+                                              playerUnit.PlayerSkillComponent.FixedUpdateBeforeFish();
+        }
     }
 
     [ObjectSystem]
@@ -14,7 +19,9 @@ namespace ET
     {
         public override void Destroy(SkillComponent self)
         {
-            // Battle TODO
+            self.FixedUpdateBeforeFish = null;
+            self.UpdateBeforeBullet = null;
+            self.SetFishAnimatorState = null;
         }
     }
 
@@ -40,8 +47,7 @@ namespace ET
             }
 
             // 当前玩家没有目标则重新寻找目标
-            Scene currentScene = self.CurrentScene;
-            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
+            UnitComponent unitComponent = self.UnitComponent;
             if (unitComponent == null)
             {
                 self.UseSkill(skillType, ConstHelper.DefaultTrackFishUnitId);
@@ -75,8 +81,7 @@ namespace ET
 
         public static void UpdateSkill(this SkillComponent self, M2C_SkillUse message)
         {
-            Scene currentScene = self.Parent as Scene;
-            UnitComponent unitComponent = currentScene.GetComponent<UnitComponent>();
+            var unitComponent = BattleLogicComponent.Instance.UnitComponent;
             Unit playerUnit = unitComponent.Get(message.UnitId);
 
             // 玩家退出渔场会为 null
@@ -92,10 +97,11 @@ namespace ET
                 self.IceEndTime = message.SkillTime + TimeHelper.ServerNow();
         }
 
-        public static void FixedUpdateBeforeFish(this SkillComponent self)
+        public static void FixedUpdateBeforeFish()
         {
             var battleLogicComponent = BattleLogicComponent.Instance;
             Scene currentScene = battleLogicComponent.CurrentScene;
+            SkillComponent self = battleLogicComponent.SkillComponent;
             if (self.IceEndTime > 0 && TimeHelper.ServerNow() >= self.IceEndTime)
             {
                 // 技能效果时间到了之后情况时间戳, 保证事件只触发一次
@@ -114,16 +120,14 @@ namespace ET
 
             var playerUnitList = battleLogicComponent.UnitComponent.GetPlayerUnitList();
             if (playerUnitList != null)
-                ForeachHelper.Foreach(playerUnitList, FixedUpdateSkillBeforeFish);
+                ForeachHelper.Foreach(playerUnitList, self.FixedUpdateBeforeFish);
         }
-
-        private static void FixedUpdateSkillBeforeFish(this Unit playerUnit) =>
-                            playerUnit.PlayerSkillComponent.FixedUpdateBeforeFish();
 
         /// <summary> 是否由技能控制自己的玩家射击 </summary>
         public static bool IsControlSelfShoot(this SkillComponent self)
         {
-            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(self.DomainScene());
+            Scene currentScene = BattleLogicComponent.Instance.CurrentScene;
+            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
             var playerSkillComponent = selfPlayerUnit.GetComponent<PlayerSkillComponent>();
             if (playerSkillComponent.IsAutoShoot)
                 return true;

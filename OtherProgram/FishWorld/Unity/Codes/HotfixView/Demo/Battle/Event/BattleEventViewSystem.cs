@@ -10,12 +10,10 @@ namespace ET
     {
         protected override void Run(object args)
         {
-            var battleViewComponent = BattleViewComponent.Instance;
-
             switch ((args as ReceiveSkillUse).Message.SkillType)
             {
                 case SkillType.Ice:
-                    battleViewComponent.FisheryIceSkill();
+                    FisheryViewComponentSystem.FisheryIceSkill();
                     break;
             }
         }

@@ -84,8 +84,7 @@ namespace ET
         /// <summary> 输入触控操作 </summary>
         public static void InputTouch(this BattleViewComponent self, ref float touchPosX, ref float touchPosY)
         {
-            Scene currentScene = BattleLogicComponent.Instance.CurrentScene;
-            var skillComponent = currentScene.GetComponent<SkillComponent>();
+            var skillComponent = BattleLogicComponent.Instance.SkillComponent;
             if (skillComponent.IsControlSelfShoot())
             {
                 RotateCannon(ref touchPosX, ref touchPosY, false);
@@ -111,14 +110,12 @@ namespace ET
 
         private static CannonShootInfo RotateCannon(ref int seatId, ref float touchPosX, ref float touchPosY, bool isPlayAnimation)
         {
-            Scene currentScene = BattleLogicComponent.Instance.CurrentScene;
-            var fisheryComponent = currentScene.GetComponent<FisheryComponent>();
-            Unit playerUnit = fisheryComponent.GetPlayerUnit(seatId);
+            Unit playerUnit = FisheryHelper.GetPlayerUnit(seatId);
             var cannonComponent = playerUnit.GetComponent<CannonComponent>();
             if (isPlayAnimation)
                 cannonComponent.PlayAnimation();
 
-            var gameObjectComponent = cannonComponent.Cannon.GetComponent<GameObjectComponent>();
+            var gameObjectComponent = cannonComponent.Cannon.GameObjectComponent as GameObjectComponent;
             var cannonTransform = gameObjectComponent.GameObject.transform;
             var collector = cannonTransform.gameObject.GetComponent<ReferenceCollector>();
 
@@ -144,10 +141,11 @@ namespace ET
         private static void CallLogicShootBullet(this BattleViewComponent self, ref float touchPosX,
                                                  ref float touchPosY, ref long trackFishUnitId)
         {
-            Scene currentScene = BattleLogicComponent.Instance.CurrentScene;
+            var battleLogicComponent = BattleLogicComponent.Instance;
+            Scene currentScene = battleLogicComponent.CurrentScene;
             var fisheryComponent = currentScene.GetComponent<FisheryComponent>();
             int selfSeatId = fisheryComponent.GetSelfSeatId();
-            var bulletLogicComponent = currentScene.GetComponent<BulletLogicComponent>();
+            var bulletLogicComponent = battleLogicComponent.BulletLogicComponent;
             UnitInfo unitInfo = bulletLogicComponent.PopUnitInfo(selfSeatId, trackFishUnitId);
             self.CallLogicShootBullet(unitInfo, ref touchPosX, ref touchPosY);
 

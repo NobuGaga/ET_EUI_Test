@@ -11,7 +11,9 @@ namespace ET
             self.TransformComponent = null;
             self.FishUnitComponent = null;
             self.BulletUnitComponent = null;
+            self.PlayerSkillComponent = null;
             self.GameObjectComponent = null;
+            self.BattleUnitViewComponent = null;
         }
     }
 }

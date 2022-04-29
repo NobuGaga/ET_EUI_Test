@@ -9,15 +9,15 @@ namespace ET
 	{
 		protected override void Run(Session session, M2C_Hit Message)
 		{
-			Scene zoneScene = session.DomainScene();
-			Scene CurrentScene = zoneScene.CurrentScene();
+			var battleLogicComponent = BattleLogicComponent.Instance;
+			Scene CurrentScene = battleLogicComponent.CurrentScene;
 
 			var publishData = KillFish.Instance;
 			publishData.CurrentScene = CurrentScene;
 			publishData.Message = Message;
 			Game.EventSystem.PublishClass(publishData);
 
-			UnitComponent unitComponent = CurrentScene.GetComponent<UnitComponent>();
+			var unitComponent = battleLogicComponent.UnitComponent;
 			unitComponent.Remove(Message.FishId);
 		}
 	}

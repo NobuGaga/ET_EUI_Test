@@ -3,11 +3,12 @@ using UnityEngine;
 namespace ET
 {
     [ObjectSystem]
+    [FriendClass(typeof(BattleLogicComponent))]
     public class LaserSkillUnitComponentAwakeSystem : AwakeSystem<LaserSkillUnitComponent, Transform>
     {
         public override void Awake(LaserSkillUnitComponent self, Transform node)
         {
-            Scene currentScene = self.DomainScene();
+            Scene currentScene = BattleLogicComponent.Instance.CurrentScene;
             SkillUnit skillUnit = self.Parent as SkillUnit;
             PlayerSkillComponent playerSkillComponent = skillUnit.Parent as PlayerSkillComponent;
             Unit playerUnit = playerSkillComponent.Parent as Unit;
@@ -43,18 +44,14 @@ namespace ET
     }
 
     [FriendClass(typeof(GlobalComponent))]
+    [FriendClass(typeof(SkillUnit))]
     [FriendClass(typeof(GameObjectComponent))]
     [FriendClass(typeof(LaserSkillUnitComponent))]
     public static class LaserSkillUnitComponentSystem
     {
         public static void UpdateLaserSkill(this SkillUnit self)
         {
-            var playerSkillLogicComponent = self.Parent as PlayerSkillComponent;
-            Unit playerUnit = playerSkillLogicComponent.Parent as Unit;
-            Scene currentScene = self.DomainScene();
-            var battleViewComponent = BattleViewComponent.Instance;
-            battleViewComponent.SkillShoot(playerUnit.Id, self);
-
+            BattleViewComponent.Instance.SkillShoot(self.Parent.Parent.Id, self);
             long trackFishUnitId = self.GetTrackFishUnitId();
             if (trackFishUnitId == ConstHelper.DefaultTrackFishUnitId)
             {
@@ -62,10 +59,9 @@ namespace ET
                 return;
             }
 
-            var laserSkillUnitComponent = self.GetComponent<LaserSkillUnitComponent>();
-
-            var gameObjectComponent = self.GetComponent<GameObjectComponent>();
-            if (gameObjectComponent == null)
+            var gameObjectComponent = self.GameObjectComponent as GameObjectComponent;
+            var laserSkillUnitComponent = self.LaserSkillUnitComponent as LaserSkillUnitComponent;
+            if (gameObjectComponent == null || laserSkillUnitComponent == null)
                 return;
 
             Camera cannonCamera = GlobalComponent.Instance.RawCannonCamera;

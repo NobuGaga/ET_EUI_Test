@@ -67,32 +67,36 @@ namespace ET
         }
     }
 
+    [FriendClass(typeof(BattleLogicComponent))]
     public class AfterEnterRoom_CameraComponent : AEvent<ReceiveEnterRoom>
     {
         protected override void Run(ReceiveEnterRoom args)
         {
-            CameraComponent cameraComponent = args.CurrentScene.ZoneScene().GetComponent<CameraComponent>();
+            Scene zoneScene = BattleLogicComponent.Instance.ZoneScene;
+            var cameraComponent = zoneScene.GetComponent<CameraComponent>();
             cameraComponent.SetTransformByAreaId(args.AreaId);
         }
     }
 
+    [FriendClass(typeof(BattleLogicComponent))]
     [FriendClass(typeof(FisheryComponent))]
     public class AfterExchangeArea_CameraComponent : AEvent<ReceiveExchangeArea>
     {
         protected override void Run(ReceiveExchangeArea args)
         {
-            FisheryComponent fisheryComponent = args.FisheryComponent;
-            CameraComponent cameraComponent = fisheryComponent.ZoneScene().GetComponent<CameraComponent>();
+            Scene zoneScene = BattleLogicComponent.Instance.ZoneScene;
+            var cameraComponent = zoneScene.GetComponent<CameraComponent>();
             cameraComponent.SetTransformByAreaId(args.FisheryComponent.AreaId);
         }
     }
 
+    [FriendClass(typeof(BattleLogicComponent))]
     public class UIFisheriesE_exitEventArgs_CameraComponent : AEventAsync<UIFisheriesE_exitEventArgs>
     {
         protected override async ETTask Run(UIFisheriesE_exitEventArgs args)
         {
-            UIFisheriesComponent fisheryComponent = args.UIFisheriesComponent;
-            CameraComponent cameraComponent = fisheryComponent.ZoneScene().GetComponent<CameraComponent>();
+            Scene zoneScene = BattleLogicComponent.Instance.ZoneScene;
+            var cameraComponent = zoneScene.GetComponent<CameraComponent>();
             cameraComponent.StopTransformTween();
             await ETTask.CompletedTask;
         }

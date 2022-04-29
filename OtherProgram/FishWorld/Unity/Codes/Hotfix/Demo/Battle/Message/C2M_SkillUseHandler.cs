@@ -5,8 +5,7 @@ namespace ET
     {
 		public static void C2M_SkillUse(this BattleLogicComponent self, int skillType, long trackFishUnitId)
 		{
-            Scene zoneScene = self.ZoneScene();
-            SessionComponent sessionComponent = zoneScene.GetComponent<SessionComponent>();
+            var sessionComponent = self.SessionComponent;
             Session session = sessionComponent.Session;
 
             C2M_SkillUse message = self.UseSkillInfo;

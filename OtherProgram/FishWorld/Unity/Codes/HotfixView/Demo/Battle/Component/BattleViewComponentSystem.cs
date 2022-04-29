@@ -5,13 +5,25 @@ using BattleMonoComponentExtension = ET.BattleMonoComponentSystem;
 namespace ET
 {
     [ObjectSystem]
+    [FriendClass(typeof(BattleLogicComponent))]
     [FriendClass(typeof(BattleViewComponent))]
+    [FriendClass(typeof(SkillComponent))]
+    [FriendClass(typeof(Unit))]
+    //[FriendClass(typeof(FisheryViewComponentSystem))]
     public class BattleViewComponentAwakeSystem : AwakeSystem<BattleViewComponent>
     {
         public override void Awake(BattleViewComponent self)
         {
+            // 初始化视图层 Foreach 方法
+            var skillComponent = BattleLogicComponent.Instance.SkillComponent;
+            skillComponent.SetFishAnimatorState = FisheryViewComponentSystem.SetFishAnimatorState;
+            skillComponent.UpdateBeforeBullet = (Unit playerUnit) =>
+                                                playerUnit.PlayerSkillComponent.UpdateBeforeBullet();
+
             BattleMonoComponent.Instance.EnterBattle(BattleMonoComponentExtension.Collide,
-                                                     BattleMonoComponentExtension.RemoveFishUnit);
+                                                     BattleMonoComponentExtension.RemoveFishUnit,
+                                                     SkillLogicComponentSystem.FixedUpdateBeforeFish,
+                                                     SkillViewHelper.UpdateBeforeBullet);
 
             BattleViewComponent.Instance = self;
 
@@ -20,6 +32,10 @@ namespace ET
             // 技能挂载在 UI 界面的节点由 UI 的 ObjectPoolComponent 管理
             // 挂载到非 UI 界面的节点由 BattleViewComponent 管理
             self.AddComponent<ObjectPoolComponent>();
+
+            self.LastCreateFishTime = 0;
+            self.AutoCreateFishGroupIndex = 0;
+            self.C2M_GM = new C2M_GM() { Param = new System.Collections.Generic.List<string>() };
         }
     }
 
@@ -45,13 +61,19 @@ namespace ET
     {
         public override void Update(BattleViewComponent self)
         {
+            FrameInstantiateObject(self);
+            AutoCreateFish(self);
+        }
+
+        private void FrameInstantiateObject(BattleViewComponent self)
+        {
             var battleLogicComponent = BattleLogicComponent.Instance;
             Scene currentScene = battleLogicComponent.CurrentScene;
             if (currentScene == null)
                 return;
 
             self.CurrentInstantiateCount = 0;
-            var unitComponent = currentScene.GetComponent<UnitComponent>();
+            var unitComponent = battleLogicComponent.UnitComponent;
             while (self.CurrentInstantiateCount < BattleConfig.FrameInstantiateObjectCount &&
                    self.InstantiateFishStack.Count > 0)
             {
@@ -63,16 +85,51 @@ namespace ET
                 fishUnit.InstantiateGameObject();
                 self.CurrentInstantiateCount++;
             }
+        }
 
-            // 有序更新, 统一在一个 Update 里进行
-            currentScene.GetComponent<SkillComponent>().FixedUpdateBeforeFish();
-            currentScene.GetComponent<SkillComponent>().UpdateBeforeBullet();
+        private void AutoCreateFish(BattleViewComponent self)
+        {
+            if (!BattleConfig.IsAutoCreateFish)
+                return;
+
+            long currentServerTime = TimeHelper.ServerNow();
+            if (self.LastCreateFishTime > 0 && currentServerTime - self.LastCreateFishTime < GMConfig.CreateFishInterval)
+                return;
+
+            self.LastCreateFishTime = currentServerTime;
+            var fishBaseConfigIDList = GMConfig.FishBaseConfigIDList;
+            ref ushort fishGroupID = ref fishBaseConfigIDList[self.AutoCreateFishGroupIndex];
+            if (++self.AutoCreateFishGroupIndex >= fishBaseConfigIDList.Length)
+                self.AutoCreateFishGroupIndex = 0;
+
+            self.C2M_GM.Cmd = GMConfig.MakeFishGM;
+            self.C2M_GM.Param.Clear();
+            self.C2M_GM.Param.Add(fishGroupID.ToString());
+            BattleLogicComponent.Instance.SessionComponent.Session.Send(self.C2M_GM);
+        }
+    }
+
+    public class AfterCreateZoneScene_BattleViewComponent : AEvent<AfterCreateZoneScene>
+    {
+        protected override void Run(AfterCreateZoneScene args)
+        {
+            var objectPool = ObjectPool.Instance;
+            for (int index = 0; index < ConstHelper.PreCreateFishClassCount; index++)
+            {
+                objectPool.Recycle(new BattleUnitViewComponent());
+                objectPool.Recycle(new GameObjectComponent());
+                objectPool.Recycle(new AnimatorComponent());
+            }
+            BattleMonoComponent.Instance.EnterGame();
         }
     }
 
     public class AfterCreateCurrentScene_BattleViewComponent : AEvent<AfterCreateCurrentScene>
     {
-        protected override void Run(AfterCreateCurrentScene args) =>
-                                args.CurrentScene.AddComponent<BattleViewComponent>();
+        protected override void Run(AfterCreateCurrentScene args)
+        {
+            if (args.CurrentScene.Name != "scene_home")
+                args.CurrentScene.AddComponent<BattleViewComponent>();
+        }
     }
 }

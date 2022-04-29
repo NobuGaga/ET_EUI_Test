@@ -6,10 +6,10 @@ namespace ET
 {
     /// <summary> 原 UnitComponent 组件数据逻辑拓展 </summary>
     [FriendClass(typeof(BattleLogicComponent))]
+    [FriendClass(typeof(UnitComponent))]
     [FriendClass(typeof(Unit))]
     [FriendClass(typeof(TransformComponent))]
     [FriendClass(typeof(FishUnitComponent))]
-    [FriendClass(typeof(UnitComponent))]
 	public static class UnitComponentLogicSystem
     {
         public static HashSet<Unit> GetPlayerUnitList(this UnitComponent self) =>
@@ -45,12 +45,12 @@ namespace ET
             battleLogicComponent.Argument_Integer = 0;
             battleLogicComponent.Result_Unit = null;
             
-            ForeachHelper.Foreach(fishUnitList, CompareFishScore);
+            ForeachHelper.Foreach(fishUnitList, self.CompareFishScore);
 
             return battleLogicComponent.Result_Unit;
         }
 
-        private static void CompareFishScore(this Unit fishUnit)
+        public static void CompareFishScore(Unit fishUnit)
         {
             if (!fishUnit.FishUnitComponent.ScreenInfo.IsInScreen)
                 return;

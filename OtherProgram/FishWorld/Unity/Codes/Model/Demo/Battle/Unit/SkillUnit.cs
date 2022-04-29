@@ -20,5 +20,7 @@ namespace ET
         public long CdEndTime;
 
         public Entity GameObjectComponent;
+
+        public Entity LaserSkillUnitComponent;
     }
 }

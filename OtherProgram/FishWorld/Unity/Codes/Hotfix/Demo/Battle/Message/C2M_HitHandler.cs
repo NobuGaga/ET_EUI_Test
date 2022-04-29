@@ -6,8 +6,7 @@ namespace ET
 		public static void C2M_Hit(this BattleLogicComponent self, float screenPosX, float screenPosY,
                                                                    long bulletUnitId, long fishUnitId)
 		{
-            Scene zoneScene = self.ZoneScene();
-            SessionComponent sessionComponent = zoneScene.GetComponent<SessionComponent>();
+            var sessionComponent = self.SessionComponent;
             Session session = sessionComponent.Session;
 
             C2M_Hit message = self.HitInfo;

@@ -7,8 +7,7 @@ namespace ET
                                             float touchPosX, float touchPosY, int cannonStack,
                                             long trackFishUnitId)
 		{
-            Scene zoneScene = self.ZoneScene();
-            SessionComponent sessionComponent = zoneScene.GetComponent<SessionComponent>();
+            var sessionComponent = self.SessionComponent;
             Session session = sessionComponent.Session;
             
             C2M_Fire message = self.FireInfo;

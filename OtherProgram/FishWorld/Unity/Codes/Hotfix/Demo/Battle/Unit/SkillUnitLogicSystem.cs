@@ -11,8 +11,9 @@ namespace ET
     public class SkillUnitDestroySystem : DestroySystem<SkillUnit>
     {
         public override void Destroy(SkillUnit self)
-        {
-            // Battle TODO
+        { 
+            self.GameObjectComponent = null;
+            self.LaserSkillUnitComponent = null;
         }
     }
 

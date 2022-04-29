@@ -7,8 +7,7 @@ namespace ET
     {
         public static Transform GetShootPointNode(Scene currentScene, int seatId)
         {
-            var fisheryComponent = currentScene.GetComponent<FisheryComponent>();
-            Unit playerUnit = fisheryComponent.GetPlayerUnit(seatId);
+            Unit playerUnit = FisheryHelper.GetPlayerUnit(seatId);
             CannonComponent cannonComponent = playerUnit.GetComponent<CannonComponent>();
             GameObjectComponent gameObjectComponent = cannonComponent.Cannon.GetComponent<GameObjectComponent>();
             Transform cannonTrans = gameObjectComponent.GameObject.transform;

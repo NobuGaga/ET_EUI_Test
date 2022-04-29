@@ -4,13 +4,14 @@ namespace ET
 {
 	/// <summary> 发射子弹接收协议 </summary>
 	[MessageHandler]
+	[FriendClass(typeof(BattleLogicComponent))]
 	public class M2C_FireHandler : AMHandler<M2C_Fire>
 	{
 		protected override void Run(Session session, M2C_Fire message)
 		{
-			Scene zoneScene = session.DomainScene();
-			Scene CurrentScene = zoneScene.CurrentScene();
-			BulletLogicComponent bulletLogicComponent = CurrentScene.GetComponent<BulletLogicComponent>();
+			var battleLogicComponent = BattleLogicComponent.Instance;
+			Scene CurrentScene = battleLogicComponent.CurrentScene;
+			var bulletLogicComponent = battleLogicComponent.BulletLogicComponent;
 
 			long unitId = message.UnitId;
             Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(CurrentScene);

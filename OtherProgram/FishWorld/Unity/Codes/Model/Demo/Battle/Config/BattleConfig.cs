@@ -8,5 +8,8 @@ namespace ET
 
 		/// <summary> 每帧最多实例化 GameObject 数 </summary>
 		public const int FrameInstantiateObjectCount = 5;
+
+		/// <summary> 是否启动自动刷鱼 </summary>
+		public static bool IsAutoCreateFish = false;
 	}
 }

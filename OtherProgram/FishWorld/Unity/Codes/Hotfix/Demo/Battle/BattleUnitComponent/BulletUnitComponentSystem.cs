@@ -1,10 +1,9 @@
-// Battle Review Before Boss Node
-
 using UnityEngine;
 
 namespace ET
 {
     [ObjectSystem]
+    [FriendClass(typeof(BattleLogicComponent))]
     [FriendClass(typeof(Unit))]
     [FriendClass(typeof(TransformComponent))]
     [FriendClass(typeof(FishUnitComponent))]
@@ -26,7 +25,7 @@ namespace ET
 
             if (trackFishUnitId != ConstHelper.DefaultTrackFishUnitId)
             {
-                var unitComponent = self.DomainScene().GetComponent<UnitComponent>();
+                var unitComponent = BattleLogicComponent.Instance.UnitComponent;
                 Unit fishUnit = unitComponent.Get(trackFishUnitId);
                 self.SetTrackDirection(fishUnit.FishUnitComponent.ScreenInfo.AimPoint);
             }
@@ -53,25 +52,6 @@ namespace ET
     [FriendClass(typeof(BulletUnitComponent))]
     public static class BulletUnitComponentSystem
     {
-        internal static void FixedUpdate(this BulletUnitComponent self, Unit unit)
-        {
-            //if (self.TrackFishUnitId != BulletConfig.DefaultTrackFishUnitId)
-            //{
-            //    Unit fishUnit = SkillHelper.GetTrackFishUnit(unit.DomainScene(), self.TrackFishUnitId);
-            //    if (fishUnit == null)
-            //    {
-            //        unit.AttributeComponent.Set(NumericType.TrackFishId, BulletConfig.DefaultTrackFishUnitId);
-            //        self.TrackFishUnitId = BulletConfig.DefaultTrackFishUnitId;
-            //    }
-            //    else
-            //        self.SetTrackDirection(fishUnit.FishUnitComponent.ScreenInfo.AimPoint);
-            //}
-            
-            //BulletMoveInfo info = self.Info;
-            //BulletMoveHelper.FixedUpdate(info);
-            //unit.TransformComponent.Info.Update(info);
-        }
-
         internal static void SetTrackDirection(this BulletUnitComponent self, Vector3 trackScreenPos)
         {
             // 追踪鱼重新计算方向, 在逻辑层设置好追踪屏幕位置

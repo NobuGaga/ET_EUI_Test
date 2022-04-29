@@ -23,14 +23,13 @@ namespace ET
                                                         (assetBundlePath, node, isUseModelPool);
 
             self.MoveToRemovePoint();
-
             if (self.SkillType == SkillType.Laser)
-                self.AddComponent<LaserSkillUnitComponent, Transform>(node, isUseModelPool);
+                self.LaserSkillUnitComponent = self.AddComponent<LaserSkillUnitComponent, Transform>(node, isUseModelPool);
         }
 
-        private static UIFisheriesLowerEffectComponent GetUIParentComponent(this SkillUnit self)
+        private static UIFisheriesLowerEffectComponent GetUIParentComponent()
         {
-            Scene zoneScene = self.DomainScene().ZoneScene();
+            Scene zoneScene = BattleLogicComponent.Instance.ZoneScene;
             if (zoneScene == null)
                 return null;
 
@@ -45,7 +44,7 @@ namespace ET
                 case SkillType.Laser:
                     return ReferenceHelper.BulletRootNode.transform;
                 default:
-                    return self.GetUIParentComponent().go_center;
+                    return GetUIParentComponent().go_center;
             }
         }
 
@@ -78,7 +77,7 @@ namespace ET
             switch (self.SkillType)
             {
                 case SkillType.Aim:
-                    var uiComponent = self.GetUIParentComponent();
+                    var uiComponent = GetUIParentComponent();
                     if (uiComponent != null)
                         return uiComponent.GetComponent<ObjectPoolComponent>();
                     return null;
@@ -149,15 +148,17 @@ namespace ET
             string assetBundlePath = ret.Item1;
             string assetName = ret.Item2;
 
-            ObjectPoolComponent objectPoolComponent = unit.GetObjectPoolComponent();
+            var objectPoolComponent = unit.GetObjectPoolComponent();
             GameObject gameObject = objectPoolComponent?.PopObject(assetBundlePath);
 
-            // 这里会抛出异常
-            if (gameObject == null)
-                gameObject = await ObjectInstantiateHelper.InitModel(unit, assetBundlePath, assetName);
+            if (gameObject != null)
+            {
+                unit.AddGameObjectComponent(assetBundlePath, gameObject.transform);
+                return;
+            }
 
-            // Unit 为 null 则已经被释放掉 
-            if (gameObject == null)
+            gameObject = await ObjectInstantiateHelper.LoadModelPrefab(assetBundlePath, assetName);
+            if (gameObject == null || unit == null || unit.IsDisposed)
                 return;
 
             gameObject = UnityEngine.Object.Instantiate(gameObject);

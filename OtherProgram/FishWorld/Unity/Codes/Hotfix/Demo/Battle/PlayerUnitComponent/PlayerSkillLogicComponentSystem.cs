@@ -20,6 +20,7 @@ namespace ET
                              self.SkillTypeList.Clear();
     }
 
+    [FriendClass(typeof(BattleLogicComponent))]
     [FriendClass(typeof(Unit))]
     [FriendClass(typeof(SkillUnit))]
     [FriendClass(typeof(FishUnitComponent))]
@@ -49,7 +50,7 @@ namespace ET
 
             Game.EventSystem.Publish(new AfterCreateSkillUnit
             {
-                CurrentScene = self.DomainScene(),
+                CurrentScene = BattleLogicComponent.Instance.CurrentScene,
                 SkillUnit = skillUnit,
             });
         }
@@ -114,7 +115,7 @@ namespace ET
                 return;
             }
 
-            UnitComponent unitComponent = self.DomainScene().GetComponent<UnitComponent>();
+            var unitComponent = BattleLogicComponent.Instance.UnitComponent;
             Unit fishUnit = unitComponent.Get(trackFishUnitId);
 
             if (fishUnit != null && !fishUnit.IsDisposed && fishUnit.FishUnitComponent.ScreenInfo.IsInScreen)
