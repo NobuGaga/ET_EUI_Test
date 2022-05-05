@@ -11,5 +11,8 @@ namespace ET
 
 		/// <summary> 是否启动自动刷鱼 </summary>
 		public static bool IsAutoCreateFish = false;
+
+		/// <summary> 战斗 Unit 配置表种类数量 </summary>
+		public static ushort BattleUnitConfigCount = 2 ^ 8;
 	}
 }

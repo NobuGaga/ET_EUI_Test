@@ -34,9 +34,7 @@ namespace ET
             // 如果是同一个 AssetBundle 里有不同的预设资源则会有问题, 目前模型资源是一个 AssetBundle 里一个预设
             // UI 资源可能多个预设在同一个 AssetBundle 里, ObjectPoolComponent 则不可使用
             // 使用 Asset Bundle Name 拼接 Asset Name 或者是别的方法
-            var ret = TryGetAssetPathAndName(unit);
-            self.AssetBundlePath = ret.Item1;
-            string assetName = ret.Item2;
+            TryGetAssetPathAndName(unit, out self.AssetBundlePath, out string assetName);
 
             var objectPoolComponent = unit.GetObjectPoolComponent();
             GameObject gameObject = objectPoolComponent?.PopObject(self.AssetBundlePath);
@@ -60,32 +58,19 @@ namespace ET
                 unit.InstantiateGameObject();
         }
 
-        private ValueTuple<string, string> TryGetAssetPathAndName(Unit unit)
+        private void TryGetAssetPathAndName(Unit unit, out string assetBundlePath, out string assetName)
         {
-            string assetBundlePath = ABPath.cannon_1AB;
-            string assetName = "cannon_1";
-            switch (unit.Type)
-            {
-                case UnitType.Fish:
-                    try
-                    {
-                        // Battle TODO 暂时只有鱼读表, 后续将子弹也读表
-                        UnitConfig unitConfig = unit.Config;
-                        assetBundlePath = unitConfig.FishAssetBundlePath;
-                        assetName = unitConfig.FishAssetName;
-                    }
-                    catch (Exception exception)
-                    {
-                        Log.Error($"private Unit.TryGetAssetPathAndName() exception msg = {exception.Message}");
-                    }
-                    break;
-                case UnitType.Bullet:
-                    assetBundlePath = ABPath.cannon_1_bulletAB;
-                    assetName = "cannon_1_bullet";
-                    break;
-            }
+            assetBundlePath = ABPath.cannon_1_bulletAB;
+            assetName = "cannon_1_bullet";
 
-            return new ValueTuple<string, string>(assetBundlePath, assetName);
+            if (unit.Type != UnitType.Fish)
+                return;
+
+            // Battle TODO 暂时只有鱼读表, 后续将子弹也读表
+            var unitConfig = unit.Config;
+            var assetBundleData = UnitConfigCategory.Instance.GetAssetBundleData(unitConfig.ResId);
+            assetBundlePath = assetBundleData.Path;
+            assetName = assetBundleData.Name;
         }
     }
 
@@ -104,6 +89,7 @@ namespace ET
     [FriendClass(typeof(Unit))]
     [FriendClass(typeof(TransformComponent))]
     [FriendClass(typeof(BattleUnitViewComponent))]
+    [FriendClass(typeof(AnimatorComponent))]
     public static class UnitViewSystem
     {
         internal static void InstantiateGameObject(this Unit self)
@@ -126,7 +112,11 @@ namespace ET
             monoUnit.ColliderMonoComponent = ColliderHelper.AddColliderComponent(self.ConfigId, gameObject);
 
             if (self.Type == UnitType.Fish)
-                self.AddComponent<AnimatorComponent>(BattleConfig.IsUseModelPool).Reset();
+            {
+                var animatorComponent = self.AddComponent<AnimatorComponent, int>(self.ConfigId, isUseModelPool);
+                animatorComponent.Reset();
+                AnimatorParameterComponent.Add(self.ConfigId, animatorComponent.Parameter);
+            }
 
             TransformMonoHelper.Add(self.Id, node);
         }

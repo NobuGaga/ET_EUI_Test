@@ -28,5 +28,11 @@ namespace ET
 
         /// <summary> 鱼存活节点名, 只在编辑器模式下设置 </summary>
         public const string NameFormat = "fish_{0}_{1}";
+
+        /// <summary> Asset Bundle Path 路径格式 </summary>
+        public const string FishAssetBundlePathFormat = "bundles/prefabs/fishes/fish_{0}.unity3d";
+
+        /// <summary> Asset Name 资源格式 </summary>
+        public const string FishAssetNameFormat = "fish_{0}";
     }
 }

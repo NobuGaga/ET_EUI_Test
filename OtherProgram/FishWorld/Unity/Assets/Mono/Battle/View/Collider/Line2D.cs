@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace ET
 {
-    public class Line2DOffset
+    public struct Line2DOffset
     {
         public float Start;
         public float End;
