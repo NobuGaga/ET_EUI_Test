@@ -46,8 +46,7 @@ namespace ET
 
             var bonesTransformArray = GetModelBonesList(gameObject.transform, colliderId != 1);
             var colliderArray = CreateColliderList(colliderId);
-            ColliderMonoComponent colliderComponent = new ColliderMonoComponent(colliderId, gameObject,
-                                                                                colliderArray,
+            ColliderMonoComponent colliderComponent = new ColliderMonoComponent(gameObject, colliderArray,
                                                                                 bonesTransformArray);
 
             colliderComponentMap.Add(instanceID, colliderComponent);
@@ -60,7 +59,8 @@ namespace ET
             if (colliderComponentMap.ContainsKey(instanceID))
                 return colliderComponentMap[instanceID];
 
-            throw new System.Exception($"ColliderMonoComponent.Get not exist GameObject. instanceID = { instanceID }");
+            Log.Error($"ColliderMonoComponent.Get not exist GameObject. instanceID = { instanceID }");
+            return null;
         }
 
         private static ICollider[] CreateColliderList(int colliderId)

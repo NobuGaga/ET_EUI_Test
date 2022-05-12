@@ -16,9 +16,14 @@ namespace ET
             if (unit.Type != UnitType.Fish)
                 return;
 
-            var animatorComponent = unit.GetComponent<AnimatorComponent>();
-            if (animatorComponent != null)
-                animatorComponent.PauseAnimator();
+            if (unit.UnitType == UnitType.Fish)
+                unit.StopAnimation();
+            else
+            {
+                var animatorComponent = unit.GetComponent<AnimatorComponent>();
+                if (animatorComponent != null)
+                    animatorComponent.PauseAnimator();
+            }
 
             TransformMonoHelper.Remove(args.UnitId);
         }

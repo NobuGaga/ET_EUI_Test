@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 namespace ET
 {
@@ -16,14 +15,14 @@ namespace ET
         /// <param name = "assetBundlePath" > AssetBundle 路径</param>
         /// <param name = "assetName" > AssetName 名</param>
         /// <returns>GameObject 实例化对象</returns>
-        public static async ETTask<GameObject> LoadModelPrefab(string assetBundlePath, string assetName)
+        public static async ETTask<UnityEngine.Object> LoadAsset(string assetBundlePath, string assetName)
         {
             Scene currentScene = BattleLogicComponent.Instance.CurrentScene;
             var ResourcesLoaderComponent = currentScene.GetComponent<ResourcesLoaderComponent>();
             try
             {
                 await ResourcesLoaderComponent.LoadAsync(assetBundlePath);
-                return ResourcesComponent.Instance.GetAsset(assetBundlePath, assetName) as GameObject;
+                return ResourcesComponent.Instance.GetAsset(assetBundlePath, assetName);
             }
             catch (Exception exception)
             {

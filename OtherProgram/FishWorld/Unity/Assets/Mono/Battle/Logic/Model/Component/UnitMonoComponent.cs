@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace ET
@@ -14,29 +13,36 @@ namespace ET
         public List<long> FishUnitIdList = new List<long>(ConstHelper.FisheryUnitCount);
         public List<long> BulletUnitIdList = new List<long>(ConstHelper.FisheryUnitCount);
 
-        public void AddFishUnit(long unitId)
+        public FishMonoUnit AddFishUnit(long unitId)
         {
             if (!unitMap.ContainsKey(unitId))
                 FishUnitIdList.Add(unitId);
-            
-            Add<FishMonoUnit>(unitId);
+
+            var fishUnit = Add<FishMonoUnit>(unitId);
+            fishUnit.Init();
+            return fishUnit;
         }
 
-        public void AddBulletUnit(long unitId)
+        public BulletMonoUnit AddBulletUnit(long unitId)
         {
             if (!unitMap.ContainsKey(unitId))
                 BulletUnitIdList.Add(unitId);
 
-            Add<BulletMonoUnit>(unitId);
+            return Add<BulletMonoUnit>(unitId);
         }
 
-        public void Add<T>(long unitId) where T : BattleMonoUnit
+        private T Add<T>(long unitId) where T : BattleMonoUnit
         {
             if (unitMap.ContainsKey(unitId))
-                throw new Exception($"UnitMonoComponent unitMap already add unit, id = { unitId }");
+            {
+                Log.Error($"UnitMonoComponent unitMap already add unit, id = { unitId }");
+                return null;
+            }
 
             var unit = MonoPool.Instance.Fetch(typeof(T)) as T;
+            unit.UnitId = unitId;
             unitMap.Add(unitId, unit);
+            return unit;
         }
 
         public T Get<T>(long unitId) where T : BattleMonoUnit
@@ -79,10 +85,12 @@ namespace ET
         {
             var unitId = FishUnitIdList[index];
             if (!unitMap.ContainsKey(unitId))
-                throw new Exception($"UnitMonoComponent unitMap not exist unit, id = { unitId }");
+            {
+                Log.Error($"UnitMonoComponent unitMap not exist unit, id = { unitId }");
+                return;
+            }
             
             FishUnitIdList.RemoveAt(index);
-
             PushPool(unitId, unitMap[unitId]);
         }
 

@@ -9,10 +9,13 @@ namespace ET
 
         public Animator Animator;
 
+        public BaseAnimation Animation;
+
         public UnityReferense(GameObject gameObject)
         {
             GameObject = gameObject;
 			Animator = gameObject.GetComponentInChildren<Animator>();
+            Animation = new SkillPlayable(Animator);
         }
     }
 
@@ -33,6 +36,12 @@ namespace ET
                 referenseMap.Add(instanceID, new UnityReferense(gameObject));
         }
 
+        public static UnityReferense GetUnityReferense(int instanceID)
+        {
+            referenseMap.TryGetValue(instanceID, out UnityReferense referense);
+            return referense;
+        }
+
         public static GameObject GetGameObject(int instanceID)
         {
             referenseMap.TryGetValue(instanceID, out UnityReferense referense);
@@ -44,6 +53,13 @@ namespace ET
             int instanceID = gameObject.GetInstanceID();
             referenseMap.TryGetValue(instanceID, out UnityReferense referense);
             return referense.Animator;
+        }
+
+        public static BaseAnimation GetAnimation(GameObject gameObject)
+        {
+            int instanceID = gameObject.GetInstanceID();
+            referenseMap.TryGetValue(instanceID, out UnityReferense referense);
+            return referense.Animation;
         }
 
         public static void RemoveGameObject(int instanceID)

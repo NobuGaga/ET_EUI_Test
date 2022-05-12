@@ -8,7 +8,6 @@ namespace ET
 	/// 战斗逻辑组件, 用于控制热更层战斗逻辑
 	/// 包括协议请求, 数据更新, 优化调用方法等
 	/// 不同模块的功能实现方法会放到对应模块中去拓展 BattleLogicComponent
-	/// 只需要通过任意 Scene 的 GetBattleLogicComponent() 接口就可以获取该组件
 	/// </summary>
 	public class BattleLogicComponent : Entity, IAwake, IDestroy
 	{
@@ -18,13 +17,19 @@ namespace ET
 
 		public Scene ZoneScene;
 
+		#region Reference Component
+
 		public UnitComponent UnitComponent;
 
 		public BulletLogicComponent BulletLogicComponent;
 
 		public SkillComponent SkillComponent;
 
-		#region Network Class
+		public FisheryComponent FisheryComponent;
+
+		#endregion
+
+		#region Network
 
 		public SessionComponent SessionComponent;
 

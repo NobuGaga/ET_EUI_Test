@@ -41,7 +41,7 @@ namespace ET
         /// <param name="offsetPosY">初始位置偏移值 Y</param>
         /// <param name="offsetPosZ">初始位置偏移值 Z</param>
         public static void InitInfo(FishMoveInfo info, short roadId, long liveTime, uint remainTime,
-                                                float offsetPosX, float offsetPosY, float offsetPosZ)
+                                                       float offsetPosX, float offsetPosY, float offsetPosZ)
         {
             // int 最大值在 20+ 天左右
             info.MoveDuration = remainTime;
@@ -70,8 +70,9 @@ namespace ET
             if (info.MoveTime < 0 || !info.IsPathMove)
                 return;
 
-            float nextTime = (float)info.MoveTime / info.MoveDuration;
-            CheckNextTimeValid(ref nextTime);
+            info.CurrentLifeTime = (float)info.MoveTime / info.MoveDuration;
+            CheckNextTimeValid(ref info.CurrentLifeTime);
+            float nextTime = info.CurrentLifeTime;
             SetForward(info, ref nextTime);
 
             nextTime = (float)(info.MoveTime + TimeHelper.ClinetDeltaFrameTime()) / info.MoveDuration;
@@ -97,8 +98,9 @@ namespace ET
             if (!info.IsPathMove)
                 return;
 
-            float nextTime = (float)info.MoveTime / info.MoveDuration;
-            CheckNextTimeValid(ref nextTime);
+            info.CurrentLifeTime = (float)info.MoveTime / info.MoveDuration;
+            CheckNextTimeValid(ref info.CurrentLifeTime);
+            float nextTime = info.CurrentLifeTime;
             SetForward(info, ref nextTime);
             SetNextPosition(info, ref nextTime);
         }

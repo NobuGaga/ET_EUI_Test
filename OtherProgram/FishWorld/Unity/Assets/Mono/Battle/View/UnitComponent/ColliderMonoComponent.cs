@@ -5,9 +5,6 @@ namespace ET
 	// 碰撞体视图组件, 用来视图层碰撞相关数据跟骨骼节点
 	public class ColliderMonoComponent
 	{
-        /// <summary> 碰撞配置 ID </summary>
-        private int colliderId;
-
         /// <summary> 模型根节点 </summary>
         private Transform rootTransform;
 
@@ -22,20 +19,13 @@ namespace ET
         /// <summary> 子弹移动方向, 单位向量 </summary>
         private Vector2 moveDirection;
 
-        public ColliderMonoComponent(int colliderId, GameObject gameObject, ICollider[] colliderArray,
+        public ColliderMonoComponent(GameObject gameObject, ICollider[] colliderArray,
                                      Transform[] bonesTransformArray)
         {
-            this.colliderId = colliderId;
             rootTransform = gameObject.transform;
             scale = rootTransform.localScale.x;
             this.colliderArray = colliderArray;
             this.bonesTransformArray = bonesTransformArray;
-
-            if (colliderArray == null || bonesTransformArray == null)
-            {
-                string msg = $"new ColliderMonoComponent error colliderId = { colliderId }, collider or bone is null";
-                throw new System.Exception(msg);
-            }
         }
 
         public void Dispose()

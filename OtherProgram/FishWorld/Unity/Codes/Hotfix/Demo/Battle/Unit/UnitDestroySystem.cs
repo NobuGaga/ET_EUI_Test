@@ -14,6 +14,7 @@ namespace ET
             self.PlayerSkillComponent = null;
             self.GameObjectComponent = null;
             self.BattleUnitViewComponent = null;
+            self.AnimatorComponent = null;
         }
     }
 }

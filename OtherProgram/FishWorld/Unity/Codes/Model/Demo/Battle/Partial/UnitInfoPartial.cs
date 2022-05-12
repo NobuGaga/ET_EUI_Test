@@ -4,13 +4,6 @@ namespace ET
 {
 	public partial class UnitInfo
 	{
-		public void InitBulletInfo(int seatId) =>
-					InitBulletInfo(seatId, BulletConfig.DefaultBulletUnitId,
-										   ConstHelper.DefaultTrackFishUnitId);
-
-		public void InitBulletInfo(int seatId, long trackFishUnitId) =>
-					InitBulletInfo(seatId, BulletConfig.DefaultBulletUnitId, trackFishUnitId);
-
 		/// <summary> 初始化子弹类型的 Unit Info </summary>
 		/// <param name="seatId">座位 ID</param>
 		/// <param name="bulletUnitId">子弹 Unit ID</param>
@@ -38,26 +31,17 @@ namespace ET
 			}
         }
 
-		private bool CheckAttributeListValid()
-        {
-			if (Ks == null || Vs == null || Ks.Count != Vs.Count)
-            {
-				Log.Error("UnitInfo.GetSeatId() Data List is null or no data");
-				return false;
-            }
-
-			return true;
-        }
-
 		public bool TryGetAttribute(ref long value, int numericType)
         {
-			if (!CheckAttributeListValid())
+			if (Ks == null || Vs == null || Ks.Count != Vs.Count)
+			{
+				Log.Error("UnitInfo.TryGetAttribute() Data List is null or no data");
 				return false;
+			}
 
 			for (ushort index = 0; index < Ks.Count; index++)
             {
-				int type = Ks[index];
-				if (type == numericType)
+				if (Ks[index] == numericType)
                 {
 					value = Vs[index];
 					return true;
@@ -69,14 +53,9 @@ namespace ET
 
 		public int GetSeatId()
 		{
-			TryGetSeatId(out long seatId);
+			long seatId = FisheryConfig.ErrorSeatId;
+			TryGetAttribute(ref seatId, NumericType.Pos);
 			return (int)seatId;
-		}
-
-		public bool TryGetSeatId(out long seatId)
-		{
-			seatId = FisheryConfig.ErrorSeatId;
-			return TryGetAttribute(ref seatId, NumericType.Pos);
 		}
 
 		public bool TryGetTrackFishUnitId(out long trackFishUnitId)
@@ -91,11 +70,8 @@ namespace ET
 			ConfigId = 0;
 			Type = 0;
 
-			if (Ks != null)
-				Ks.Clear();
-
-			if (Vs != null)
-				Vs.Clear();
+			Ks?.Clear();
+			Vs?.Clear();
 		}
 	}
 }

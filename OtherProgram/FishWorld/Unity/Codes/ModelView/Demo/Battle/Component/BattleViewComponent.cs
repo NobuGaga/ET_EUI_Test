@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace ET
@@ -23,5 +24,7 @@ namespace ET
 
 		/// <summary> GM 协议消息结构体 </summary>
 		public C2M_GM C2M_GM;
+
+		public Action<string, UnityEngine.Object> Action_String_UnityObject;
 	}
 }

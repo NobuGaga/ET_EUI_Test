@@ -1,3 +1,6 @@
+// Battle Review Before Boss Node
+
+using System.Collections.Generic;
 using ET.EventType;
 
 namespace ET
@@ -5,13 +8,31 @@ namespace ET
     [ObjectSystem]
     public sealed class BulletLogicComponentAwakeSystem : AwakeSystem<BulletLogicComponent>
     {
-        public override void Awake(BulletLogicComponent self) => self.Reset();
+        public override void Awake(BulletLogicComponent self)
+        {
+            // 重置子弹 Unit ID 计数器
+            self.BulletId = 0;
+            self.LastShootBulletTime = 0;
+            self.ShootBulletCount = 0;
+
+            self.UnitInfo = new UnitInfo();
+
+            // 重置单次使用子弹 Unit ID 计数器
+            self.OneHitBulletId = 0;
+            self.OneHitBulletIdStack = new Stack<long>(FisheryConfig.FisheryMaxBulletCount);
+        }
     }
 
     [ObjectSystem]
     public sealed class BulletLogicComponentDestroySystem : DestroySystem<BulletLogicComponent>
     {
-        public override void Destroy(BulletLogicComponent self) => self.RemoveAllUnit();
+        public override void Destroy(BulletLogicComponent self)
+        {
+            self.UnitInfo = null;
+
+            self.OneHitBulletIdStack.Clear();
+            self.OneHitBulletIdStack = null;
+        }
     }
 
     [FriendClass(typeof(BattleLogicComponent))]
@@ -19,38 +40,24 @@ namespace ET
     [FriendClass(typeof(Unit))]
     public static class BulletLogicComponentSystem
     {
-        public static UnitInfo PopUnitInfo(this BulletLogicComponent self, int seatId)
-        {
-            self.unitInfo.Dispose();
-            self.unitInfo.InitBulletInfo(seatId);
-            return self.unitInfo;
-        }
-
         public static UnitInfo PopUnitInfo(this BulletLogicComponent self, int seatId,
-                                           long trackFishUnitId)
-        {
-            self.unitInfo.Dispose();
-            self.unitInfo.InitBulletInfo(seatId, BulletConfig.DefaultBulletUnitId, trackFishUnitId);
-            return self.unitInfo;
-        }
+                                           long trackFishUnitId) =>
+                               self.PopUnitInfo(seatId, BulletConfig.DefaultBulletUnitId, trackFishUnitId);
 
         public static UnitInfo PopUnitInfo(this BulletLogicComponent self, int seatId,
                                                 long bulletUnitId, long trackFishUnitId)
         {
-            self.unitInfo.Dispose();
-            self.unitInfo.InitBulletInfo(seatId, bulletUnitId, trackFishUnitId);
-            return self.unitInfo;
+            self.UnitInfo.Dispose();
+            self.UnitInfo.InitBulletInfo(seatId, bulletUnitId, trackFishUnitId);
+            return self.UnitInfo;
         }
 
         /// <summary> 生成自己发射的子弹 Unit ID </summary>
         private static long GenerateBulletId(this BulletLogicComponent self)
         {
-            long unitId = 0;
-
-            Scene currentScene = self.Parent as Scene;
-            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
-            NumericComponent numericComponent = selfPlayerUnit.GetComponent<NumericComponent>();
-            int seatId = numericComponent.GetAsInt(NumericType.Pos);
+            var battleLogicComponent =  BattleLogicComponent.Instance;
+            var fisheryComponent = battleLogicComponent.FisheryComponent;
+            int seatId = fisheryComponent.GetSelfSeatId();
 
             // 这里采用位置 ID 乘以每个人发射子弹上限的数字位数加多一位
             // 例如发射子弹上限为 30, 则 UnitId = seatId * 100 + BulletId;
@@ -58,6 +65,7 @@ namespace ET
 
             // Battle TODO delete
             ushort circleTime = 0;
+            long unitId = 0;
 
             do
             {
@@ -70,7 +78,7 @@ namespace ET
 
                 unitId = bulletIdFix + (++self.BulletId);
 
-                if (self.BulletId >= BulletConfig.ShootMaxBulletCount)
+                if (self.BulletId > BulletConfig.ShootMaxBulletCount)
                     self.BulletId = 0;
             }
             while (self.GetChild<Unit>(unitId) != null);
@@ -78,22 +86,55 @@ namespace ET
             return unitId;
         }
 
-        /// <summary> 生成马上销毁的子弹 Unit ID </summary>
-        private static long GenerateOneHitBulletId(this BulletLogicComponent self)
+        /// <summary> 
+        /// 战斗逻辑发射子弹, 放在子弹这里定义为了使用这里的子弹所特有的方法
+        /// Battle Warning 必要在调用前调用 UIFisheriesComponent.CalcCannonRotation
+        /// 修改炮台旋转方向为当前设计方向
+        /// </summary>
+        public static void ShootBullet(this BattleLogicComponent battleLogicComponent,
+                                            UnitInfo unitInfo, CannonShootInfo cannonShootInfo)
         {
-            if (self.OneHitBulletIdStack.Count > 0)
-                return self.OneHitBulletIdStack.Pop();
+            Scene currentScene = battleLogicComponent.CurrentScene;
+            var self = battleLogicComponent.BulletLogicComponent;
 
-            return self.GetOneHitBulletIdFix() + self.OneHitBulletId++;
+            if (unitInfo.UnitId == BulletConfig.DefaultBulletUnitId)
+            {
+                long unitId = self.GenerateBulletId();
+                unitInfo.UnitId = unitId;
+            }
+
+            // 保持所有的战斗 Unit 都 Add 到 Current Scene 上, 因为 Unit 只是数据
+            Unit unit = self.AddChildWithId<Unit, UnitInfo, CannonShootInfo>(unitInfo.UnitId, unitInfo,
+                                                                             cannonShootInfo, true);
+
+            self.ShootBulletCount++;
+            self.LastShootBulletTime = TimeHelper.ServerNow();
+
+            var publishData = AfterUnitCreate.Instance;
+            publishData.CurrentScene = currentScene;
+            publishData.Unit = unit;
+
+            Game.EventSystem.PublishClass(publishData);
+        }
+
+        public static void RemoveUnit(this BulletLogicComponent self, long unitId)
+        {
+            var publishData = RemoveBulletUnit.Instance;
+            publishData.Set(BattleLogicComponent.Instance.CurrentScene, unitId);
+            Game.EventSystem.PublishClass(publishData);
+
+            UnitMonoComponent.Instance.Remove(unitId);
+
+            self.ShootBulletCount--;
+            self.RemoveChild(unitId);
         }
 
         /// <summary> 获取单次使用子弹 ID 校正值 </summary>
-        public static long GetOneHitBulletIdFix(this BulletLogicComponent self)
+        public static long GetOneHitBulletIdFix()
         {
-            Scene currentScene = self.Parent as Scene;
-            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
-            NumericComponent numericComponent = selfPlayerUnit.GetComponent<NumericComponent>();
-            int seatId = numericComponent.GetAsInt(NumericType.Pos);
+            var battleLogicComponent = BattleLogicComponent.Instance;
+            var fisheryComponent = battleLogicComponent.FisheryComponent;
+            int seatId = fisheryComponent.GetSelfSeatId();
 
             // 这里采用位置 ID 乘以每个人发射子弹上限的数字位数加多两位
             // 例如发射子弹上限为 30, 则 UnitId = seatId * 1000 + OneHitBulletId;
@@ -129,99 +170,16 @@ namespace ET
             // 生成一个不跟普通子弹重复的 ID
             // 然后只做时间间隔的刷新, 不加入子弹碰撞列表中
             // 因为发射出去后马上当成已经发生碰撞的子弹
-            long bulletUnitId = self.GenerateOneHitBulletId();
+            long bulletUnitId;
+            if (self.OneHitBulletIdStack.Count > 0)
+                bulletUnitId = self.OneHitBulletIdStack.Pop();
+            else
+                bulletUnitId = GetOneHitBulletIdFix() + (++self.OneHitBulletId);
 
             self.LastShootBulletTime = TimeHelper.ServerNow();
 
             battleLogicComponent.C2M_Fire(bulletUnitId, screenPosX, screenPosY, cannonStack, trackFishUnitId);
             battleLogicComponent.C2M_Hit(screenPosX, screenPosY, bulletUnitId, trackFishUnitId);
-        }
-
-        /// <summary> 
-        /// 战斗逻辑发射子弹, 放在子弹这里定义为了使用这里的子弹所特有的方法
-        /// Battle Warning 必要在调用前调用 UIFisheriesComponent.CalcCannonRotation
-        /// 修改炮台旋转方向为当前设计方向
-        /// </summary>
-        public static void ShootBullet(this BattleLogicComponent battleLogicComponent,
-                                            UnitInfo unitInfo, CannonShootInfo cannonShootInfo)
-        {
-            Scene currentScene = battleLogicComponent.CurrentScene;
-            BulletLogicComponent self = battleLogicComponent.BulletLogicComponent;
-
-            if (unitInfo.UnitId == BulletConfig.DefaultBulletUnitId)
-            {
-                long unitId = self.GenerateBulletId();
-                unitInfo.UnitId = unitId;
-            }
-
-            bool isUseModelPool = BattleConfig.IsUseModelPool;
-
-            // 保持所有的战斗 Unit 都 Add 到 Current Scene 上, 因为 Unit 只是数据
-            Unit unit = self.AddChildWithId<Unit, UnitInfo, CannonShootInfo>(unitInfo.UnitId, unitInfo,
-                                                                             cannonShootInfo, isUseModelPool);
-
-            self.ShootBulletCount++;
-            self.BulletIdList.Add(unitInfo.UnitId);
-
-            self.LastShootBulletTime = TimeHelper.ServerNow();
-
-            var publishData = AfterUnitCreate.Instance;
-            publishData.CurrentScene = currentScene;
-            publishData.Unit = unit;
-            Game.EventSystem.PublishClass(publishData);
-        }
-
-        public static void RemoveUnit(this BulletLogicComponent self, long unitId)
-        {
-            var publishData = RemoveBulletUnit.Instance;
-            publishData.CurrentScene = BattleLogicComponent.Instance.CurrentScene;
-            publishData.UnitId = unitId;
-            Game.EventSystem.PublishClass(publishData);
-
-            UnitMonoComponent.Instance.Remove(unitId);
-
-            self.ShootBulletCount--;
-            
-            for (short index = (short)(self.BulletIdList.Count - 1); index >= 0; index--)
-            {
-                if (self.BulletIdList[index] == unitId)
-                {
-                    self.BulletIdList.RemoveAt(index);
-                    self.RemoveChild(unitId);
-                    break;
-                }
-            }
-        }
-
-        public static void RemoveAllUnit(this BulletLogicComponent self)
-        {
-            for (short index = 0; index < self.BulletIdList.Count; index++)
-            {
-                long unitId = self.BulletIdList[index];
-                self.RemoveChild(unitId);
-            }
-
-            self.Reset();
-        }
-
-        public static void Reset(this BulletLogicComponent self)
-        {
-            // 重置子弹 Unit ID 计数器
-            self.BulletId = 0;
-
-            // 重置单次使用子弹 Unit ID 计数器
-            self.OneHitBulletId = 0;
-
-            // 重置自己发射子弹个数
-            self.ShootBulletCount = 0;
-
-            self.LastShootBulletTime = 0;
-
-            // 不在 Awake 创建, 在定义的时候 new, 在 Destroy 清理, 更改是否使用池的标识时不用改写代码
-            self.BulletIdList.Clear();
-
-            // 不在 Awake 创建, 在定义的时候 new, 在 Destroy 清理, 更改是否使用池的标识时不用改写代码
-            self.OneHitBulletIdStack.Clear();
         }
     }
 }

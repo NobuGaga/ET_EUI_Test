@@ -36,6 +36,8 @@ namespace ET
             self.LastCreateFishTime = 0;
             self.AutoCreateFishGroupIndex = 0;
             self.C2M_GM = new C2M_GM() { Param = new System.Collections.Generic.List<string>() };
+
+            self.Action_String_UnityObject = UnitViewSystem.ForeachBundleAsset;
         }
     }
 

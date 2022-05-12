@@ -16,9 +16,6 @@ namespace ET
 			publishData.CurrentScene = CurrentScene;
 			publishData.Message = Message;
 			Game.EventSystem.PublishClass(publishData);
-
-			var unitComponent = battleLogicComponent.UnitComponent;
-			unitComponent.Remove(Message.FishId);
 		}
 	}
 }

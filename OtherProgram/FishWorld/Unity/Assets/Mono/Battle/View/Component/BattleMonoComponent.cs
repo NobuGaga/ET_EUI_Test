@@ -23,26 +23,25 @@ namespace ET
         {
             // 调用注意顺序, 先初始化 Mono 层引用类
             ReferenceHelper.Init();
-            ConstHelper.Init(Screen.width, Screen.height, ReferenceHelper.CannoCamera.orthographicSize);
+#if UNITY_EDITOR
 
+            ConstHelper.Init(true, Screen.width, Screen.height, ReferenceHelper.CannoCamera.orthographicSize);
+            BattleDebugComponent.Init();
+#else
+            ConstHelper.Init(false, Screen.width, Screen.height, ReferenceHelper.CannoCamera.orthographicSize);
+#endif
             var monoPool = MonoPool.Instance;
             for (int index = 0; index < ConstHelper.PreCreateFishClassCount; index++)
             {
-                monoPool.Recycle(new TransformInfo());
+                monoPool.Recycle(new FishMonoUnit());
                 monoPool.Recycle(new TransformInfo());
                 monoPool.Recycle(new FishMoveInfo());
                 monoPool.Recycle(new FishScreenInfo());
+                monoPool.Recycle(new TimeLineMonoInfo());
             }
-#if UNITY_EDITOR
-
-            BattleDebugComponent.Init();
-#endif
         }
 
-        public void EnterGame()
-        {
-
-        }
+        public void EnterGame() { }
 
         public void EnterBattle(Action<float, float, long, long> collideAction, Action<long> removeFishUnitAction,
                                 Action updateSkillBeforeFish, Action updateSkillBeforeBullet)
@@ -104,7 +103,8 @@ namespace ET
                 bulletUnit.FixedUpdate();
                 bulletUnit.Update();
 
-                if (bulletUnit.Transform == null || bulletUnit.ColliderMonoComponent == null)
+                if (bulletUnit.Transform == null || bulletUnit.ColliderMonoComponent == null ||
+                    !bulletUnit.IsCanCollide)
                     continue;
 
                 CheckCollidFish(bulletUnit, unitId, unitMonoComponent, fishUnitIdList);
@@ -117,12 +117,12 @@ namespace ET
             for (var fishIndex = 0; fishIndex < fishUnitIdList.Count; fishIndex++)
             {
                 var fishUnitId = fishUnitIdList[fishIndex];
-                var fishUnit = unitMonoComponent.Get<FishMonoUnit>(fishUnitId);
                 ref long trackFishUnitId = ref bulletUnit.BulletMoveInfo.TrackFishUnitId;
                 if (trackFishUnitId != ConstHelper.DefaultTrackFishUnitId && trackFishUnitId != fishUnitId)
                     continue;
 
-                if (fishUnit.ColliderMonoComponent == null)
+                var fishUnit = unitMonoComponent.Get<FishMonoUnit>(fishUnitId);
+                if (!fishUnit.IsCanCollide || fishUnit.ColliderMonoComponent == null)
                     continue;
 
                 if (!bulletUnit.ColliderMonoComponent.IsCollide(fishUnit.ColliderMonoComponent))
@@ -135,7 +135,7 @@ namespace ET
                     screenPosition = bulletUnit.ColliderMonoComponent.GetBulletCollidePoint();
 
                 collideAction(screenPosition.x, screenPosition.y, bulletUnitId, fishUnitId);
-                break;
+                return;
             }
         }
 

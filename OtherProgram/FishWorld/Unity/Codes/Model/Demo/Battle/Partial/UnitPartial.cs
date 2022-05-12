@@ -23,5 +23,7 @@ namespace ET
         public Entity GameObjectComponent;
 
         public Entity BattleUnitViewComponent;
+
+        public Entity AnimatorComponent;
     }
 }

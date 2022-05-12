@@ -13,6 +13,9 @@ namespace ET
 		/// <summary> 区域 ID, 用于读取配置设置摄像机 </summary>
 		public int AreaId;
 
+		/// <summary> 是否在播放主摄像机移动 Tween </summary>
+		public bool IsMovingCamera;
+
 		public System.Action<Unit> QuickMoveFish;
 	}
 }

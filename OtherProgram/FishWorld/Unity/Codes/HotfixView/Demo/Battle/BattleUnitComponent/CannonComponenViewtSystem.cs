@@ -10,7 +10,7 @@ namespace ET
         public static void PlayAnimation(this CannonComponent self)
         {
             AnimatorComponent animatorComponent = self.Cannon.GetComponent<AnimatorComponent>();
-            animatorComponent.Play(MotionType.attack);
+            animatorComponent.Play(MotionType.Attack);
         }
     }
 }

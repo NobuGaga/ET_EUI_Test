@@ -28,8 +28,11 @@ namespace ET
             self.ZoneScene = null;
 
             self.SessionComponent = null;
+
             self.UnitComponent = null;
             self.BulletLogicComponent = null;
+            self.SkillComponent = null;
+            self.FisheryComponent = null;
 
             self.FireInfo = null;
             self.HitInfo = null;
@@ -62,19 +65,36 @@ namespace ET
         protected override void Run(AfterCreateCurrentScene args)
         {
             Scene currentScene = args.CurrentScene;
+
+            // Battle TODO 战斗场景才添加战斗逻辑组件
             if (currentScene.Name == "scene_home")
                 return;
 
             var self = currentScene.AddComponent<BattleLogicComponent>();
+
             self.CurrentScene = currentScene;
             self.ZoneScene = currentScene.Parent.Parent as Scene;
 
             self.SessionComponent = self.ZoneScene.GetComponent<SessionComponent>();
-            self.UnitComponent = currentScene.GetComponent<UnitComponent>();
 
-            currentScene.AddComponent<FisheryComponent>();
-            self.SkillComponent = currentScene.AddComponent<SkillComponent>();
+            self.UnitComponent = currentScene.GetComponent<UnitComponent>();
             self.BulletLogicComponent = currentScene.AddComponent<BulletLogicComponent>();
+            self.SkillComponent = currentScene.AddComponent<SkillComponent>();
+            self.FisheryComponent = currentScene.AddComponent<FisheryComponent>();
+        }
+    }
+
+    [FriendClass(typeof(BattleLogicComponent))]
+    public class ExecuteTimeLine_BattleLogicComponent : AEventClass<ExecuteTimeLine>
+    {
+        protected override void Run(object obj)
+        {
+            var self = BattleLogicComponent.Instance;
+            ExecuteTimeLine args = obj as ExecuteTimeLine;
+            ref long unitId = ref args.UnitId;
+            Unit fishUnit = self.UnitComponent.Get(unitId);
+            if (fishUnit != null && !fishUnit.IsDisposed)
+                fishUnit.Execute(args.Info);
         }
     }
 }

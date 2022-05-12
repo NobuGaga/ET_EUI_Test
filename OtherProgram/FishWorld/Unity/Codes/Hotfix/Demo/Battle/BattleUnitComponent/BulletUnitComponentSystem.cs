@@ -30,7 +30,9 @@ namespace ET
                 self.SetTrackDirection(fishUnit.FishUnitComponent.ScreenInfo.AimPoint);
             }
 
-            bulletUnit.TransformComponent.NodeName = string.Format(BulletConfig.NameFormat, bulletUnit.UnitId);
+            if (ConstHelper.IsEditor)
+                bulletUnit.TransformComponent.NodeName = string.Format(BulletConfig.NameFormat, bulletUnit.UnitId);
+
             bulletUnit.TransformComponent.Info.Update(bulletMoveInfo);
         }
     }

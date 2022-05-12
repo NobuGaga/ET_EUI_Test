@@ -1,3 +1,5 @@
+// Battle Review Before Boss Node
+
 namespace ET
 {
     [ObjectSystem]
@@ -12,7 +14,6 @@ namespace ET
             FishMoveInfo info = FishMoveInfoHelper.PopInfo(unit.UnitId);
             info.Reset();
 
-            // 这里用 var 看起来不像 NumericComponent 组件 = =
             var attributeComponent = unit.AttributeComponent;
             // 鱼线表 ID
             short roadId = (short)attributeComponent[NumericType.RoadId];
@@ -32,7 +33,10 @@ namespace ET
             self.ScreenInfo.IsInScreen = false;
 
             var transformComponent = unit.TransformComponent;
-            transformComponent.NodeName = string.Format(FishConfig.NameFormat, unit.ConfigId, unit.UnitId);
+
+            if (ConstHelper.IsEditor)
+                transformComponent.NodeName = string.Format(FishConfig.NameFormat, unit.ConfigId, unit.UnitId);
+
             transformComponent.Info.Update(info);
         }
     }
@@ -52,25 +56,11 @@ namespace ET
         }
     }
 
-    [FriendClass(typeof(BattleLogicComponent))]
-    [FriendClass(typeof(Unit))]
-    [FriendClass(typeof(TransformComponent))]
     [FriendClass(typeof(FishUnitComponent))]
     internal static class FishUnitComponentSystem
     {
-        internal static void FixedUpdate(this FishUnitComponent self, Unit unit)
-        {
-            FishMoveInfo info = self.MoveInfo;
-            FishMoveInfoHelper.FixedUpdate(info);
-
-            if (!info.IsMoveEnd)
-                unit.TransformComponent.Info.Update(info);
-        }
-
         internal static void SetMoveSpeed(this FishUnitComponent self, float moveSpeed) =>
                              self.MoveInfo.MoveSpeed = moveSpeed;
-
-        internal static void PauseMove(this FishUnitComponent self) => self.MoveInfo.IsPause = true;
 
         internal static void ResumeMove(this FishUnitComponent self) => self.MoveInfo.IsPause = false;
     }

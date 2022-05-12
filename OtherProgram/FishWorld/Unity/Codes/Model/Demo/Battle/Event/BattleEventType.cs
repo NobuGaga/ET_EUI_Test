@@ -46,6 +46,15 @@ namespace ET
 
             public static ReceiveFire Instance = new ReceiveFire();
 
+            public void Set(Scene currentScene, UnitInfo unitInfo, M2C_Fire message)
+            {
+                CurrentScene = currentScene;
+                UnitInfo = unitInfo;
+                TouchPosX = message.TouchPosX;
+                TouchPosY = message.TouchPosY;
+                Message = message;
+            }
+
             public override void Dispose()
             {
                 CurrentScene = null;
@@ -120,6 +129,12 @@ namespace ET
 
             public static RemoveBulletUnit Instance = new RemoveBulletUnit();
 
+            public void Set(Scene currentScene, long unitId)
+            {
+                CurrentScene = currentScene;
+                UnitId = unitId;
+            }
+
             public override void Dispose()
             {
                 CurrentScene = null;
@@ -140,6 +155,27 @@ namespace ET
             public Scene CurrentScene;
 
             public int SkillType;
+        }
+
+        #endregion
+
+        #region Mono To Logic
+
+        public class ExecuteTimeLine : DisposeObject
+        {
+            public long UnitId;
+
+            public TimeLineConfigInfo Info;
+
+            public static ExecuteTimeLine Instance = new ExecuteTimeLine();
+
+            public void Set(long unitId, TimeLineConfigInfo info)
+            {
+                UnitId = unitId;
+                Info = info;
+            }
+
+            public override void Dispose() => Info = null;
         }
 
         #endregion

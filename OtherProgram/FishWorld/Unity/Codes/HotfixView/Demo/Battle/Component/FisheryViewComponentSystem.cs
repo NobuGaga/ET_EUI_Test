@@ -18,17 +18,6 @@ namespace ET
             ForeachHelper.Foreach(unitComponent.GetFishUnitList(), skillComponent.SetFishAnimatorState);
         }
 
-        public static void SetFishAnimatorState(Unit fishUnit)
-        {
-            var animatorComponent = fishUnit.GetComponent<AnimatorComponent>();
-            if (animatorComponent == null)
-                return;
-
-            FishUnitComponent fishUnitComponent = fishUnit.FishUnitComponent;
-            if (fishUnitComponent.MoveInfo.IsPause)
-                animatorComponent.PauseAnimator();
-            else
-                animatorComponent.RunAnimator();
-        }
+        public static void SetFishAnimatorState(Unit fishUnit) => fishUnit.PauseAnimation();
     }
 }

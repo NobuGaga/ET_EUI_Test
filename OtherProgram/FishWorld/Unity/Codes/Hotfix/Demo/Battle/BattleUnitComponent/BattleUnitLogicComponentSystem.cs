@@ -10,7 +10,8 @@ namespace ET
         // 在 AddChild 的时候根据传入参数调用相应的 IAake 方法
         public override void Awake(Unit self, int configId, UnitInfo unitInfo)
         {
-            UnitMonoComponent.Instance.AddFishUnit(unitInfo.UnitId);
+            var fishMonoUnit = UnitMonoComponent.Instance.AddFishUnit(unitInfo.UnitId);
+            fishMonoUnit.IsCanCollide = true;
 
             self.Awake(unitInfo);
 
@@ -28,7 +29,8 @@ namespace ET
         // 在 AddChild 的时候根据传入参数调用相应的 IAake 方法
         public override void Awake(Unit self, UnitInfo unitInfo, CannonShootInfo cannonShootInfo)
         {
-            UnitMonoComponent.Instance.AddBulletUnit(unitInfo.UnitId);
+            var bulletMonoUnit = UnitMonoComponent.Instance.AddBulletUnit(unitInfo.UnitId);
+            bulletMonoUnit.IsCanCollide = true;
 
             self.Awake(unitInfo);
 

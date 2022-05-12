@@ -21,6 +21,6 @@ namespace ET
         public Vector2 ShootLocalPosition;
 
         public Vector3 GetBulletStartPosition() =>
-                    new Vector3(ShootLocalPosition.x, ShootLocalPosition.y, 0);
+                       new Vector3(ShootLocalPosition.x, ShootLocalPosition.y, 0);
     }
 }

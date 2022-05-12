@@ -112,7 +112,7 @@ namespace ET
             if (float.TryParse(floatString, out float value))
                 vector.SetValue(vectorFlag, value);
             else
-                throw new System.Exception($"Config Vector3 string is not valid config string = { vectorString }");
+                Log.Error($"Config Vector3 string is not valid config string = { vectorString }");
         }
 
         private const byte VectorFlagX = 0;

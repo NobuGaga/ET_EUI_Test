@@ -11,6 +11,8 @@ namespace ET
             // Battle TODO 暂时写死
             self.RoomType = 1;
 
+            self.IsMovingCamera = false;
+
             self.QuickMoveFish = (Unit fishUnit) =>
             {
                 var fishUnitComponent = fishUnit.FishUnitComponent;

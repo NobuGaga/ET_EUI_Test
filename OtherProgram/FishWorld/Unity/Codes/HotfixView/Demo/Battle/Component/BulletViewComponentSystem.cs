@@ -1,5 +1,6 @@
 using UnityEngine;
 using ET.EventType;
+using BulletHelper = ET.BulletLogicComponentSystem;
 
 namespace ET
 {
@@ -169,12 +170,26 @@ namespace ET
         }
     }
 
+    [FriendClass(typeof(BattleLogicComponent))]
+    [FriendClass(typeof(BulletLogicComponent))]
     public class AfterShoot_BattleViewComponent : AEventClass<ReceiveFire>
     {
         protected override void Run(object obj)
         {
             var args = obj as ReceiveFire;
-            BattleViewComponent.Instance.CallLogicShootBullet(args.UnitInfo, ref args.TouchPosX, ref args.TouchPosY);
+            long playerUnitId = args.Message.UnitId;
+            Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(args.CurrentScene);
+
+            if (selfPlayerUnit.Id != playerUnitId)
+            {
+                BattleViewComponent.Instance.CallLogicShootBullet(args.UnitInfo, ref args.TouchPosX, ref args.TouchPosY);
+                return;
+            }
+
+            // 自己发射的子弹不走协议创建, 本地创建后再发送协议给服务器广播给其他客户端
+            long bulletUnitId = args.Message.BulletId;
+            if (bulletUnitId >= BulletHelper.GetOneHitBulletIdFix())
+                BattleLogicComponent.Instance.BulletLogicComponent.OneHitBulletIdStack.Push(bulletUnitId);
         }
     }
 }

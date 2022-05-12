@@ -34,18 +34,20 @@ namespace ET
             // 如果是同一个 AssetBundle 里有不同的预设资源则会有问题, 目前模型资源是一个 AssetBundle 里一个预设
             // UI 资源可能多个预设在同一个 AssetBundle 里, ObjectPoolComponent 则不可使用
             // 使用 Asset Bundle Name 拼接 Asset Name 或者是别的方法
-            TryGetAssetPathAndName(unit, out self.AssetBundlePath, out string assetName);
+            var assetBundleData = TryGetAssetPathAndName(unit);
+            self.AssetBundlePath = assetBundleData.Path;
+            string assetName = assetBundleData.Name;
 
             var objectPoolComponent = unit.GetObjectPoolComponent();
             GameObject gameObject = objectPoolComponent?.PopObject(self.AssetBundlePath);
 
             if (gameObject != null)
             {
-                unit.InitViewComponent(gameObject);
+                unit.InitViewComponent(gameObject, self.AssetBundlePath);
                 return;
             }
 
-            gameObject = await ObjectInstantiateHelper.LoadModelPrefab(self.AssetBundlePath, assetName);
+            gameObject = await ObjectInstantiateHelper.LoadAsset(self.AssetBundlePath, assetName) as GameObject;
             self.PrefabObject = gameObject;
 
             // Unit 已经被释放掉
@@ -58,19 +60,20 @@ namespace ET
                 unit.InstantiateGameObject();
         }
 
-        private void TryGetAssetPathAndName(Unit unit, out string assetBundlePath, out string assetName)
+        private AssetBundleData TryGetAssetPathAndName(Unit unit)
         {
-            assetBundlePath = ABPath.cannon_1_bulletAB;
-            assetName = "cannon_1_bullet";
+            if (unit.Type == UnitType.Fish)
+            {
+                // Battle TODO 暂时只有鱼读表, 后续将子弹也读表
+                var unitConfig = unit.Config;
+                return UnitConfigCategory.Instance.GetAssetBundleData(unitConfig.ResId);
+            }
 
-            if (unit.Type != UnitType.Fish)
-                return;
-
-            // Battle TODO 暂时只有鱼读表, 后续将子弹也读表
-            var unitConfig = unit.Config;
-            var assetBundleData = UnitConfigCategory.Instance.GetAssetBundleData(unitConfig.ResId);
-            assetBundlePath = assetBundleData.Path;
-            assetName = assetBundleData.Name;
+            return new AssetBundleData()
+            {
+                Path = ABPath.cannon_1_bulletAB,
+                Name = "cannon_1_bullet",
+            };
         }
     }
 
@@ -86,6 +89,7 @@ namespace ET
     }
 
     [FriendClass(typeof(BattleLogicComponent))]
+    [FriendClass(typeof(BattleViewComponent))]
     [FriendClass(typeof(Unit))]
     [FriendClass(typeof(TransformComponent))]
     [FriendClass(typeof(BattleUnitViewComponent))]
@@ -96,29 +100,94 @@ namespace ET
         {
             var battleUnitViewComponent = self.BattleUnitViewComponent as BattleUnitViewComponent;
             var gameObject = UnityEngine.Object.Instantiate(battleUnitViewComponent.PrefabObject);
-            self.InitViewComponent(gameObject);
+            self.InitViewComponent(gameObject, battleUnitViewComponent.AssetBundlePath);
         }
 
-        internal static void InitViewComponent(this Unit self, GameObject gameObject)
+        internal static void InitViewComponent(this Unit self, GameObject gameObject, string assetBundlePath)
         {
-            var battleUnitViewComponent = self.BattleUnitViewComponent as BattleUnitViewComponent;
             Transform node = gameObject.transform;
             bool isUseModelPool = BattleConfig.IsUseModelPool;
-            self.GameObjectComponent = self.AddComponent<GameObjectComponent, string, Transform>(
-                                                         battleUnitViewComponent.AssetBundlePath, node, isUseModelPool);
+            self.GameObjectComponent = self.AddComponent<GameObjectComponent, string, Transform>
+                                                        (assetBundlePath, node, isUseModelPool);
 
             self.InitTransform();
             BattleMonoUnit monoUnit = UnitMonoComponent.Instance.Get(self.UnitId);
             monoUnit.ColliderMonoComponent = ColliderHelper.AddColliderComponent(self.ConfigId, gameObject);
+            TransformMonoHelper.Add(self.UnitId, node);
 
             if (self.Type == UnitType.Fish)
+                self.InitFishAnimator().Coroutine();
+        }
+
+        private static async ETTask InitFishAnimator(this Unit self)
+        {
+            bool isUseModelPool = BattleConfig.IsUseModelPool;
+            int configId = self.ConfigId;
+            var animatorComponent = self.AddComponent<AnimatorComponent, int>(configId, isUseModelPool);
+            animatorComponent.Reset();
+            self.AnimatorComponent = animatorComponent;
+
+            // Battle TODO 临时处理击杀鱼表现
+            //animatorComponent.Animator.Play(MotionTypeHelper.Get(MotionType.Move));
+            //animatorComponent.Animator.enabled = false;
+
+            await ETTask.CompletedTask;
+
+            if (AnimationClipHelper.Contains(configId))
             {
-                var animatorComponent = self.AddComponent<AnimatorComponent, int>(self.ConfigId, isUseModelPool);
-                animatorComponent.Reset();
-                AnimatorParameterComponent.Add(self.ConfigId, animatorComponent.Parameter);
+                self.PlayAnimation(MotionType.Move, true);
+                return;
             }
 
-            TransformMonoHelper.Add(self.Id, node);
+            var assetBundleData = UnitConfigCategory.Instance.GetAssetBundleData(self.Config.ResId);
+            string assetBundlePath = assetBundleData.ClipPath;
+            Scene currentScene = BattleLogicComponent.Instance.CurrentScene;
+            var ResourcesLoaderComponent = currentScene.GetComponent<ResourcesLoaderComponent>();
+            await ResourcesLoaderComponent.LoadAsync(assetBundlePath);
+
+            if (AnimationClipHelper.Contains(configId))
+            {
+                self.PlayAnimation(MotionType.Move, true);
+                return;
+            }
+
+            var assetMap = ResourcesComponent.Instance.GetBundleAll(assetBundlePath);
+            BattleLogicComponent.Instance.Argument_Integer = configId;
+
+            // 将每个模型动作存到 Mono 层, 新的模型加载后只执行一次
+            ForeachHelper.Foreach(assetMap, BattleViewComponent.Instance.Action_String_UnityObject);
+            self.PlayAnimation(AnimatorConfig.DefaultMotionType, true);
+        }
+
+        internal static void PlayAnimation(this Unit self, int motionType, bool isLoop)
+        {
+            var gameObjectComponent = self.GameObjectComponent as GameObjectComponent;
+            AnimationClipHelper.Play(gameObjectComponent.GameObject, self.ConfigId,
+                                     MotionTypeHelper.Get(motionType), isLoop);
+        }
+
+        internal static void PauseAnimation(this Unit self)
+        {
+            if (self.GameObjectComponent == null)
+                return;
+
+            var gameObjectComponent = self.GameObjectComponent as GameObjectComponent;
+            AnimationClipHelper.Pause(gameObjectComponent.GameObject);
+        }
+
+        internal static void StopAnimation(this Unit self)
+        {
+            if (self.GameObjectComponent == null)
+                return;
+
+            var gameObjectComponent = self.GameObjectComponent as GameObjectComponent;
+            AnimationClipHelper.Stop(gameObjectComponent.GameObject);
+        }
+
+        internal static void ForeachBundleAsset(string assetName, UnityEngine.Object asset)
+        {
+            ref int configId = ref BattleLogicComponent.Instance.Argument_Integer;
+            AnimationClipHelper.Add(configId, assetName, asset as AnimationClip);
         }
 
         internal static ObjectPoolComponent GetObjectPoolComponent(this Unit unit)

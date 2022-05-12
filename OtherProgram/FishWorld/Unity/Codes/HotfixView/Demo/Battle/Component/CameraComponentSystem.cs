@@ -1,8 +1,10 @@
-using ET.EventType;
 using UnityEngine;
+using ET.EventType;
 
 namespace ET
 {
+    [FriendClass(typeof(BattleLogicComponent))]
+    [FriendClass(typeof(FisheryComponent))]
     [FriendClass(typeof(CameraComponent))]
     public static class CameraComponentSystem
     {
@@ -15,7 +17,7 @@ namespace ET
             // Battle TODO 先不设置鱼节点变换, 因为主界面场景摄像机写死变换鱼影响到这边逻辑
             Vector3 vector;
             if (VectorStringHelper.TryParseVector(vectorString, out vector))
-                self.PlayMovePosition(vector, time);
+                self.PlayMovePosition(vector, time).Coroutine();
 
             vectorString = config.CameraParamRotation;
             time = (float)config.CameraRotateTime / FishConfig.MilliSecond;
@@ -30,21 +32,25 @@ namespace ET
             DotweenHelper.DOKill(cameraTrans);
         }
 
-        public static void PlayMovePosition(this CameraComponent self, Vector3 endValue, float duration)
+        public static async ETTask PlayMovePosition(this CameraComponent self, Vector3 endValue, float duration)
         {
             Transform cameraTrans = self.mainCamera.transform;
             //Transform fishRootTrans = GlobalComponent.Instance.FishRoot;
             //Vector3 fishRootEndValue = endValue - cameraTrans.position + fishRootTrans.position;
 
+            DotweenHelper.DOKill(cameraTrans);
+
             if (duration > 0)
             {
-                DotweenHelper.DOMove(cameraTrans, endValue, duration).Coroutine();
+                BattleLogicComponent.Instance.FisheryComponent.IsMovingCamera = true;
                 //DotweenHelper.DOMove(fishRootTrans, fishRootEndValue, duration).Coroutine();
+                await DotweenHelper.DOMove(cameraTrans, endValue, duration);
+                BattleLogicComponent.Instance.FisheryComponent.IsMovingCamera = false;
             }
             else
             {
-                cameraTrans.position = endValue;
                 //fishRootTrans.position = fishRootEndValue;
+                cameraTrans.position = endValue;
             }
         }
 
@@ -57,7 +63,7 @@ namespace ET
             if (duration > 0)
             {
                 DotweenHelper.DORotate(cameraTrans, endValue, duration).Coroutine();
-                //DotweenHelper.DOMove(fishRootTrans, fishRootEndValue, duration).Coroutine();
+                //DotweenHelper.DORotate(fishRootTrans, fishRootEndValue, duration).Coroutine();
             }
             else
             {

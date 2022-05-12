@@ -157,7 +157,7 @@ namespace ET
                 return;
             }
 
-            gameObject = await ObjectInstantiateHelper.LoadModelPrefab(assetBundlePath, assetName);
+            gameObject = await ObjectInstantiateHelper.LoadAsset(assetBundlePath, assetName) as GameObject;
             if (gameObject == null || unit == null || unit.IsDisposed)
                 return;
 

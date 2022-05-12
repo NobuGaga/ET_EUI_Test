@@ -1,18 +1,24 @@
+// Battle Review Before Boss Node
+
 using System.Collections.Generic;
 
 namespace ET
 {
-	/// <summary>
-	/// 子弹逻辑组件
-	/// </summary>
+	/// <summary> 子弹逻辑组件 </summary>
 	[ChildType(typeof(Unit))]
-	public class BulletLogicComponent : Entity, IAwake, IDestroy//, Battle TODO IUpdate
+	public class BulletLogicComponent : Entity, IAwake, IDestroy
 	{
 		/// <summary> 客户端生成的子弹 ID 计数器 </summary>
 		public long BulletId;
 
 		/// <summary> 上一次发射子弹时间戳(毫秒) </summary>
 		public long LastShootBulletTime;
+
+		/// <summary> 自己发射的子弹个数 </summary>
+		public ushort ShootBulletCount;
+
+		/// <summary> 用于客户端本地创建 Unit 统一使用的 UnitInfo </summary>
+		public UnitInfo UnitInfo;
 
 		/// <summary>
 		/// 客户端生成单次使用的子弹 ID 计数器
@@ -21,15 +27,6 @@ namespace ET
 		/// </summary>
 		public long OneHitBulletId;
 
-		/// <summary> 自己发射的子弹个数 </summary>
-		public ushort ShootBulletCount;
-
-		/// <summary> 用于客户端本地创建 Unit 统一使用的 UnitInfo </summary>
-		public UnitInfo unitInfo = new UnitInfo();
-
-		/// <summary> 渔场内存在的子弹 ID 列表, 加快遍历速度 </summary>
-		public List<long> BulletIdList = new List<long>(FisheryConfig.FisheryMaxBulletCount);
-
-		public Stack<long> OneHitBulletIdStack { get; set; } = new Stack<long>(FisheryConfig.FisheryMaxBulletCount);
+		public Stack<long> OneHitBulletIdStack;
 	}
 }

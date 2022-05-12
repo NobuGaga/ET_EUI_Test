@@ -24,6 +24,9 @@ namespace ET
         /// </summary>
         public int MoveTime;
 
+        /// <summary> 当前生命周期, 已运动时间除以总运动时间 </summary>
+        public float CurrentLifeTime;
+
         // 三轴偏移值, 每个鱼的偏移值都不一样, 不跟随鱼线变化(跟鱼变化)
         public float OffsetPosX;
         public float OffsetPosY;
