@@ -41,8 +41,7 @@ namespace ET
             fishUnitComponent.MoveInfo.IsPause = true;
             var battleMonoUnit = UnitMonoComponent.Instance.Get(fishUnitId);
             battleMonoUnit.IsCanCollide = false;
-            (fishUnit.AnimatorComponent as AnimatorComponent).Animator.Play(MotionTypeHelper.Get(MotionType.Move));
-            //fishUnit.PlayAnimation(MotionType.Die, false);
+            fishUnit.PlayAnimation(MotionType.Die, false);
             RemoveUnit(unitComponent, fishUnitId).Coroutine();
         }
 

@@ -10,11 +10,8 @@ namespace ET
         // 在 AddChild 的时候根据传入参数调用相应的 IAake 方法
         public override void Awake(Unit self, int configId, UnitInfo unitInfo)
         {
-            var fishMonoUnit = UnitMonoComponent.Instance.AddFishUnit(unitInfo.UnitId);
-            fishMonoUnit.IsCanCollide = true;
-
+            UnitMonoComponent.Instance.AddFishUnit(unitInfo.UnitId);
             self.Awake(unitInfo);
-
             self.ConfigId = configId;
             self.FishUnitComponent = self.AddComponent<FishUnitComponent>(BattleConfig.IsUseModelPool);
         }

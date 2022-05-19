@@ -13,5 +13,7 @@ namespace ET
 		public string AssetBundlePath;
 
 		public GameObject PrefabObject;
+
+		public string MotionName;
 	}
 }

@@ -10,7 +10,7 @@ namespace ET
 
         public Quaternion Rotation;
         public Quaternion LocalRotation;
-        
+
         public Vector3 Forward;
 
         public void Update(FishMoveInfo info)

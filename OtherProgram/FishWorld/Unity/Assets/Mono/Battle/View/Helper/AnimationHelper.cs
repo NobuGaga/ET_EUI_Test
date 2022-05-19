@@ -62,18 +62,7 @@ namespace ET
             if (!clipMap.ContainsKey(motionName))
                 return;
 
-            var clip = clipMap[motionName];
-            //var unityReferense = UnityComponentHelper.GetUnityReferense(gameObject.GetInstanceID());
-            //for (int index = 0; index < unityReferense.clipList.Count; index++)
-            //{
-            //    if (unityReferense.clipList[index].name.Contains(motionName))
-            //    {
-            //        clip = unityReferense.clipList[index];
-            //        break;
-            //    }
-            //}
-
-            animation.Play(clip, isLoop);
+            animation.Play(clipMap[motionName], isLoop);
         }
 
         public static void Pause(GameObject gameObject) =>

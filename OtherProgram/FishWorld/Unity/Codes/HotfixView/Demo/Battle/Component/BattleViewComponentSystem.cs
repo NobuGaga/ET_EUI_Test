@@ -134,4 +134,17 @@ namespace ET
                 args.CurrentScene.AddComponent<BattleViewComponent>();
         }
     }
+
+    [FriendClass(typeof(BattleLogicComponent))]
+    public class ExecuteTimeLine_BattleViewComponent : AEventClass<ExecuteTimeLine>
+    {
+        protected override void Run(object obj)
+        {
+            var args = obj as ExecuteTimeLine;
+            var battleLogicComponent = BattleLogicComponent.Instance;
+            Unit fishUnit = battleLogicComponent.UnitComponent.Get(args.UnitId);
+            if (fishUnit != null && !fishUnit.IsDisposed)
+                fishUnit.Execute(args.Info);
+        }
+    }
 }

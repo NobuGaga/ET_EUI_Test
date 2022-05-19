@@ -16,6 +16,8 @@ namespace ET
 		/// <summary> 是否在播放主摄像机移动 Tween </summary>
 		public bool IsMovingCamera;
 
+		public System.Func<Unit, int, bool> FindFishUnitBySeatId;
+
 		public System.Action<Unit> QuickMoveFish;
 	}
 }

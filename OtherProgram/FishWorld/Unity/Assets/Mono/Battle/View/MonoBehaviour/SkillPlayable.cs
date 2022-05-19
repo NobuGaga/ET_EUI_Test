@@ -8,54 +8,51 @@ namespace ET
     {
         private Animator m_animator;
 
+        private string animatorInstanceID;
+
         private AnimationClip m_curClip;
 
         private PlayableGraph playableGraph;
 
-        private AnimationPlayableOutput m_output;
+        private AnimationPlayableOutput playableOutput;
+
+        private AnimationClipPlayable playableClip;
 
         public SkillPlayable(Animator animator) => Init(animator);
 
         public override void Init<T>(T animator)
         {
             m_animator = animator as Animator;
-        }
+            animatorInstanceID = m_animator.GetInstanceID().ToString();
 
-        public override void SetAnimationPlayTime(AnimationClip clip, float time)
-        {
-            //AnimationPlayableUtilities.PlayClip(m_animator, clip, out playableGraph);
-            //playableGraph.Evaluate(time);
-            base.SetAnimationPlayTime(clip, time);
+            playableGraph = PlayableGraph.Create(animatorInstanceID);
+            playableGraph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
+            playableOutput = AnimationPlayableOutput.Create(playableGraph, animatorInstanceID, m_animator);
         }
 
         public override void Play(AnimationClip clip, bool isLoop) {
-            //AnimationPlayableUtilities.PlayClip(m_animator, clip, out playableGraph);
             m_curClip = clip;
-            if (playableGraph.IsValid())
-                playableGraph.Destroy();
-            playableGraph = PlayableGraph.Create("PlayAnimationSample");
-            // 创建一个Output节点，类型是Animation，名字是Animation，目标对象是物体上的Animator组件
-            var playableOutput = AnimationPlayableOutput.Create(playableGraph, "Animation", m_animator);
-            // 创建一个动画剪辑Playable，将clip传入进去
-            var clipPlayable = AnimationClipPlayable.Create(playableGraph, clip);
-            // 将playable连接到output
-            playableOutput.SetSourcePlayable(clipPlayable);
+
+            if (playableClip.IsValid())
+                playableClip.Destroy();
+
+            playableClip = AnimationClipPlayable.Create(playableGraph, clip);
+            playableOutput.SetSourcePlayable(playableClip);
             playableGraph.Play();
+            
             base.Play(clip, isLoop);
         }
 
         protected override void SampleAnimation() { }
 
-        protected override void Replay()
-        {
-            playableGraph.Destroy();
-            Play(m_curClip, isLoop);
-        }
+        protected override void Replay() => Play(m_curClip, isLoop);
 
         public override void Dispose()
         {
             if (playableGraph.IsValid())
                 playableGraph.Destroy();
+
+            m_animator = null;
             m_curClip = null;
         }
     }

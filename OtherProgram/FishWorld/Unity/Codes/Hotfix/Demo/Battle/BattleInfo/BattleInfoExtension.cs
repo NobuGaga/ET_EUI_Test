@@ -31,5 +31,12 @@ namespace ET
             self.NextForward = TransformDefaultConfig.DefaultForward;
             self.MoveSpeed = FishConfig.DefaultMoveSpeed;
         }
+
+        public static void Reset(this TransformRotateInfo self)
+        {
+            self.LocalRotationZ = 0;
+            self.RotationDuration = 0;
+            self.RotationTime = 0;
+        }
     }
 }

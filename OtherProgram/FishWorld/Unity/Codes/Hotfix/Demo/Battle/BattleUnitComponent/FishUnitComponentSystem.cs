@@ -11,8 +11,8 @@ namespace ET
         {
             Unit unit = self.Parent as Unit;
 
-            FishMoveInfo info = FishMoveInfoHelper.PopInfo(unit.UnitId);
-            info.Reset();
+            FishMoveInfo moveInfo = FishMoveInfoHelper.PopInfo(unit.UnitId);
+            moveInfo.Reset();
 
             var attributeComponent = unit.AttributeComponent;
             // 鱼线表 ID
@@ -26,8 +26,8 @@ namespace ET
             float offsetPosY = (float)attributeComponent[NumericType.PositionY] / FishConfig.ServerOffsetScale;
             float offsetPosZ = (float)attributeComponent[NumericType.PositionZ] / FishConfig.ServerOffsetScale;
 
-            FishMoveInfoHelper.InitInfo(info, roadId, liveTime, remainTime, offsetPosX, offsetPosY, offsetPosZ);
-            self.MoveInfo = info;
+            FishMoveInfoHelper.InitInfo(moveInfo, roadId, liveTime, remainTime, offsetPosX, offsetPosY, offsetPosZ);
+            self.MoveInfo = moveInfo;
 
             self.ScreenInfo = FishScreenInfoHelper.PopInfo(unit.UnitId);
             self.ScreenInfo.IsInScreen = false;
@@ -37,7 +37,13 @@ namespace ET
             if (ConstHelper.IsEditor)
                 transformComponent.NodeName = string.Format(FishConfig.NameFormat, unit.ConfigId, unit.UnitId);
 
-            transformComponent.Info.Update(info);
+            transformComponent.Info.Update(moveInfo);
+
+            TransformRotateInfo rotateInfo = TransformRotateInfoHelper.PopInfo(unit.UnitId);
+            rotateInfo.Reset();
+            self.RotateInfo = rotateInfo;
+
+            TimeLineConfigInfoHelper.SetConfigId(unit.UnitId, attributeComponent.GetAsInt(NumericType.Timeline));
         }
     }
 
@@ -46,13 +52,18 @@ namespace ET
     {
         public override void Destroy(FishUnitComponent self)
         {
+            long unitId = self.Parent.Id;
             var moveInfo = self.MoveInfo;
             self.MoveInfo = null;
-            FishMoveInfoHelper.PushPool(self.Parent.Id, moveInfo);
+            FishMoveInfoHelper.PushPool(unitId, moveInfo);
 
             var screenInfo = self.ScreenInfo;
             self.ScreenInfo = null;
-            FishScreenInfoHelper.PushPool(self.Parent.Id, screenInfo);
+            FishScreenInfoHelper.PushPool(unitId, screenInfo);
+
+            var rotateInfo = self.RotateInfo;
+            self.RotateInfo = null;
+            TransformRotateInfoHelper.PushPool(unitId, rotateInfo);
         }
     }
 

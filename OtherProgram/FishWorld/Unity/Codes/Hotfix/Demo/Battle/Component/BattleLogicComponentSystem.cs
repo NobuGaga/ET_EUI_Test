@@ -84,17 +84,19 @@ namespace ET
         }
     }
 
-    [FriendClass(typeof(BattleLogicComponent))]
     public class ExecuteTimeLine_BattleLogicComponent : AEventClass<ExecuteTimeLine>
     {
         protected override void Run(object obj)
         {
-            var self = BattleLogicComponent.Instance;
-            ExecuteTimeLine args = obj as ExecuteTimeLine;
-            ref long unitId = ref args.UnitId;
-            Unit fishUnit = self.UnitComponent.Get(unitId);
-            if (fishUnit != null && !fishUnit.IsDisposed)
-                fishUnit.Execute(args.Info);
+            var args = obj as ExecuteTimeLine;
+            var info = args.Info;
+
+            // 不是状态的都是表现层逻辑
+            if (info.Type < TimeLineNodeType.ReadyState)
+                return;
+
+            var battleUnit = UnitMonoComponent.Instance.Get(args.UnitId);
+            battleUnit.IsCanCollide = info.Type == TimeLineNodeType.ActiveState;
         }
     }
 }

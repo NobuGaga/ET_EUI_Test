@@ -18,7 +18,8 @@ namespace ET
             Unit bulletUnit = bulletLogicComponent.GetChild<Unit>(bulletUnitId);
             var attributeComponent = bulletUnit.GetComponent<NumericComponent>();
             int seatId = attributeComponent.GetAsInt(NumericType.Pos);
-            Unit playerUnit = FisheryHelper.GetPlayerUnit(seatId);
+            var fisheryComponent = self.FisheryComponent;
+            Unit playerUnit = fisheryComponent.GetPlayerUnit(seatId);
             long playerUnitId = playerUnit.Id;
             Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
 

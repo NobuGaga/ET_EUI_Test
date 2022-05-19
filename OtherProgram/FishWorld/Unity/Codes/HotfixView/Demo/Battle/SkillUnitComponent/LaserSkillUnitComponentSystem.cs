@@ -15,7 +15,7 @@ namespace ET
             var attributeComponent = playerUnit.GetComponent<NumericComponent>();
             int seatId = attributeComponent.GetAsInt(NumericType.Pos);
 
-            self.CannonShootPointNode = CannonHelper.GetShootPointNode(currentScene, seatId);
+            self.CannonShootPointNode = CannonHelper.GetShootPointNode(seatId);
 
             // 上层还有一个节点 = =
             Transform otherRootNode = node.GetChild(0);

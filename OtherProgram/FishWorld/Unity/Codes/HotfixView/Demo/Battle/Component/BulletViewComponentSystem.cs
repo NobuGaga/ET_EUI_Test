@@ -111,7 +111,8 @@ namespace ET
 
         private static CannonShootInfo RotateCannon(ref int seatId, ref float touchPosX, ref float touchPosY, bool isPlayAnimation)
         {
-            Unit playerUnit = FisheryHelper.GetPlayerUnit(seatId);
+            var fisheryComponent = BattleLogicComponent.Instance.FisheryComponent;
+            Unit playerUnit = fisheryComponent.GetPlayerUnit(seatId);
             var cannonComponent = playerUnit.GetComponent<CannonComponent>();
             if (isPlayAnimation)
                 cannonComponent.PlayAnimation();

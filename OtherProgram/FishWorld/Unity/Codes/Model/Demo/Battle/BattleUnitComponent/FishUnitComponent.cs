@@ -10,5 +10,8 @@ namespace ET
 
         /// <summary> Mono 层鱼屏幕数据类 </summary>
         public FishScreenInfo ScreenInfo;
+
+        /// <summary> Mono 层鱼屏幕数据类 </summary>
+        public TransformRotateInfo RotateInfo;
     }
 }

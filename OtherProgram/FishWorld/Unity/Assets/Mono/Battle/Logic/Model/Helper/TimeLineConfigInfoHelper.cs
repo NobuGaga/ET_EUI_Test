@@ -80,26 +80,33 @@ namespace ET
                 return 0;
         }
 
+        public static void SetConfigId(long unitId, int configId)
+        {
+            var unit = UnitMonoComponent.Instance.Get<FishMonoUnit>(unitId);
+            var info = unit.TimeLineMonoInfo;
+            info.ConfigId = configId;
+        }
+
         public static void SetExecuteTimeLine(Action<long, TimeLineConfigInfo> action) =>
                            executeTimeLineDelegate = action;
 
-        public static void FixedUpdate(long unitId, TimeLineMonoInfo info)
+        public static void FixedUpdate(long unitId, FishMoveInfo moveInfo, TimeLineMonoInfo timeLineInfo)
         {
-            var configId = info.ConfigId;
+            var configId = timeLineInfo.ConfigId;
             if (!timeLineInfoMap.ContainsKey(configId))
                 return;
 
             var list = timeLineInfoMap[configId];
-            info.LifeTime += (float)TimeHelper.ClinetDeltaFrameTime() / 1000;
-            ref float currentListTime = ref info.LifeTime;
-            for (int index = info.NodeIndex; index < list.Count; index++)
+            timeLineInfo.LifeTime = moveInfo.CurrentLifeTime;
+            ref float currentListTime = ref timeLineInfo.LifeTime;
+            for (int index = timeLineInfo.NodeIndex; index < list.Count; index++)
             {
                 TimeLineConfigInfo nodeInfo = list[index];
                 if (currentListTime < nodeInfo.LifeTime)
                     break;
 
                 executeTimeLineDelegate(unitId, nodeInfo);
-                info.NodeIndex = index;
+                timeLineInfo.NodeIndex = index + 1;
             }
         }
     }

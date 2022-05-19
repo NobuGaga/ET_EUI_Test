@@ -19,6 +19,8 @@ namespace ET
             else if (unit.Type == UnitType.Bullet)
                 self.NodeParent = ReferenceHelper.BulletRootNode.transform;
 
+            self.MotionName = null;
+
             InitModel(self, unit).Coroutine();
         }
 
@@ -127,17 +129,8 @@ namespace ET
             animatorComponent.Reset();
             self.AnimatorComponent = animatorComponent;
 
-            // Battle TODO 临时处理击杀鱼表现
-            //animatorComponent.Animator.Play(MotionTypeHelper.Get(MotionType.Move));
-            //animatorComponent.Animator.enabled = false;
-
-            await ETTask.CompletedTask;
-
             if (AnimationClipHelper.Contains(configId))
-            {
-                self.PlayAnimation(MotionType.Move, true);
                 return;
-            }
 
             var assetBundleData = UnitConfigCategory.Instance.GetAssetBundleData(self.Config.ResId);
             string assetBundlePath = assetBundleData.ClipPath;
@@ -145,9 +138,12 @@ namespace ET
             var ResourcesLoaderComponent = currentScene.GetComponent<ResourcesLoaderComponent>();
             await ResourcesLoaderComponent.LoadAsync(assetBundlePath);
 
+            var battleUnitViewComponent = self.BattleUnitViewComponent as BattleUnitViewComponent;
+            string motionName = battleUnitViewComponent.MotionName;
             if (AnimationClipHelper.Contains(configId))
             {
-                self.PlayAnimation(MotionType.Move, true);
+                if (!string.IsNullOrEmpty(motionName))
+                    self.PlayAnimation(motionName, true);
                 return;
             }
 
@@ -156,14 +152,26 @@ namespace ET
 
             // 将每个模型动作存到 Mono 层, 新的模型加载后只执行一次
             ForeachHelper.Foreach(assetMap, BattleViewComponent.Instance.Action_String_UnityObject);
-            self.PlayAnimation(AnimatorConfig.DefaultMotionType, true);
+            if (!string.IsNullOrEmpty(motionName))
+                self.PlayAnimation(motionName, true);
         }
 
-        internal static void PlayAnimation(this Unit self, int motionType, bool isLoop)
+        internal static void PlayAnimation(this Unit self, int motionType, bool isLoop) =>
+                             self.PlayAnimation(MotionTypeHelper.Get(motionType), isLoop);
+
+        internal static void PlayAnimation(this Unit self, string motionName, bool isLoop)
         {
+            var battleUnitViewComponent = self.BattleUnitViewComponent as BattleUnitViewComponent;
+
+            // 这里只储存循环播放的动作名, 用于作异步加载完后播放
+            if (isLoop)
+                battleUnitViewComponent.MotionName = motionName;
+
+            if (self.GameObjectComponent == null)
+                return;
+
             var gameObjectComponent = self.GameObjectComponent as GameObjectComponent;
-            AnimationClipHelper.Play(gameObjectComponent.GameObject, self.ConfigId,
-                                     MotionTypeHelper.Get(motionType), isLoop);
+            AnimationClipHelper.Play(gameObjectComponent.GameObject, self.ConfigId, motionName, isLoop);
         }
 
         internal static void PauseAnimation(this Unit self)

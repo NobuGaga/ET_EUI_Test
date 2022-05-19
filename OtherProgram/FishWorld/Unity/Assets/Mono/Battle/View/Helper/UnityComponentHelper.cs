@@ -64,8 +64,11 @@ namespace ET
 
         public static void RemoveGameObject(int instanceID)
         {
-            if (referenseMap.ContainsKey(instanceID))
-                referenseMap.Remove(instanceID);
+            if (!referenseMap.ContainsKey(instanceID))
+                return;
+
+            UnityReferense referense = referenseMap[instanceID];
+            referense.Animation.Dispose();
         }
     }
 }

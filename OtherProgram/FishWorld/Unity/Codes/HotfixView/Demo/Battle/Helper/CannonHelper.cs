@@ -2,12 +2,14 @@ using UnityEngine;
 
 namespace ET
 {
+    [FriendClass(typeof(BattleLogicComponent))]
     [FriendClass(typeof(CannonComponent))]
     public static class CannonHelper
     {
-        public static Transform GetShootPointNode(Scene currentScene, int seatId)
+        public static Transform GetShootPointNode(int seatId)
         {
-            Unit playerUnit = FisheryHelper.GetPlayerUnit(seatId);
+            var fisheryComponent = BattleLogicComponent.Instance.FisheryComponent;
+            Unit playerUnit = fisheryComponent.GetPlayerUnit(seatId);
             CannonComponent cannonComponent = playerUnit.GetComponent<CannonComponent>();
             GameObjectComponent gameObjectComponent = cannonComponent.Cannon.GetComponent<GameObjectComponent>();
             Transform cannonTrans = gameObjectComponent.GameObject.transform;

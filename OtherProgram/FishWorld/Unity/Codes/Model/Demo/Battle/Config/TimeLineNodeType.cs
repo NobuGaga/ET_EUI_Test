@@ -16,17 +16,17 @@ namespace ET
         /// <summary> UI 出场动画 </summary>
         public const int AppearUI = 4;
 
-        // 状态类型从 11 开始
+        // 状态类型从 21 开始
         /// <summary> 预备状态(服务器通知刷怪, 但怪物为不可攻击状态(可能跟场景融为一体之类的)) </summary>
-        public const int ReadyState = 11;
+        public const int ReadyState = 21;
 
         /// <summary> 活跃状态(正常可攻击状态) </summary>
-        public const int ActiveState = 12;
+        public const int ActiveState = 22;
 
         /// <summary> 非活跃状态(正常不可攻击状态) </summary>
-        public const int InactiveState = 13;
+        public const int InactiveState = 23;
 
         /// <summary> 死亡状态 </summary>
-        public const int DeadState = 14;
+        public const int DeadState = 24;
     }
 }

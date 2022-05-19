@@ -3,6 +3,7 @@
 namespace ET
 {
     [ObjectSystem]
+    [FriendClass(typeof(BattleLogicComponent))]
     [FriendClass(typeof(Unit))]
     public sealed class FisheryComponentAwakeSystem : AwakeSystem<FisheryComponent>
     {
@@ -12,6 +13,17 @@ namespace ET
             self.RoomType = 1;
 
             self.IsMovingCamera = false;
+
+            self.FindFishUnitBySeatId = (Unit playerUnit, int seatId) =>
+            {
+                var attributeComponent = playerUnit.GetComponent<NumericComponent>();
+                if (attributeComponent.GetAsInt(NumericType.Pos) != seatId)
+                    return true;
+
+                var battleLogicComponent = BattleLogicComponent.Instance;
+                battleLogicComponent.Result_Unit = playerUnit;
+                return false;
+            };
 
             self.QuickMoveFish = (Unit fishUnit) =>
             {
@@ -47,6 +59,19 @@ namespace ET
         {
             var playerComponent = self.Parent.Parent.Parent.GetComponent<PlayerComponent>();
             return self.GetSeatId(playerComponent.MyId);
+        }
+
+        public static Unit GetPlayerUnit(this FisheryComponent self, int seatId)
+        {
+            var battleLogicComponent = BattleLogicComponent.Instance;
+            UnitComponent unitComponent = battleLogicComponent.UnitComponent;
+
+            var playerUnitList = unitComponent.GetPlayerUnitList();
+            battleLogicComponent.Result_Unit = null;
+
+            battleLogicComponent.Foreach(playerUnitList, self.FindFishUnitBySeatId, seatId);
+
+            return battleLogicComponent.Result_Unit;
         }
 
         /// <summary> 渔场冰冻技能逻辑处理 </summary>

@@ -14,6 +14,8 @@ namespace ET
 
         public TimeLineMonoInfo TimeLineMonoInfo;
 
+        public TransformRotateInfo TransformRotateInfo;
+
         public void Init()
         {
             TimeLineMonoInfo = MonoPool.Instance.Fetch(typeof(TimeLineMonoInfo)) as TimeLineMonoInfo;
@@ -28,7 +30,7 @@ namespace ET
                 TransformInfo.Update(FishMoveInfo);
 
             if (TimeLineMonoInfo != null)
-                TimeLineConfigInfoHelper.FixedUpdate(UnitId, TimeLineMonoInfo);
+                TimeLineConfigInfoHelper.FixedUpdate(UnitId, FishMoveInfo, TimeLineMonoInfo);
         }
 
 #if !NOT_UNITY

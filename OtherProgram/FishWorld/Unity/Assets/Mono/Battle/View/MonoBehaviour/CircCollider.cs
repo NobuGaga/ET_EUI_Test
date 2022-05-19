@@ -41,7 +41,12 @@ namespace ET
 
         void OnDrawGizmos()
         {
-            if (Camera.current.name != ColliderConfig.FishCameraName)
+            string sceneName = Camera.current.name;
+            if (sceneName == ColliderConfig.CannonCameraName ||
+                sceneName == ColliderConfig.UICameraName)
+                return;
+
+            if (sceneName == ColliderConfig.SceneCameraName && Application.isPlaying)
                 return;
 
             Gizmos.color = gizmosColor;
