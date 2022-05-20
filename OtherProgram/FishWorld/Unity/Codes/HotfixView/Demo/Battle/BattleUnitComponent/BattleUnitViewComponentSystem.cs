@@ -15,11 +15,12 @@ namespace ET
             unit.BattleUnitViewComponent = self;
 
             if (unit.Type == UnitType.Fish)
+            {
                 self.NodeParent = ReferenceHelper.FishRootNode.transform;
+                self.MotionName = MotionTypeHelper.Get(AnimatorConfig.DefaultMotionType);
+            }
             else if (unit.Type == UnitType.Bullet)
                 self.NodeParent = ReferenceHelper.BulletRootNode.transform;
-
-            self.MotionName = null;
 
             InitModel(self, unit).Coroutine();
         }
@@ -87,6 +88,7 @@ namespace ET
             self.NodeParent = null;
             self.AssetBundlePath = null;
             self.PrefabObject = null;
+            self.MotionName = null;
         }
     }
 
@@ -125,35 +127,42 @@ namespace ET
         {
             bool isUseModelPool = BattleConfig.IsUseModelPool;
             int configId = self.ConfigId;
+            string resId = self.Config.ResId;
             var animatorComponent = self.AddComponent<AnimatorComponent, int>(configId, isUseModelPool);
             animatorComponent.Reset();
             self.AnimatorComponent = animatorComponent;
 
-            if (AnimationClipHelper.Contains(configId))
+            if (AnimationClipHelper.Contains(resId))
                 return;
 
             var assetBundleData = UnitConfigCategory.Instance.GetAssetBundleData(self.Config.ResId);
-            string assetBundlePath = assetBundleData.ClipPath;
+            string clipBundlePath = assetBundleData.ClipPath;
             Scene currentScene = BattleLogicComponent.Instance.CurrentScene;
             var ResourcesLoaderComponent = currentScene.GetComponent<ResourcesLoaderComponent>();
-            await ResourcesLoaderComponent.LoadAsync(assetBundlePath);
+            await ResourcesLoaderComponent.LoadAsync(clipBundlePath);
 
             var battleUnitViewComponent = self.BattleUnitViewComponent as BattleUnitViewComponent;
             string motionName = battleUnitViewComponent.MotionName;
-            if (AnimationClipHelper.Contains(configId))
+            if (AnimationClipHelper.Contains(resId))
             {
                 if (!string.IsNullOrEmpty(motionName))
                     self.PlayAnimation(motionName, true);
                 return;
             }
 
-            var assetMap = ResourcesComponent.Instance.GetBundleAll(assetBundlePath);
-            BattleLogicComponent.Instance.Argument_Integer = configId;
+            var assetMap = ResourcesComponent.Instance.GetBundleAll(clipBundlePath);
+            BattleLogicComponent.Instance.Argument_String = resId;
 
             // 将每个模型动作存到 Mono 层, 新的模型加载后只执行一次
             ForeachHelper.Foreach(assetMap, BattleViewComponent.Instance.Action_String_UnityObject);
             if (!string.IsNullOrEmpty(motionName))
                 self.PlayAnimation(motionName, true);
+        }
+
+        internal static void ForeachBundleAsset(string assetName, UnityEngine.Object asset)
+        {
+            string resId = BattleLogicComponent.Instance.Argument_String;
+            AnimationClipHelper.Add(resId, assetName, asset as AnimationClip);
         }
 
         internal static void PlayAnimation(this Unit self, int motionType, bool isLoop) =>
@@ -164,14 +173,26 @@ namespace ET
             var battleUnitViewComponent = self.BattleUnitViewComponent as BattleUnitViewComponent;
 
             // 这里只储存循环播放的动作名, 用于作异步加载完后播放
-            if (isLoop)
-                battleUnitViewComponent.MotionName = motionName;
+            if (isLoop) battleUnitViewComponent.MotionName = motionName;
 
-            if (self.GameObjectComponent == null)
-                return;
+            if (self.GameObjectComponent == null) return;
 
+            string resId = self.Config.ResId;
             var gameObjectComponent = self.GameObjectComponent as GameObjectComponent;
-            AnimationClipHelper.Play(gameObjectComponent.GameObject, self.ConfigId, motionName, isLoop);
+            AnimationClipHelper.Play(gameObjectComponent.GameObject, resId, motionName, isLoop);
+
+            if (isLoop) return;
+
+            var clip = AnimationClipHelper.GetClip(resId, motionName);
+            if (clip != null)
+                self.ResumeMainMotion(clip.length).Coroutine();
+        }
+
+        internal static async ETTask ResumeMainMotion(this Unit self, float time)
+        {
+            await TimerComponent.Instance.WaitAsync((long)(time * 1000));
+            var battleUnitViewComponent = self.BattleUnitViewComponent as BattleUnitViewComponent;
+            self.PlayAnimation(battleUnitViewComponent.MotionName, true);
         }
 
         internal static void PauseAnimation(this Unit self)
@@ -190,12 +211,6 @@ namespace ET
 
             var gameObjectComponent = self.GameObjectComponent as GameObjectComponent;
             AnimationClipHelper.Stop(gameObjectComponent.GameObject);
-        }
-
-        internal static void ForeachBundleAsset(string assetName, UnityEngine.Object asset)
-        {
-            ref int configId = ref BattleLogicComponent.Instance.Argument_Integer;
-            AnimationClipHelper.Add(configId, assetName, asset as AnimationClip);
         }
 
         internal static ObjectPoolComponent GetObjectPoolComponent(this Unit unit)

@@ -13,7 +13,7 @@ namespace ET
             switch (info.Type)
             {
                 case TimeLineNodeType.PlayAnimate:
-                    self.PlayAnimation(info.Arguments[0], true);
+                    self.PlayAnimation(info.Arguments);
                     return;
                 case TimeLineNodeType.Rotate:
                     self.Rotate(info.Arguments);
@@ -25,6 +25,12 @@ namespace ET
 
                     return;
             }
+        }
+
+        private static void PlayAnimation(this Unit self, string[] arguments)
+        {
+            int.TryParse(arguments[1], out int loopFlag);
+            self.PlayAnimation(arguments[0], loopFlag > 0);
         }
 
         private static void Rotate(this Unit self, string[] arguments)

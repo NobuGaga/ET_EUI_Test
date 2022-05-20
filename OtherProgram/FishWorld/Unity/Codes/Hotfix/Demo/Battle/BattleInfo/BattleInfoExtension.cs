@@ -37,6 +37,7 @@ namespace ET
             self.LocalRotationZ = 0;
             self.RotationDuration = 0;
             self.RotationTime = 0;
+            self.IsFowardMainCamera = false;
         }
     }
 }

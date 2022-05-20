@@ -82,8 +82,7 @@ namespace ET
 
         public static void FixedUpdate(FishMoveInfo info)
         {
-            if (info.IsPause || info.IsMoveEnd)
-                return;
+            if (info.IsPause || info.IsMoveEnd) return;
 
             if (info.IsMoveTimeOut)
             {
@@ -92,11 +91,9 @@ namespace ET
             }
 
             info.MoveTime += (int)(info.MoveSpeed * TimeHelper.ClinetDeltaFrameTime());
-            if (info.MoveTime < 0)
-                return;
+            if (info.MoveTime < 0) return;
 
-            if (!info.IsPathMove)
-                return;
+            if (!info.IsPathMove) return;
 
             info.CurrentLifeTime = (float)info.MoveTime / info.MoveDuration;
             CheckNextTimeValid(ref info.CurrentLifeTime);

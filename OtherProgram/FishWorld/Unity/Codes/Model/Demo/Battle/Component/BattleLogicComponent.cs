@@ -47,6 +47,8 @@ namespace ET
 
 		public int Argument_Integer;
 
+		public string Argument_String;
+
 		public Unit Result_Unit;
 
 		public Action<Unit, bool> Action_Unit_Bool;

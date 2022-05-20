@@ -14,7 +14,7 @@ namespace ET
 
         public TimeLineConfigInfo(float lifeTime, int type)
         {
-            LifeTime = lifeTime;
+            LifeTime = lifeTime / 100;
             Type = type;
         }
     }

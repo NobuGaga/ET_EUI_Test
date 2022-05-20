@@ -31,6 +31,9 @@ namespace ET
 
             if (TimeLineMonoInfo != null)
                 TimeLineConfigInfoHelper.FixedUpdate(UnitId, FishMoveInfo, TimeLineMonoInfo);
+
+            if (TransformRotateInfo.IsRotating)
+                TransformRotateInfoHelper.FixedUpdate(TransformInfo, TransformRotateInfo);
         }
 
 #if !NOT_UNITY
@@ -42,7 +45,18 @@ namespace ET
 
             Transform.localPosition = TransformInfo.LocalPosition;
             TransformInfo.WorldPosition = Transform.position;
-            Transform.forward = TransformInfo.Forward;
+
+            if (TransformRotateInfo.IsRotating)
+            {
+                Transform.localRotation = TransformInfo.LocalRotation;
+                TransformInfo.LocalRotation = Transform.localRotation;
+            }
+
+            if (TransformRotateInfo.IsFowardMainCamera)
+                Transform.forward = ReferenceHelper.FishCamera.transform.position;
+            else
+                Transform.forward = TransformInfo.Forward;
+
             var animation = UnityComponentHelper.GetAnimation(Transform.gameObject);
             animation.Update((float)TimeHelper.ClinetDeltaFrameTime() / 1000);
 

@@ -118,9 +118,9 @@ namespace ET
             var objectPool = ObjectPool.Instance;
             for (int index = 0; index < ConstHelper.PreCreateFishClassCount; index++)
             {
-                objectPool.Recycle(new BattleUnitViewComponent());
-                objectPool.Recycle(new GameObjectComponent());
-                objectPool.Recycle(new AnimatorComponent());
+                objectPool.Recycle(typeof(BattleUnitViewComponent), new BattleUnitViewComponent());
+                objectPool.Recycle(typeof(GameObjectComponent), new GameObjectComponent());
+                objectPool.Recycle(typeof(GameObjectComponent), new AnimatorComponent());
             }
             BattleMonoComponent.Instance.EnterGame();
         }

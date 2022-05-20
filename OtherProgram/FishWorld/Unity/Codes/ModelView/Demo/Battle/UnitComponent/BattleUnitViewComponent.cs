@@ -14,6 +14,7 @@ namespace ET
 
 		public GameObject PrefabObject;
 
+		/// <summary> 循环播放动作名 </summary>
 		public string MotionName;
 	}
 }

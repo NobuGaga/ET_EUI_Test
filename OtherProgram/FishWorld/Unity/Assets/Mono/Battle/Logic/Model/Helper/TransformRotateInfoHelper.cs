@@ -1,7 +1,5 @@
 // Battle Review Before Boss Node
 
-using UnityEngine;
-
 namespace ET
 {
     /// <summary>
@@ -30,6 +28,23 @@ namespace ET
                 unit.TransformRotateInfo = null;
 
             MonoPool.Instance.Recycle(info);
+        }
+
+        public static void FixedUpdate(TransformInfo transformInfo, TransformRotateInfo rotateInfo)
+        {
+            int deltaTime = (int)TimeHelper.ClinetDeltaFrameTime();
+            rotateInfo.RotationTime += deltaTime;
+            float rate = (float)rotateInfo.RotationTime / rotateInfo.RotationDuration;
+            if (rate > 1)
+            {
+                rotateInfo.IsRotating = false;
+                return;
+            }
+
+            ref var localRotation = ref transformInfo.LocalRotation;
+            var eulerAngles = localRotation.eulerAngles;
+            eulerAngles.z += (float)deltaTime / rotateInfo.RotationDuration * rotateInfo.LocalRotationZ;
+            localRotation.eulerAngles = eulerAngles;
         }
     }
 }

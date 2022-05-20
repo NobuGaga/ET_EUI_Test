@@ -32,9 +32,6 @@ namespace ET
         /// <summary> Asset Bundle Path 路径格式 </summary>
         public const string FishAssetBundlePathFormat = "bundles/prefabs/fishes/{0}.unity3d";
 
-        /// <summary> Asset Name 资源格式 </summary>
-        public const string FishAssetNameFormat = "{0}";
-
         /// <summary> Asset Clip Bundle Path 路径格式 </summary>
         public const string FishAssetClipBundlePathFormat = "bundles/clip/fishes/{0}.unity3d";
     }

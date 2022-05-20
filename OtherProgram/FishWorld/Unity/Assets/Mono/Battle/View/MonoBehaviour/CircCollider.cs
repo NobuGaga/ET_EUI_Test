@@ -7,33 +7,7 @@ namespace ET
     public class CircCollider : MonoBehaviour
     {   
         public float radio;
-        public Transform parent;
         public Vector3 position;
-
-        private void Start() 
-        {
-
-        }
-
-        public float radius
-        {
-            get
-            {
-                return radio * GetParentScale();
-            }
-        }
-
-        private float GetParentScale()
-        {
-            float r = 0.1f;
-
-            if(parent != null)
-            {
-               r = parent.localScale.x;
-            }
-
-            return r;
-        }
 
         public Color gizmosColor = Color.yellow;
 
@@ -50,7 +24,7 @@ namespace ET
                 return;
 
             Gizmos.color = gizmosColor;
-            Gizmos.DrawWireSphere(transform.position, radius);
+            Gizmos.DrawWireSphere(transform.position, radio);
         }
 #endif
     }

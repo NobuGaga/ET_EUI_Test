@@ -79,7 +79,7 @@ namespace ET
                 for (var index = 0; index < _tempCircleColliderList.Count; index++)
                 {
                     var collider = _tempCircleColliderList[index];
-                    _colliderList.Add(new Sphere(ColliderConfig.FishCamera, Vector3.zero, collider.radius));
+                    _colliderList.Add(new Sphere(ColliderConfig.FishCamera, Vector3.zero, collider.radio));
                 }
             }
 
