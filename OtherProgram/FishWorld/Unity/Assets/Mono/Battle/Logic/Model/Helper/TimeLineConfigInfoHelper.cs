@@ -27,7 +27,7 @@ namespace ET
         {
             timeLineInfoMap = new Dictionary<int, List<TimeLineConfigInfo>>(DefaultLineCount);
             startStateInfo = new TimeLineConfigInfo(0, ConstHelper.TimeLineType_ActiveState);
-            endStateInfo = new TimeLineConfigInfo(1, ConstHelper.TimeLineType_DeadState);
+            endStateInfo = new TimeLineConfigInfo(100, ConstHelper.TimeLineType_DeadState);
         }
 
         public static void Add(int id, string[] configNodeArray)
@@ -55,6 +55,7 @@ namespace ET
                 TimeLineConfigInfo timeLineInfo = new TimeLineConfigInfo(float.Parse(nodes[0]), int.Parse(nodes[1]));
                 if (timeLineInfo.Type == ConstHelper.TimeLineType_ActiveState) hasStartState = true;
                 if (timeLineInfo.Type == ConstHelper.TimeLineType_DeadState) hasEndState = true;
+
                 int argumentLength = nodes.Length - 2;
                 timeLineInfo.Arguments = new string[argumentLength];
 
@@ -73,11 +74,19 @@ namespace ET
         private static int SortTimeLineInfoList(TimeLineConfigInfo leftInfo, TimeLineConfigInfo rightInfo)
         {
             if (leftInfo.LifeTime < rightInfo.LifeTime)
-                return 1;
-            else if (leftInfo.LifeTime > rightInfo.LifeTime)
                 return -1;
-            else 
+            else if (leftInfo.LifeTime > rightInfo.LifeTime)
+                return 1;
+            else
                 return 0;
+        }
+
+        public static List<TimeLineConfigInfo> Get(int configId)
+        {
+            if (!timeLineInfoMap.ContainsKey(configId))
+                return null;
+
+            return timeLineInfoMap[configId];
         }
 
         public static void SetConfigId(long unitId, int configId)
@@ -102,6 +111,11 @@ namespace ET
             for (int index = timeLineInfo.NodeIndex; index < list.Count; index++)
             {
                 TimeLineConfigInfo nodeInfo = list[index];
+
+                // 自动执行节点由于不知道执行时机, 在热更层控制执行
+                if (nodeInfo.IsAutoExecute)
+                    continue;
+
                 if (currentListTime < nodeInfo.LifeTime)
                     break;
 

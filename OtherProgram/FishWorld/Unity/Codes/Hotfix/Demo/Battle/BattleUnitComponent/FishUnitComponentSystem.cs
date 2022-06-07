@@ -25,25 +25,29 @@ namespace ET
             float offsetPosX = (float)attributeComponent[NumericType.PositionX] / FishConfig.ServerOffsetScale;
             float offsetPosY = (float)attributeComponent[NumericType.PositionY] / FishConfig.ServerOffsetScale;
             float offsetPosZ = (float)attributeComponent[NumericType.PositionZ] / FishConfig.ServerOffsetScale;
+            int originConfigSpeed = attributeComponent.GetAsInt(NumericType.Speed);
 
-            FishMoveInfoHelper.InitInfo(moveInfo, roadId, liveTime, remainTime, offsetPosX, offsetPosY, offsetPosZ);
+            FishMoveInfoHelper.InitInfo(moveInfo, roadId, liveTime, remainTime, offsetPosX, offsetPosY, offsetPosZ, originConfigSpeed);
             self.MoveInfo = moveInfo;
 
             self.ScreenInfo = FishScreenInfoHelper.PopInfo(unit.UnitId);
             self.ScreenInfo.IsInScreen = false;
 
             var transformComponent = unit.TransformComponent;
-
-            if (ConstHelper.IsEditor)
-                transformComponent.NodeName = string.Format(FishConfig.NameFormat, unit.ConfigId, unit.UnitId);
-
             transformComponent.Info.Update(moveInfo);
 
             TransformRotateInfo rotateInfo = TransformRotateInfoHelper.PopInfo(unit.UnitId);
-            rotateInfo.Reset();
+            rotateInfo.ResetRotateInfo();
+            rotateInfo.ResetForward();
             self.RotateInfo = rotateInfo;
 
-            TimeLineConfigInfoHelper.SetConfigId(unit.UnitId, attributeComponent.GetAsInt(NumericType.Timeline));
+            int timeLineConfigId = attributeComponent.GetAsInt(NumericType.Timeline);
+
+            TimeLineConfigInfoHelper.SetConfigId(unit.UnitId, timeLineConfigId);
+
+            // Battle TODO delete
+            int fishGroupId = attributeComponent.GetAsInt(NumericType.GroupUid);
+            Log.Debug($"创建鱼 鱼组表 ID = { fishGroupId }, 基础表 ID = { unit.ConfigId }, 鱼线 ID = { roadId }, 时间轴 ID = { timeLineConfigId }");
         }
     }
 
@@ -68,11 +72,13 @@ namespace ET
     }
 
     [FriendClass(typeof(FishUnitComponent))]
-    internal static class FishUnitComponentSystem
+    public static class FishUnitComponentSystem
     {
         internal static void SetMoveSpeed(this FishUnitComponent self, float moveSpeed) =>
                              self.MoveInfo.MoveSpeed = moveSpeed;
 
-        internal static void ResumeMove(this FishUnitComponent self) => self.MoveInfo.IsPause = false;
+        public static void PauseMove(this FishUnitComponent self) => self.MoveInfo.IsPause = true;
+
+        public static void ResumeMove(this FishUnitComponent self) => self.MoveInfo.IsPause = false;
     }
 }

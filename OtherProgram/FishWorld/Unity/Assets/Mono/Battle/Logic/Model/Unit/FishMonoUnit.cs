@@ -40,8 +40,7 @@ namespace ET
 
         public override void Update()
         {
-            if (Transform == null)
-                return;
+            if (Transform == null) return;
 
             Transform.localPosition = TransformInfo.LocalPosition;
             TransformInfo.WorldPosition = Transform.position;
@@ -53,15 +52,14 @@ namespace ET
             }
 
             if (TransformRotateInfo.IsFowardMainCamera)
-                Transform.forward = ReferenceHelper.FishCamera.transform.position;
+                Transform.LookAt(ReferenceHelper.FishCamera.transform.position);
             else
                 Transform.forward = TransformInfo.Forward;
 
             var animation = UnityComponentHelper.GetAnimation(Transform.gameObject);
             animation.Update((float)TimeHelper.ClinetDeltaFrameTime() / 1000);
 
-            if (ColliderMonoComponent == null)
-                return;
+            if (ColliderMonoComponent == null) return;
 
             ColliderMonoComponent.UpdateColliderCenter();
             FishScreenInfo.AimPoint = ColliderMonoComponent.GetFishAimPoint();

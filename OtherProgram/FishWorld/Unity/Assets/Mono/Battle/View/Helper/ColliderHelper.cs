@@ -79,6 +79,7 @@ namespace ET
                 for (var index = 0; index < _tempCircleColliderList.Count; index++)
                 {
                     var collider = _tempCircleColliderList[index];
+                    // 球体的中心点偏移值因为使用的是碰撞节点的世界坐标, 所以偏移值为 0
                     _colliderList.Add(new Sphere(ColliderConfig.FishCamera, Vector3.zero, collider.radio));
                 }
             }

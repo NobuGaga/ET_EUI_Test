@@ -82,8 +82,8 @@ namespace ET
                 //Debug.LogError("FishPathManager ExpandPosList fish line point must at lest 1");
                 return;
             }
-            Vector3 firstPathPos = _pathPointCache[1];
-            Vector3 secondPathPos = _pathPointCache[2];
+            Vector3 firstPathPos = _pathPointCache[0];
+            Vector3 secondPathPos = _pathPointCache[1];
             _pathPointCache.Insert(0 , GetExpandPos(secondPathPos, firstPathPos));
             Vector3 lastPathPos = _pathPointCache[_pathPointCache.Count - 1];
             Vector3 lastSecondPathPos = _pathPointCache[_pathPointCache.Count - 2];

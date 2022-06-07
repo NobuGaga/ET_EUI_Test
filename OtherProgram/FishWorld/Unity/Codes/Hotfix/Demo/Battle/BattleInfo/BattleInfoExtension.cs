@@ -9,7 +9,9 @@ namespace ET
         public static void Reset(this TransformInfo self)
         {
             self.WorldPosition = TransformDefaultConfig.DefaultPosition;
+            self.LocalPosition = TransformDefaultConfig.DefaultPosition;
             self.Rotation = TransformDefaultConfig.DefaultRotation;
+            self.LocalRotation = TransformDefaultConfig.DefaultRotation;
             self.Forward = TransformDefaultConfig.DefaultForward;
         }
 
@@ -30,14 +32,17 @@ namespace ET
             self.NextPos = FishConfig.RemovePoint;
             self.NextForward = TransformDefaultConfig.DefaultForward;
             self.MoveSpeed = FishConfig.DefaultMoveSpeed;
+            self.MoveAcceleration = FishConfig.DefaultMoveAcceleration;
         }
 
-        public static void Reset(this TransformRotateInfo self)
+        public static void ResetRotateInfo(this TransformRotateInfo self)
         {
             self.LocalRotationZ = 0;
             self.RotationDuration = 0;
             self.RotationTime = 0;
-            self.IsFowardMainCamera = false;
         }
+
+        public static void ResetForward(this TransformRotateInfo self) =>
+                           self.IsFowardMainCamera = false;
     }
 }

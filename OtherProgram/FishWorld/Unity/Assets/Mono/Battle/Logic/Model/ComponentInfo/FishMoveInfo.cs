@@ -38,8 +38,24 @@ namespace ET
         /// <summary> 下一帧朝向 </summary>
         public Vector3 NextForward;
 
-        /// <summary> 移动速度 </summary>
+        /// <summary>
+        /// 移动速度, 这里的速度都是通过乘以时间间隔实现的
+        /// 实际是一个更新时间步长修正值
+        /// 初始速度读取配置表保存, 在时间轴运行过程中有可能改变速度大小
+        /// 配置的速度值都是根据初始速度值做比较产生比例从而修改速度值
+        /// </summary>
         public float MoveSpeed;
+
+        /// <summary>
+        /// 移动加速度, 同上面的移动速度一样, 加速度值为修正值的单位时间改变值
+        /// </summary>
+        public float MoveAcceleration;
+
+        /// <summary> 初始鱼组配置表鱼线速度 </summary>
+        public int OriginConfigSpeed;
+
+        /// <summary> 当前配置表鱼线速度 </summary>
+        public int CurrentConfigSpeed;
 
         /// <summary> 鱼线表 ID, 放在这里储存用来获取对应的 FishPath 类 </summary>
         public short RoadId;

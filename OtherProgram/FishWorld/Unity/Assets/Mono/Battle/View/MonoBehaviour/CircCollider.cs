@@ -7,7 +7,6 @@ namespace ET
     public class CircCollider : MonoBehaviour
     {   
         public float radio;
-        public Vector3 position;
 
         public Color gizmosColor = Color.yellow;
 

@@ -37,7 +37,7 @@ namespace ET
             self.AutoCreateFishGroupIndex = 0;
             self.C2M_GM = new C2M_GM() { Param = new System.Collections.Generic.List<string>() };
 
-            self.Action_String_UnityObject = UnitViewSystem.ForeachBundleAsset;
+            self.Action_String_UnityObject = UnitViewAnimationSystem.ForeachBundleAsset;
         }
     }
 
@@ -71,8 +71,7 @@ namespace ET
         {
             var battleLogicComponent = BattleLogicComponent.Instance;
             Scene currentScene = battleLogicComponent.CurrentScene;
-            if (currentScene == null)
-                return;
+            if (currentScene == null) return;
 
             self.CurrentInstantiateCount = 0;
             var unitComponent = battleLogicComponent.UnitComponent;
@@ -91,8 +90,7 @@ namespace ET
 
         private void AutoCreateFish(BattleViewComponent self)
         {
-            if (!BattleConfig.IsAutoCreateFish)
-                return;
+            if (!BattleConfig.IsAutoCreateFish) return;
 
             long currentServerTime = TimeHelper.ServerNow();
             if (self.LastCreateFishTime > 0 && currentServerTime - self.LastCreateFishTime < GMConfig.CreateFishInterval)
@@ -120,7 +118,7 @@ namespace ET
             {
                 objectPool.Recycle(typeof(BattleUnitViewComponent), new BattleUnitViewComponent());
                 objectPool.Recycle(typeof(GameObjectComponent), new GameObjectComponent());
-                objectPool.Recycle(typeof(GameObjectComponent), new AnimatorComponent());
+                objectPool.Recycle(typeof(AnimatorComponent), new AnimatorComponent());
             }
             BattleMonoComponent.Instance.EnterGame();
         }

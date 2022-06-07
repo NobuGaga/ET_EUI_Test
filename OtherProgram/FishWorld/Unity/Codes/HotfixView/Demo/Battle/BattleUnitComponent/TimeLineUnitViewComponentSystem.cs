@@ -1,6 +1,6 @@
 // Battle Review Before Boss Node
 
-using System;
+using UnityEngine;
 
 namespace ET
 {
@@ -13,42 +13,64 @@ namespace ET
             switch (info.Type)
             {
                 case TimeLineNodeType.PlayAnimate:
-                    self.PlayAnimation(info.Arguments);
-                    return;
-                case TimeLineNodeType.Rotate:
-                    self.Rotate(info.Arguments);
-                    return;
-                case TimeLineNodeType.SpeedChange:
-
-                    return;
-                case TimeLineNodeType.AppearUI:
-
-                    return;
+                    var clip = self.PlayAnimation(info);
+                    if (clip != null)
+                        info.ExecuteTime = clip.length;
+                    break;
+                case TimeLineNodeType.PauseFishLine:
+                    self.PauseFishLineMove(info).Coroutine();
+                    break;
             }
+            
+            if (info.IsAutoNext && info.ExecuteTime > 0)
+                Execute(self.UnitId, info).Coroutine();
         }
 
-        private static void PlayAnimation(this Unit self, string[] arguments)
+        private static async ETTask Execute(long unitId, TimeLineConfigInfo info)
         {
-            int.TryParse(arguments[1], out int loopFlag);
-            self.PlayAnimation(arguments[0], loopFlag > 0);
+            await TimerComponent.Instance.WaitAsync((long)(info.ExecuteTime * FishConfig.MilliSecond));
+            FishTimelineConfigCategory.Instance.PublishTimeLineEvent(unitId, info);
         }
 
-        private static void Rotate(this Unit self, string[] arguments)
+        private static AnimationClip PlayAnimation(this Unit self, TimeLineConfigInfo timeLineInfo)
         {
-            var rotateInfo = self.FishUnitComponent.RotateInfo;
-            rotateInfo.Reset();
+            string motionName = timeLineInfo.Arguments[0];
+            bool isLoop = false;
+            if (int.TryParse(timeLineInfo.Arguments[1], out int loopFlag))
+                isLoop = loopFlag > 0;
 
-            if (!float.TryParse(arguments[3], out float time))
+            var fishUnitComponent = self.FishUnitComponent;
+            var moveInfo = fishUnitComponent.MoveInfo;
+
+            // Battle Warning 暂时只当有一条主时间轴, 时间轴总时长跟鱼线时长一致
+            long currentTime = TimeHelper.ServerNow();
+            long startMoveTime = currentTime - moveInfo.MoveTime;
+
+            // Battle Warning 主时间轴触发时间暂时使用鱼生命周期开始时间(服务端没做, 需要服务器端记录主时间轴触发时间)
+            //long triggerTime = (long)(timeLineInfo.LifeTime * moveInfo.MoveDuration) + triggerTimeLineTime;
+            long triggerTime = (long)(timeLineInfo.LifeTime * moveInfo.MoveDuration) + startMoveTime;
+
+            // 已播放时长
+            float playTime = (float)(currentTime - triggerTime) / FishConfig.MilliSecond;
+
+            return self.PlayAnimation(motionName, playTime, isLoop);
+        }
+
+        private static async ETTask PauseFishLineMove(this Unit self, TimeLineConfigInfo timeLineInfo)
+        {
+            if (!float.TryParse(timeLineInfo.Arguments[0], out float changeTime))
                 return;
 
-            if (!float.TryParse(arguments[2], out float rotationZ))
+            if (self.GameObjectComponent == null)
                 return;
 
-            if (Math.Abs(rotationZ) < 1)
+            var fishUnitComponent = self.FishUnitComponent;
+            fishUnitComponent.PauseMove();
+            await TimerComponent.Instance.WaitAsync((long)(changeTime * FishConfig.MilliSecond));
+            if (self == null || self.IsDisposed)
                 return;
 
-            rotateInfo.LocalRotationZ = rotationZ;
-            rotateInfo.RotationDuration = (uint)(time * 1000);
+            fishUnitComponent.ResumeMove();
         }
     }
 }

@@ -74,6 +74,20 @@ namespace ET
             animation.Play(clip, isLoop);
         }
 
+        public static void Play(GameObject gameObject, string resId, string motionName, float time, bool isLoop)
+        {
+            var animation = UnityComponentHelper.GetAnimation(gameObject);
+            if (animation == null)
+                return;
+
+            var clip = GetClip(resId, motionName);
+            if (clip == null)
+                return;
+
+            animation.Play(clip, isLoop);
+            animation.SetAnimationPlayTime(clip, time);
+        }
+
         public static void Pause(GameObject gameObject) =>
                            UnityComponentHelper.GetAnimation(gameObject)?.Pause();
 

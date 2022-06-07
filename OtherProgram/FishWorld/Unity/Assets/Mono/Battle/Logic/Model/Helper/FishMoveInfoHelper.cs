@@ -41,7 +41,8 @@ namespace ET
         /// <param name="offsetPosY">初始位置偏移值 Y</param>
         /// <param name="offsetPosZ">初始位置偏移值 Z</param>
         public static void InitInfo(FishMoveInfo info, short roadId, long liveTime, uint remainTime,
-                                                       float offsetPosX, float offsetPosY, float offsetPosZ)
+                                                       float offsetPosX, float offsetPosY, float offsetPosZ,
+                                                       int configSpeed)
         {
             // int 最大值在 20+ 天左右
             info.MoveDuration = remainTime;
@@ -66,6 +67,8 @@ namespace ET
             info.OffsetPosX = offsetPosX;
             info.OffsetPosY = offsetPosY;
             info.OffsetPosZ = offsetPosZ;
+            info.OriginConfigSpeed = configSpeed;
+            info.CurrentConfigSpeed = configSpeed;
 
             if (info.MoveTime < 0 || !info.IsPathMove)
                 return;
@@ -90,7 +93,11 @@ namespace ET
                 return;
             }
 
-            info.MoveTime += (int)(info.MoveSpeed * TimeHelper.ClinetDeltaFrameTime());
+            float deltaTime = TimeHelper.ClinetDeltaFrameTime();
+
+            // 默认加速度为 0, 先计算加速后的速度值, 再获取指定
+            info.MoveSpeed += deltaTime * info.MoveAcceleration;
+            info.MoveTime += (int)(info.MoveSpeed * deltaTime);
             if (info.MoveTime < 0) return;
 
             if (!info.IsPathMove) return;

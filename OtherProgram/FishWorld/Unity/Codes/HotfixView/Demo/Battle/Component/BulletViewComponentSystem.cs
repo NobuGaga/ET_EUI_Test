@@ -77,7 +77,7 @@ namespace ET
                 if (!isSelf || !IsCanSkillShoot(true))
                     return;
 
-                int cannonStack = 1;
+                int cannonStack = 2 * BulletConfig.DefaultStack;
                 battleLogicComponent.Shoot_C2M_Bullet(screenPosition.x, screenPosition.y, cannonStack, trackFishUnitId);
             }
         }

@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace ET
@@ -6,16 +5,25 @@ namespace ET
     [ObjectSystem]
     [FriendClass(typeof(BattleViewComponent))]
     [FriendClass(typeof(Unit))]
+    [FriendClass(typeof(TransformComponent))]
     [FriendClass(typeof(GameObjectComponent))]
     public class BattleUnitViewComponentAwakeSystem : AwakeSystem<BattleUnitViewComponent>
     {
         public override void Awake(BattleUnitViewComponent self)
         {
             Unit unit = self.Parent as Unit;
+            var transformComponent = unit.TransformComponent;
             unit.BattleUnitViewComponent = self;
 
             if (unit.Type == UnitType.Fish)
             {
+                if (ConstHelper.IsEditor)
+                {
+                    string unitIdName = (unit.UnitId % 100).ToString();
+                    var lineId = unit.AttributeComponent[NumericType.RoadId];
+                    transformComponent.NodeName = string.Format(FishConfig.NameFormat, unit.ConfigId, unit.Config.ResId, lineId, unitIdName);
+                }
+
                 self.NodeParent = ReferenceHelper.FishRootNode.transform;
                 self.MotionName = MotionTypeHelper.Get(AnimatorConfig.DefaultMotionType);
             }
@@ -89,142 +97,6 @@ namespace ET
             self.AssetBundlePath = null;
             self.PrefabObject = null;
             self.MotionName = null;
-        }
-    }
-
-    [FriendClass(typeof(BattleLogicComponent))]
-    [FriendClass(typeof(BattleViewComponent))]
-    [FriendClass(typeof(Unit))]
-    [FriendClass(typeof(TransformComponent))]
-    [FriendClass(typeof(BattleUnitViewComponent))]
-    [FriendClass(typeof(AnimatorComponent))]
-    public static class UnitViewSystem
-    {
-        internal static void InstantiateGameObject(this Unit self)
-        {
-            var battleUnitViewComponent = self.BattleUnitViewComponent as BattleUnitViewComponent;
-            var gameObject = UnityEngine.Object.Instantiate(battleUnitViewComponent.PrefabObject);
-            self.InitViewComponent(gameObject, battleUnitViewComponent.AssetBundlePath);
-        }
-
-        internal static void InitViewComponent(this Unit self, GameObject gameObject, string assetBundlePath)
-        {
-            Transform node = gameObject.transform;
-            bool isUseModelPool = BattleConfig.IsUseModelPool;
-            self.GameObjectComponent = self.AddComponent<GameObjectComponent, string, Transform>
-                                                        (assetBundlePath, node, isUseModelPool);
-
-            self.InitTransform();
-            BattleMonoUnit monoUnit = UnitMonoComponent.Instance.Get(self.UnitId);
-            monoUnit.ColliderMonoComponent = ColliderHelper.AddColliderComponent(self.ConfigId, gameObject);
-            TransformMonoHelper.Add(self.UnitId, node);
-
-            if (self.Type == UnitType.Fish)
-                self.InitFishAnimator().Coroutine();
-        }
-
-        private static async ETTask InitFishAnimator(this Unit self)
-        {
-            bool isUseModelPool = BattleConfig.IsUseModelPool;
-            int configId = self.ConfigId;
-            string resId = self.Config.ResId;
-            var animatorComponent = self.AddComponent<AnimatorComponent, int>(configId, isUseModelPool);
-            animatorComponent.Reset();
-            self.AnimatorComponent = animatorComponent;
-
-            if (AnimationClipHelper.Contains(resId))
-                return;
-
-            var assetBundleData = UnitConfigCategory.Instance.GetAssetBundleData(self.Config.ResId);
-            string clipBundlePath = assetBundleData.ClipPath;
-            Scene currentScene = BattleLogicComponent.Instance.CurrentScene;
-            var ResourcesLoaderComponent = currentScene.GetComponent<ResourcesLoaderComponent>();
-            await ResourcesLoaderComponent.LoadAsync(clipBundlePath);
-
-            var battleUnitViewComponent = self.BattleUnitViewComponent as BattleUnitViewComponent;
-            string motionName = battleUnitViewComponent.MotionName;
-            if (AnimationClipHelper.Contains(resId))
-            {
-                if (!string.IsNullOrEmpty(motionName))
-                    self.PlayAnimation(motionName, true);
-                return;
-            }
-
-            var assetMap = ResourcesComponent.Instance.GetBundleAll(clipBundlePath);
-            BattleLogicComponent.Instance.Argument_String = resId;
-
-            // 将每个模型动作存到 Mono 层, 新的模型加载后只执行一次
-            ForeachHelper.Foreach(assetMap, BattleViewComponent.Instance.Action_String_UnityObject);
-            if (!string.IsNullOrEmpty(motionName))
-                self.PlayAnimation(motionName, true);
-        }
-
-        internal static void ForeachBundleAsset(string assetName, UnityEngine.Object asset)
-        {
-            string resId = BattleLogicComponent.Instance.Argument_String;
-            AnimationClipHelper.Add(resId, assetName, asset as AnimationClip);
-        }
-
-        internal static void PlayAnimation(this Unit self, int motionType, bool isLoop) =>
-                             self.PlayAnimation(MotionTypeHelper.Get(motionType), isLoop);
-
-        internal static void PlayAnimation(this Unit self, string motionName, bool isLoop)
-        {
-            var battleUnitViewComponent = self.BattleUnitViewComponent as BattleUnitViewComponent;
-
-            // 这里只储存循环播放的动作名, 用于作异步加载完后播放
-            if (isLoop) battleUnitViewComponent.MotionName = motionName;
-
-            if (self.GameObjectComponent == null) return;
-
-            string resId = self.Config.ResId;
-            var gameObjectComponent = self.GameObjectComponent as GameObjectComponent;
-            AnimationClipHelper.Play(gameObjectComponent.GameObject, resId, motionName, isLoop);
-
-            if (isLoop) return;
-
-            var clip = AnimationClipHelper.GetClip(resId, motionName);
-            if (clip != null)
-                self.ResumeMainMotion(clip.length).Coroutine();
-        }
-
-        internal static async ETTask ResumeMainMotion(this Unit self, float time)
-        {
-            await TimerComponent.Instance.WaitAsync((long)(time * 1000));
-            var battleUnitViewComponent = self.BattleUnitViewComponent as BattleUnitViewComponent;
-            self.PlayAnimation(battleUnitViewComponent.MotionName, true);
-        }
-
-        internal static void PauseAnimation(this Unit self)
-        {
-            if (self.GameObjectComponent == null)
-                return;
-
-            var gameObjectComponent = self.GameObjectComponent as GameObjectComponent;
-            AnimationClipHelper.Pause(gameObjectComponent.GameObject);
-        }
-
-        internal static void StopAnimation(this Unit self)
-        {
-            if (self.GameObjectComponent == null)
-                return;
-
-            var gameObjectComponent = self.GameObjectComponent as GameObjectComponent;
-            AnimationClipHelper.Stop(gameObjectComponent.GameObject);
-        }
-
-        internal static ObjectPoolComponent GetObjectPoolComponent(this Unit unit)
-        {
-            var battleLogicComponent = BattleLogicComponent.Instance;
-            int unitType = unit.Type;
-            if (unitType == UnitType.Player || unitType == UnitType.Cannon)
-            {
-                Scene currentScene = battleLogicComponent.CurrentScene;
-                return currentScene.GetComponent<ObjectPoolComponent>();
-            }
-
-            var battleViewComponent = BattleViewComponent.Instance;
-            return battleViewComponent.GetComponent<ObjectPoolComponent>();
         }
     }
 }

@@ -67,9 +67,8 @@ namespace ET
         {
             Scene currentScene = args.CurrentScene;
 
-            // Battle TODO ’Ω∂∑≥°æ∞≤≈ÃÌº”’Ω∂∑¬ﬂº≠◊Èº˛
-            if (currentScene.Name == "scene_home")
-                return;
+            // Battle TODO ÊàòÊñóÂú∫ÊôØÊâçÊ∑ªÂä†ÊàòÊñóÈÄªËæëÁªÑ‰ª∂
+            if (currentScene.Name == "scene_home") return;
 
             var self = currentScene.AddComponent<BattleLogicComponent>();
 
@@ -96,32 +95,45 @@ namespace ET
             var args = obj as ExecuteTimeLine;
             ref long unitId = ref args.UnitId;
             var info = args.Info;
-            ref var type = ref info.Type;
+            ref int type = ref info.Type;
 
-            if (type == TimeLineNodeType.ForwardCamera)
+            var battleLogicComponent = BattleLogicComponent.Instance;
+            Unit unit = battleLogicComponent.UnitComponent.Get(unitId);
+
+            switch (type)
             {
-                var battleLogicComponent = BattleLogicComponent.Instance;
-                Unit unit = battleLogicComponent.UnitComponent.Get(unitId);
-                var fishUnitComponent = unit.FishUnitComponent;
-                var rotateInfo = fishUnitComponent.RotateInfo;
-                rotateInfo.IsFowardMainCamera = !rotateInfo.IsFowardMainCamera;
-                return;
+                case TimeLineNodeType.Rotate:
+                    Rotate(unit, info);
+                    break;
+                case TimeLineNodeType.SpeedChange:
+                    SpeedChange(unit, info).Coroutine();
+                    break;
+                case TimeLineNodeType.ForwardCamera:
+                    var fishUnitComponent = unit.FishUnitComponent;
+                    var rotateInfo = fishUnitComponent.RotateInfo;
+                    rotateInfo.IsFowardMainCamera = !rotateInfo.IsFowardMainCamera;
+                    break;
+                default:
+                    if (type < TimeLineNodeType.ReadyState)
+                        break;
+
+                    var battleUnit = UnitMonoComponent.Instance.Get(unitId);
+                    battleUnit.IsCanCollide = info.Type == TimeLineNodeType.ActiveState;
+                    break;
             }
 
-            if (type == TimeLineNodeType.Rotate)
-            {
-                var battleLogicComponent = BattleLogicComponent.Instance;
-                Unit unit = battleLogicComponent.UnitComponent.Get(args.UnitId);
-                Rotate(unit, info);
-                return;
-            }
+            // Êí≠ÊîæÂä®‰ΩúÂú®ËßÜÂõæÂ±ÇËé∑Âèñ clip Êó∂Èïø
+            if (info.IsAutoNext && info.ExecuteTime > 0 &&
+                type != TimeLineNodeType.PlayAnimate && type != TimeLineNodeType.PauseFishLine)
+                Execute(unitId, info).Coroutine();
+        }
 
-            // ≤ª «◊¥Ã¨µƒ∂º «±Ìœ÷≤„¬ﬂº≠
-            if (type < TimeLineNodeType.ReadyState)
-                return;
-
-            var battleUnit = UnitMonoComponent.Instance.Get(unitId);
-            battleUnit.IsCanCollide = info.Type == TimeLineNodeType.ActiveState;
+        private async ETTask Execute(long unitId, TimeLineConfigInfo info)
+        {
+            await TimerComponent.Instance.WaitAsync((long)(info.ExecuteTime * FishConfig.MilliSecond));
+            var publicData = ExecuteTimeLine.Instance;
+            publicData.Set(unitId, info);
+            Game.EventSystem.PublishClass(publicData);
         }
 
         private void Rotate(Unit self, TimeLineConfigInfo timeLineInfo)
@@ -129,24 +141,26 @@ namespace ET
             var fishUnitComponent = self.FishUnitComponent;
             var moveInfo = fishUnitComponent.MoveInfo;
             var rotateInfo = fishUnitComponent.RotateInfo;
-            rotateInfo.Reset();
+            rotateInfo.ResetRotateInfo();
 
             string[] arguments = timeLineInfo.Arguments;
-
-            if (!float.TryParse(arguments[3], out float time))
-                return;
 
             if (!float.TryParse(arguments[2], out float rotationZ))
                 return;
 
-            if (Math.Abs(rotationZ) < 1)
+            if (!float.TryParse(arguments[3], out float time))
                 return;
 
-            // Battle Warning ‘› ±÷ªµ±”–“ªÃı÷˜ ±º‰÷·,  ±º‰÷·◊‹ ±≥§∏˙”„œﬂ ±≥§“ª÷¬
+            if (Math.Abs(rotationZ) < 1) return;
+
+            // Battle Warning ÊöÇÊó∂Âè™ÂΩìÊúâ‰∏ÄÊù°‰∏ªÊó∂Èó¥ËΩ¥, Êó∂Èó¥ËΩ¥ÊÄªÊó∂ÈïøË∑üÈ±ºÁ∫øÊó∂Èïø‰∏ÄËá¥
             long currentTime = TimeHelper.ServerNow();
             long startMoveTime = currentTime - moveInfo.MoveTime;
+
+            // Battle Warning ‰∏ªÊó∂Èó¥ËΩ¥Ëß¶ÂèëÊó∂Èó¥ÊöÇÊó∂‰ΩøÁî®È±ºÁîüÂëΩÂë®ÊúüÂºÄÂßãÊó∂Èó¥(ÊúçÂä°Á´ØÊ≤°ÂÅö, ÈúÄË¶ÅÊúçÂä°Âô®Á´ØËÆ∞ÂΩï‰∏ªÊó∂Èó¥ËΩ¥Ëß¶ÂèëÊó∂Èó¥)
+            //long triggerTime = (long)(timeLineInfo.LifeTime * moveInfo.MoveDuration) + triggerTimeLineTime;
             long triggerTime = (long)(timeLineInfo.LifeTime * moveInfo.MoveDuration) + startMoveTime;
-            uint rotateDuration = (uint)(time * 1000);
+            uint rotateDuration = (uint)(time * FishConfig.MilliSecond);
             if (currentTime > (triggerTime + rotateDuration))
                 return;
 
@@ -156,10 +170,35 @@ namespace ET
 
             var transformComponent = self.TransformComponent;
             var localRotation = transformComponent.Info.LocalRotation;
-            var eulerAngles = localRotation.eulerAngles;
-            eulerAngles.z += (float)rotateInfo.RotationTime / rotateDuration * rotationZ;
-            localRotation.eulerAngles = eulerAngles;
+            var eulerAngle = TransformRotateInfoHelper.ToEulerAngle(localRotation);
+            eulerAngle.z += (float)rotateInfo.RotationTime / rotateDuration * rotationZ;
+            localRotation = TransformRotateInfoHelper.ToQuaternion(eulerAngle);
             transformComponent.Info.LocalRotation = localRotation;
+        }
+
+        private async ETTask SpeedChange(Unit self, TimeLineConfigInfo timeLineInfo)
+        {
+            var fishUnitComponent = self.FishUnitComponent;
+            var moveInfo = fishUnitComponent.MoveInfo;
+            string[] arguments = timeLineInfo.Arguments;
+
+            if (!int.TryParse(arguments[0], out int changeSpeed))
+                return;
+
+            if (!float.TryParse(arguments[1], out float time))
+                return;
+
+            // Âçï‰Ωç ÊØ´Áßí
+            time *= FishConfig.MilliSecond;
+            moveInfo.MoveAcceleration = ((changeSpeed + moveInfo.OriginConfigSpeed - moveInfo.CurrentConfigSpeed)
+                                        / moveInfo.OriginConfigSpeed - 1) / time;
+
+            await TimerComponent.Instance.WaitAsync((long)time);
+
+            if (self == null || self.IsDisposed || moveInfo == null) return;
+
+            moveInfo.CurrentConfigSpeed = changeSpeed + moveInfo.OriginConfigSpeed;
+            moveInfo.MoveAcceleration = 0;
         }
     }
 }

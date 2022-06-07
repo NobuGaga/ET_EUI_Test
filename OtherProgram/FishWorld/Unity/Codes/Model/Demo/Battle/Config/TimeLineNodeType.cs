@@ -19,6 +19,9 @@ namespace ET
         /// <summary> 面向摄像机 </summary>
         public const int ForwardCamera = 5;
 
+        /// <summary> 暂停鱼线执行 </summary>
+        public const int PauseFishLine = 6;
+
         // 状态类型从 21 开始
         /// <summary> 预备状态(服务器通知刷怪, 但怪物为不可攻击状态(可能跟场景融为一体之类的)) </summary>
         public const int ReadyState = 21;

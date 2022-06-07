@@ -19,8 +19,7 @@ namespace ET
 
     [ObjectSystem]
 	[FriendClass(typeof(Unit))]
-	public class BulletUnitLogicComponentAwakeSystem : AwakeSystem<Unit, UnitInfo,
-                                                                   CannonShootInfo>
+	public class BulletUnitLogicComponentAwakeSystem : AwakeSystem<Unit, UnitInfo, CannonShootInfo>
     {
         // 添加通用数据或者组件
         // 在 AddChild 的时候根据传入参数调用相应的 IAake 方法

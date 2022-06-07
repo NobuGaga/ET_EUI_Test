@@ -69,20 +69,12 @@ namespace ET
                 m_curPlayTime = m_clipLength;
                 SampleAnimation();
                 if (isLoop)
-                {
-                    Replay();
                     m_curPlayTime = 0;
-                }
                 else
                     Stop();
             }
             else
                 SampleAnimation();
-        }
-
-        protected virtual void Replay()
-        {
-
         }
 
         protected abstract void SampleAnimation();

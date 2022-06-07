@@ -6,4 +6,9 @@ namespace ET
     {
         public Vector3 Vector;
     }
+
+    public class Quaternion_Class
+    {
+        public Quaternion Quaternion;
+    }
 }

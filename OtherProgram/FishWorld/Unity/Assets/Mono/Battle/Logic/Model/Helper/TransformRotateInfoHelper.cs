@@ -1,5 +1,7 @@
 // Battle Review Before Boss Node
 
+using UnityEngine;
+
 namespace ET
 {
     /// <summary>
@@ -41,10 +43,48 @@ namespace ET
                 return;
             }
 
-            ref var localRotation = ref transformInfo.LocalRotation;
-            var eulerAngles = localRotation.eulerAngles;
+            var eulerAngles = ToEulerAngle(transformInfo.LocalRotation);
             eulerAngles.z += (float)deltaTime / rotateInfo.RotationDuration * rotateInfo.LocalRotationZ;
-            localRotation.eulerAngles = eulerAngles;
+            transformInfo.LocalRotation = ToQuaternion(eulerAngles);
+        }
+
+        public static Vector3 ToEulerAngle(Quaternion quaternion)
+        {
+            ref float x = ref quaternion.x;
+            ref float y = ref quaternion.y;
+            ref float z = ref quaternion.z;
+            ref float w = ref quaternion.w;
+
+            var vector = new Vector3();
+            vector.x = Mathf.Asin(2 * (w * x - y * z));
+            vector.y = Mathf.Atan2(2 * (w * y + x * z), 1 - 2 * (x * x + y * y));
+            vector.z = Mathf.Atan2(2 * (w * z + x * y), 1 - 2 * (x * x + z * z));
+
+            return vector;
+        }
+
+        public static Quaternion ToQuaternion(Vector3 vector)
+        {
+            float halfX = vector.x / 2;
+            float halfY = vector.y / 2;
+            float halfZ = vector.z / 2;
+
+            float sinHalfX = Mathf.Sin(halfX);
+            float cosHalfX = Mathf.Cos(halfX);
+
+            float sinHalfY = Mathf.Sin(halfY);
+            float cosHalfY = Mathf.Cos(halfY);
+
+            float sinHalfZ = Mathf.Sin(halfZ);
+            float cosHalfZ = Mathf.Cos(halfZ);
+
+            var quaternion = new Quaternion();
+            quaternion.x = sinHalfY * sinHalfZ * cosHalfX + cosHalfY * cosHalfZ * sinHalfX;
+            quaternion.y = sinHalfY * cosHalfZ * cosHalfX - cosHalfY * sinHalfZ * sinHalfX;
+            quaternion.z = cosHalfY * sinHalfZ * cosHalfX - sinHalfY * cosHalfZ * sinHalfX;
+            quaternion.w = cosHalfX * cosHalfY * cosHalfZ - sinHalfX * sinHalfY * sinHalfZ;
+
+            return quaternion;
         }
     }
 }

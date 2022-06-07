@@ -35,7 +35,10 @@ namespace ET
         public const ushort ShootMaxBulletCount = 30;
 
         /// <summary> 射击子弹时间间隔毫秒 </summary>
-        public const ushort ShootBulletInterval = 200;
+        public const ushort ShootBulletInterval = 167;
+
+        /// <summary> 默认炮倍 </summary>
+        public const int DefaultStack = 1000;
 
         /// <summary>
         /// 子弹 ID 校正值, 该值等于个人发射子弹上限值数字位数加多一位

@@ -26,12 +26,15 @@ namespace ET
             animatorInstanceID = m_animator.GetInstanceID().ToString();
 
             playableGraph = PlayableGraph.Create(animatorInstanceID);
-            playableGraph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
+            playableGraph.SetTimeUpdateMode(DirectorUpdateMode.UnscaledGameTime);
             playableOutput = AnimationPlayableOutput.Create(playableGraph, animatorInstanceID, m_animator);
         }
 
-        public override void Play(AnimationClip clip, bool isLoop) {
+        public override void SetAnimationPlayTime(AnimationClip clip, float time)
+        {
             m_curClip = clip;
+
+            if (clip == null) return;
 
             if (playableClip.IsValid())
                 playableClip.Destroy();
@@ -39,13 +42,20 @@ namespace ET
             playableClip = AnimationClipPlayable.Create(playableGraph, clip);
             playableOutput.SetSourcePlayable(playableClip);
             playableGraph.Play();
-            
-            base.Play(clip, isLoop);
+
+            base.SetAnimationPlayTime(clip, time);
         }
 
-        protected override void SampleAnimation() { }
+        protected override void SampleAnimation()
+        {
+            if (m_curClip == null)
+                return;
 
-        protected override void Replay() => Play(m_curClip, isLoop);
+            if (!playableClip.IsValid())
+                return;
+
+            playableClip.SetTime(m_curPlayTime);
+        }
 
         public override void Dispose()
         {

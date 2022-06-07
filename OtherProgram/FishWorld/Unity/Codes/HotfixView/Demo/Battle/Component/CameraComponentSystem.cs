@@ -24,6 +24,8 @@ namespace ET
 
             if (VectorStringHelper.TryParseVector(vectorString, out vector))
                 self.PlayRotate(vector, time);
+
+            self.PlayFieldOfView(config.FieldOfView, time);
         }
 
         public static void StopTransformTween(this CameraComponent self)
@@ -35,21 +37,20 @@ namespace ET
         public static async ETTask PlayMovePosition(this CameraComponent self, Vector3 endValue, float duration)
         {
             Transform cameraTrans = self.mainCamera.transform;
-            //Transform fishRootTrans = GlobalComponent.Instance.FishRoot;
-            //Vector3 fishRootEndValue = endValue - cameraTrans.position + fishRootTrans.position;
+            Transform fishRootTrans = GlobalComponent.Instance.FishRoot;
 
             DotweenHelper.DOKill(cameraTrans);
 
             if (duration > 0)
             {
                 BattleLogicComponent.Instance.FisheryComponent.IsMovingCamera = true;
-                //DotweenHelper.DOMove(fishRootTrans, fishRootEndValue, duration).Coroutine();
+                DotweenHelper.DOMove(fishRootTrans, endValue, duration).Coroutine();
                 await DotweenHelper.DOMove(cameraTrans, endValue, duration);
                 BattleLogicComponent.Instance.FisheryComponent.IsMovingCamera = false;
             }
             else
             {
-                //fishRootTrans.position = fishRootEndValue;
+                fishRootTrans.position = endValue;
                 cameraTrans.position = endValue;
             }
         }
@@ -57,18 +58,31 @@ namespace ET
         public static void PlayRotate(this CameraComponent self, Vector3 endValue, float duration)
         {
             Transform cameraTrans = self.mainCamera.transform;
-            //Transform fishRootTrans = GlobalComponent.Instance.FishRoot;
-            //Vector3 fishRootEndValue = endValue - cameraTrans.eulerAngles + fishRootTrans.eulerAngles;
+            Transform fishRootTrans = GlobalComponent.Instance.FishRoot;
 
             if (duration > 0)
             {
                 DotweenHelper.DORotate(cameraTrans, endValue, duration).Coroutine();
-                //DotweenHelper.DORotate(fishRootTrans, fishRootEndValue, duration).Coroutine();
+                DotweenHelper.DORotate(fishRootTrans, endValue, duration).Coroutine();
             }
             else
             {
                 cameraTrans.eulerAngles = endValue;
-                //fishRootTrans.eulerAngles = fishRootEndValue;
+                fishRootTrans.eulerAngles = endValue;
+            }
+        }
+
+        public static void PlayFieldOfView(this CameraComponent self, int fieldOfView, float duration)
+        {
+            Camera mainCamera = self.mainCamera;
+
+            if (duration > 0)
+            {
+                // Battle TODO
+            }
+            else
+            {
+                mainCamera.fieldOfView = fieldOfView;
             }
         }
     }

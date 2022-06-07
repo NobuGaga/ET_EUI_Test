@@ -11,5 +11,10 @@ namespace ET
                                     MonoPool.Instance.Fetch(typeof(Vector3_Class)) as Vector3_Class;
 
         public static void PushPool(Vector3_Class info) => MonoPool.Instance.Recycle(info);
+
+        public static Quaternion_Class Pop_Quaternion_Class() =>
+                            MonoPool.Instance.Fetch(typeof(Quaternion_Class)) as Quaternion_Class;
+
+        public static void PushPool(Quaternion_Class info) => MonoPool.Instance.Recycle(info);
     }
 }
