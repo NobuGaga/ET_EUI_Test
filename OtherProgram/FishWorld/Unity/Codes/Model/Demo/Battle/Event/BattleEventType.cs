@@ -161,6 +161,26 @@ namespace ET
 
         #region Mono To Logic
 
+        public class InitTimeLine : DisposeObject
+        {
+            public long UnitId;
+
+            public float ExecuteTime;
+
+            public TimeLineConfigInfo Info;
+
+            public static InitTimeLine Instance = new InitTimeLine();
+
+            public void Set(long unitId, float executeTime, TimeLineConfigInfo info)
+            {
+                UnitId = unitId;
+                ExecuteTime = executeTime;
+                Info = info;
+            }
+
+            public override void Dispose() => Info = null;
+        }
+
         public class ExecuteTimeLine : DisposeObject
         {
             public long UnitId;

@@ -86,6 +86,46 @@ namespace ET
 
     [FriendClass(typeof(BattleLogicComponent))]
     [FriendClass(typeof(Unit))]
+    [FriendClass(typeof(FishUnitComponent))]
+    public class InitTimeLine_BattleLogicComponent : AEventClass<InitTimeLine>
+    {
+        protected override void Run(object obj)
+        {
+            var args = obj as InitTimeLine;
+            ref long unitId = ref args.UnitId;
+            var info = args.Info;
+            ref int type = ref info.Type;
+            ref float executeTime = ref args.ExecuteTime;
+
+            var battleLogicComponent = BattleLogicComponent.Instance;
+            Unit unit = battleLogicComponent.UnitComponent.Get(unitId);
+            var fishUnitComponent = unit.FishUnitComponent;
+
+            switch (info.Type)
+            {
+                case TimeLineNodeType.PauseFishLine:
+                    var moveInfo = fishUnitComponent.MoveInfo;
+                    moveInfo.IsPause = true;
+                    ResumePathMove(unit, executeTime).Coroutine();
+                    break;
+            }
+        }
+
+        private async ETTask ResumePathMove(Unit unit, float executeTime)
+        {
+            await TimerComponent.Instance.WaitAsync((long)(executeTime * 1000));
+
+            if (unit == null || unit.IsDisposed)
+                return;
+
+            var fishUnitComponent = unit.FishUnitComponent;
+            var moveInfo = fishUnitComponent.MoveInfo;
+            moveInfo.IsPause = true;
+        }
+    }
+
+    [FriendClass(typeof(BattleLogicComponent))]
+    [FriendClass(typeof(Unit))]
     [FriendClass(typeof(TransformComponent))]
     [FriendClass(typeof(FishUnitComponent))]
     public class ExecuteTimeLine_BattleLogicComponent : AEventClass<ExecuteTimeLine>
@@ -164,6 +204,8 @@ namespace ET
             if (currentTime > (triggerTime + rotateDuration))
                 return;
 
+            // Battle Warning 欧拉角使用弧度制?
+            rotationZ /= 57.29578f;
             rotateInfo.LocalRotationZ = rotationZ;
             rotateInfo.RotationTime = (int)(currentTime - triggerTime);
             rotateInfo.RotationDuration = rotateDuration;

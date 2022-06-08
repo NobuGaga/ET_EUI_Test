@@ -21,7 +21,7 @@ namespace ET
         /// </summary>
         public bool IsAutoNext;
 
-        /// <summary> 执行节点时长 </summary>
+        /// <summary> 执行节点时长 (秒) </summary>
         public float ExecuteTime;
 
         /// <summary> 自动执行节点标识 </summary>

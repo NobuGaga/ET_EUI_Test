@@ -19,8 +19,15 @@ namespace ET
             var attributeComponent = bulletUnit.GetComponent<NumericComponent>();
             int seatId = attributeComponent.GetAsInt(NumericType.Pos);
             var fisheryComponent = self.FisheryComponent;
-            Unit playerUnit = fisheryComponent.GetPlayerUnit(seatId);
-            long playerUnitId = playerUnit.Id;
+            long playerUnitId = 0;
+            // Battle Warning 有玩家退出房间 Current Scene 上的 FisheryComponent 组件会为空
+            // 暂时将 playerUnitId 设置为 0
+            if (fisheryComponent != null)
+            {
+                Unit playerUnit = fisheryComponent.GetPlayerUnit(seatId);
+                playerUnitId = playerUnit.Id;
+            }
+
             Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
 
             if (playerUnitId == selfPlayerUnit.Id)

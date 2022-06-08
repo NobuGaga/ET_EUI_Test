@@ -17,7 +17,7 @@ namespace ET
         public bool IsMoveEnd;
 
         /// <summary> 鱼线总运动时间, 毫秒 </summary>
-        public uint MoveDuration;
+        public int MoveDuration;
 
         /// <summary>
         /// 鱼线当前已运动时间, 毫秒, 为负数则还没到出生时间, 通过累加时间到达正数开始移动

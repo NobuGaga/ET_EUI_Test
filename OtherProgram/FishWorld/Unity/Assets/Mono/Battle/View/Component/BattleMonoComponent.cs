@@ -21,9 +21,6 @@ namespace ET
 
         BattleMonoComponent()
         {
-            // 设置帧率
-            Application.targetFrameRate = 60;
-
             // 调用注意顺序, 先初始化 Mono 层引用类
             ReferenceHelper.Init();
 #if UNITY_EDITOR

@@ -29,7 +29,7 @@ namespace ET
         private static async ETTask Execute(long unitId, TimeLineConfigInfo info)
         {
             await TimerComponent.Instance.WaitAsync((long)(info.ExecuteTime * FishConfig.MilliSecond));
-            FishTimelineConfigCategory.Instance.PublishTimeLineEvent(unitId, info);
+            FishTimelineConfigCategory.Instance.PublishExecuteTimeLineEvent(unitId, info);
         }
 
         private static AnimationClip PlayAnimation(this Unit self, TimeLineConfigInfo timeLineInfo)
@@ -42,15 +42,15 @@ namespace ET
             var fishUnitComponent = self.FishUnitComponent;
             var moveInfo = fishUnitComponent.MoveInfo;
 
-            // Battle Warning ÔİÊ±Ö»µ±ÓĞÒ»ÌõÖ÷Ê±¼äÖá, Ê±¼äÖá×ÜÊ±³¤¸úÓãÏßÊ±³¤Ò»ÖÂ
+            // Battle Warning æš‚æ—¶åªå½“æœ‰ä¸€æ¡ä¸»æ—¶é—´è½´, æ—¶é—´è½´æ€»æ—¶é•¿è·Ÿé±¼çº¿æ—¶é•¿ä¸€è‡´
             long currentTime = TimeHelper.ServerNow();
             long startMoveTime = currentTime - moveInfo.MoveTime;
 
-            // Battle Warning Ö÷Ê±¼äÖá´¥·¢Ê±¼äÔİÊ±Ê¹ÓÃÓãÉúÃüÖÜÆÚ¿ªÊ¼Ê±¼ä(·şÎñ¶ËÃ»×ö, ĞèÒª·şÎñÆ÷¶Ë¼ÇÂ¼Ö÷Ê±¼äÖá´¥·¢Ê±¼ä)
+            // Battle Warning ä¸»æ—¶é—´è½´è§¦å‘æ—¶é—´æš‚æ—¶ä½¿ç”¨é±¼ç”Ÿå‘½å‘¨æœŸå¼€å§‹æ—¶é—´(æœåŠ¡ç«¯æ²¡åš, éœ€è¦æœåŠ¡å™¨ç«¯è®°å½•ä¸»æ—¶é—´è½´è§¦å‘æ—¶é—´)
             //long triggerTime = (long)(timeLineInfo.LifeTime * moveInfo.MoveDuration) + triggerTimeLineTime;
             long triggerTime = (long)(timeLineInfo.LifeTime * moveInfo.MoveDuration) + startMoveTime;
 
-            // ÒÑ²¥·ÅÊ±³¤
+            // å·²æ’­æ”¾æ—¶é•¿
             float playTime = (float)(currentTime - triggerTime) / FishConfig.MilliSecond;
 
             return self.PlayAnimation(motionName, playTime, isLoop);

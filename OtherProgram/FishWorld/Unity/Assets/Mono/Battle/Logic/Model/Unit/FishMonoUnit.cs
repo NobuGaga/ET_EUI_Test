@@ -8,6 +8,8 @@ namespace ET
 {
 	public class FishMonoUnit : BattleMonoUnit
     {
+        public LifeCycleInfo LifeCycleInfo;
+
         public FishMoveInfo FishMoveInfo;
 
         public FishScreenInfo FishScreenInfo;
@@ -18,19 +20,22 @@ namespace ET
 
         public void Init()
         {
+            LifeCycleInfo = MonoPool.Instance.Fetch(typeof(LifeCycleInfo)) as LifeCycleInfo;
+            LifeCycleInfo.Reset();
             TimeLineMonoInfo = MonoPool.Instance.Fetch(typeof(TimeLineMonoInfo)) as TimeLineMonoInfo;
             TimeLineMonoInfo.Reset();
         }
 
         public override void FixedUpdate()
         {
-            FishMoveInfoHelper.FixedUpdate(FishMoveInfo);
-
-            if (!FishMoveInfo.IsMoveEnd)
-                TransformInfo.Update(FishMoveInfo);
+            LifeCycleInfoHelper.FixedUpdate(LifeCycleInfo, FishMoveInfo);
 
             if (TimeLineMonoInfo != null)
-                TimeLineConfigInfoHelper.FixedUpdate(UnitId, FishMoveInfo, TimeLineMonoInfo);
+                TimeLineConfigInfoHelper.FixedUpdate(UnitId, LifeCycleInfo, TimeLineMonoInfo);
+
+            FishMoveInfoHelper.FixedUpdate(FishMoveInfo);
+            if (!FishMoveInfo.IsMoveEnd)
+                TransformInfo.Update(FishMoveInfo);
 
             if (TransformRotateInfo.IsRotating)
                 TransformRotateInfoHelper.FixedUpdate(TransformInfo, TransformRotateInfo);
@@ -42,8 +47,15 @@ namespace ET
         {
             if (Transform == null) return;
 
+            float deltaTime = Time.deltaTime;
+
             Transform.localPosition = TransformInfo.LocalPosition;
             TransformInfo.WorldPosition = Transform.position;
+
+            if (TransformRotateInfo.IsFowardMainCamera)
+                Transform.LookAt(ReferenceHelper.FishCamera.transform.position);
+            else
+                Transform.forward = Vector3.Slerp(Transform.forward, TransformInfo.Forward, deltaTime);
 
             if (TransformRotateInfo.IsRotating)
             {
@@ -51,13 +63,8 @@ namespace ET
                 TransformInfo.LocalRotation = Transform.localRotation;
             }
 
-            if (TransformRotateInfo.IsFowardMainCamera)
-                Transform.LookAt(ReferenceHelper.FishCamera.transform.position);
-            else
-                Transform.forward = TransformInfo.Forward;
-
             var animation = UnityComponentHelper.GetAnimation(Transform.gameObject);
-            animation.Update((float)TimeHelper.ClinetDeltaFrameTime() / 1000);
+            animation.Update(deltaTime);
 
             if (ColliderMonoComponent == null) return;
 
@@ -72,17 +79,18 @@ namespace ET
 
         public override void Dispose()
         {
+            base.Dispose();
+            MonoPool.Instance.Recycle(LifeCycleInfo);
+            LifeCycleInfo = null;
+            FishMoveInfo = null;
+            FishScreenInfo = null;
+            MonoPool.Instance.Recycle(TimeLineMonoInfo);
+            TimeLineMonoInfo = null;
 #if !NOT_UNITY
 
             if (Transform != null)
                 UnityComponentHelper.GetAnimation(Transform.gameObject)?.Reset();
 #endif
-            base.Dispose();
-            FishMoveInfo = null;
-            FishScreenInfo = null;
-            var timeLineMonoInfo = TimeLineMonoInfo;
-            TimeLineMonoInfo = null;
-            MonoPool.Instance.Recycle(timeLineMonoInfo);
         }
     }
 }

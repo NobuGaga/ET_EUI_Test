@@ -1,3 +1,4 @@
+using UnityEngine;
 using ET.EventType;
 
 using BattleMonoComponentExtension = ET.BattleMonoComponentSystem;
@@ -143,6 +144,25 @@ namespace ET
             Unit fishUnit = battleLogicComponent.UnitComponent.Get(args.UnitId);
             if (fishUnit != null && !fishUnit.IsDisposed)
                 fishUnit.Execute(args.Info);
+        }
+    }
+
+    public static class BattleViewComponentSystem
+    {
+        /// <summary> 预设预加载实例化 </summary>
+        public static async ETTask PreLoadAndInstantiateObject(this BattleViewComponent self)
+        {
+            string assetName = "fish_10101";
+            string assetBundlePath = string.Format(FishConfig.FishAssetBundlePathFormat, assetName);
+            var objectPoolComponent = self.GetComponent<ObjectPoolComponent>();
+
+            var gameObject = await ObjectInstantiateHelper.LoadAsset(assetBundlePath, assetName) as GameObject;
+            gameObject = UnityEngine.Object.Instantiate(gameObject);
+            gameObject.transform.parent = ReferenceHelper.FishRootNode.transform;
+            gameObject.transform.localPosition = FishConfig.RemovePoint;
+            gameObject.name = FishConfig.DefaultName;
+
+            objectPoolComponent?.PushObject(assetBundlePath, gameObject);
         }
     }
 }

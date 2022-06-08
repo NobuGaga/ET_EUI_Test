@@ -35,21 +35,17 @@ namespace ET
         /// <summary> 使用服务器数据初始化移动数据 </summary>
         /// <param name="info">移动数据</param>
         /// <param name="roadId">鱼线表数据</param>
-        /// <param name="liveTime">出生时间戳(毫秒)</param>
-        /// <param name="remainTime">剩余存活时间(秒)</param>
+        /// <param name="totalMoveTime">总移动时间(毫秒)</param>
         /// <param name="offsetPosX">初始位置偏移值 X</param>
         /// <param name="offsetPosY">初始位置偏移值 Y</param>
         /// <param name="offsetPosZ">初始位置偏移值 Z</param>
-        public static void InitInfo(FishMoveInfo info, short roadId, long liveTime, uint remainTime,
+        /// <param name="configSpeed">配置表初始速度值</param>
+        /// <param name="isPause">当前时刻是否暂停</param>
+        public static void InitInfo(FishMoveInfo info, short roadId, int totalMoveTime,
                                                        float offsetPosX, float offsetPosY, float offsetPosZ,
                                                        int configSpeed)
         {
-            // int 最大值在 20+ 天左右
-            info.MoveDuration = remainTime;
-            info.MoveTime = (int)(TimeHelper.ServerFrameTime() - liveTime);
-            if (info.MoveTime > 0)
-                info.MoveDuration += (uint)info.MoveTime;
-
+            info.MoveDuration = totalMoveTime;
             if (info.IsMoveTimeOut)
             {
                 info.StopMove();

@@ -12,12 +12,20 @@ namespace ET
         public static void FisheryIceSkill()
         {
             var battleLogicComponent = BattleLogicComponent.Instance;
-            Scene currentScene = battleLogicComponent.CurrentScene;
             var unitComponent = battleLogicComponent.UnitComponent;
             var skillComponent = battleLogicComponent.SkillComponent;
             ForeachHelper.Foreach(unitComponent.GetFishUnitList(), skillComponent.SetFishAnimatorState);
         }
 
         public static void SetFishAnimatorState(Unit fishUnit) => fishUnit.PauseAnimation();
+    }
+
+    public class FisheryViewComponent_FisherySkillEnd : AEvent<EventType.FisherySkillEnd>
+    {
+        protected override void Run(EventType.FisherySkillEnd args)
+        {
+            if (args.SkillType == SkillType.Ice)
+                FisheryViewComponentSystem.FisheryIceSkill();
+        }
     }
 }

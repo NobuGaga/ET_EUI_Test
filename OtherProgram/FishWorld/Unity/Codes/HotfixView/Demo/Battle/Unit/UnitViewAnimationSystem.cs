@@ -14,7 +14,7 @@ namespace ET
             bool isUseModelPool = BattleConfig.IsUseModelPool;
             int configId = self.ConfigId;
             string resId = self.Config.ResId;
-            var animatorComponent = self.AddComponent<AnimatorComponent, int>(configId, isUseModelPool);
+            var animatorComponent = self.AddComponent<AnimatorComponent, string>(resId, isUseModelPool);
             animatorComponent.Reset();
             self.AnimatorComponent = animatorComponent;
 

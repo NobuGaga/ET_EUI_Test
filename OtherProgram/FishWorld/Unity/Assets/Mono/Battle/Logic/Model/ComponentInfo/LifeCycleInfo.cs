@@ -1,7 +1,5 @@
 // Battle Review Before Boss Node
 
-using UnityEngine;
-
 namespace ET
 {
     /// <summary>
@@ -12,5 +10,21 @@ namespace ET
     {
         /// <summary> 当前生命周期时间, 已存活时间除以生命周期长度 </summary>
         public float CurrentLifeTime;
+
+        /// <summary> 已存活时间 (秒) </summary>
+        public float SurvivalTime;
+
+        /// <summary> 总存活时间 (秒) </summary>
+        public float TotalLifeTime;
+
+        public void Reset()
+        {
+            CurrentLifeTime = 0;
+            SurvivalTime = 0;
+            TotalLifeTime = 0;
+        }
+
+        /// <summary> 是否到达生命周期尽头 </summary>
+        public bool IsLifeTimeOut => SurvivalTime > TotalLifeTime || CurrentLifeTime > 1;
     }
 }

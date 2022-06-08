@@ -11,8 +11,18 @@ namespace ET
         {
             Unit unit = self.Parent as Unit;
 
+            // 先给 Mono 层数据结构初始化(但不附初始值), 有的值需要用时间轴赋值
             FishMoveInfo moveInfo = FishMoveInfoHelper.PopInfo(unit.UnitId);
             moveInfo.Reset();
+            self.MoveInfo = moveInfo;
+
+            self.ScreenInfo = FishScreenInfoHelper.PopInfo(unit.UnitId);
+            self.ScreenInfo.IsInScreen = false;
+
+            TransformRotateInfo rotateInfo = TransformRotateInfoHelper.PopInfo(unit.UnitId);
+            rotateInfo.ResetRotateInfo();
+            rotateInfo.ResetForward();
+            self.RotateInfo = rotateInfo;
 
             var attributeComponent = unit.AttributeComponent;
             // 鱼线表 ID
@@ -25,25 +35,18 @@ namespace ET
             float offsetPosX = (float)attributeComponent[NumericType.PositionX] / FishConfig.ServerOffsetScale;
             float offsetPosY = (float)attributeComponent[NumericType.PositionY] / FishConfig.ServerOffsetScale;
             float offsetPosZ = (float)attributeComponent[NumericType.PositionZ] / FishConfig.ServerOffsetScale;
+
+            int totalMoveTime = attributeComponent.GetAsInt(NumericType.MoveTime);
             int originConfigSpeed = attributeComponent.GetAsInt(NumericType.Speed);
+            int timeLineConfigId = attributeComponent.GetAsInt(NumericType.Timeline);
 
-            FishMoveInfoHelper.InitInfo(moveInfo, roadId, liveTime, remainTime, offsetPosX, offsetPosY, offsetPosZ, originConfigSpeed);
-            self.MoveInfo = moveInfo;
+            LifeCycleInfoHelper.InitInfo(unit.UnitId, liveTime, remainTime);
+            TimeLineConfigInfoHelper.SetConfigId(unit.UnitId, timeLineConfigId);
 
-            self.ScreenInfo = FishScreenInfoHelper.PopInfo(unit.UnitId);
-            self.ScreenInfo.IsInScreen = false;
+            FishMoveInfoHelper.InitInfo(moveInfo, roadId, totalMoveTime, offsetPosX, offsetPosY, offsetPosZ, originConfigSpeed);
 
             var transformComponent = unit.TransformComponent;
             transformComponent.Info.Update(moveInfo);
-
-            TransformRotateInfo rotateInfo = TransformRotateInfoHelper.PopInfo(unit.UnitId);
-            rotateInfo.ResetRotateInfo();
-            rotateInfo.ResetForward();
-            self.RotateInfo = rotateInfo;
-
-            int timeLineConfigId = attributeComponent.GetAsInt(NumericType.Timeline);
-
-            TimeLineConfigInfoHelper.SetConfigId(unit.UnitId, timeLineConfigId);
 
             // Battle TODO delete
             int fishGroupId = attributeComponent.GetAsInt(NumericType.GroupUid);

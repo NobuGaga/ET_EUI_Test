@@ -33,6 +33,7 @@ namespace ET
             self.NextForward = TransformDefaultConfig.DefaultForward;
             self.MoveSpeed = FishConfig.DefaultMoveSpeed;
             self.MoveAcceleration = FishConfig.DefaultMoveAcceleration;
+            self.IsPause = false;
         }
 
         public static void ResetRotateInfo(this TransformRotateInfo self)
