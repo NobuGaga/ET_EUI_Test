@@ -11,6 +11,9 @@ namespace ET
 		/// <summary> 客户端生成的子弹 ID 计数器 </summary>
 		public long BulletId;
 
+		/// <summary> 客户端生成的无效子弹 ID 计数器 </summary>
+		public long UnvalidBulletId;
+
 		/// <summary> 上一次发射子弹时间戳(毫秒) </summary>
 		public long LastShootBulletTime;
 

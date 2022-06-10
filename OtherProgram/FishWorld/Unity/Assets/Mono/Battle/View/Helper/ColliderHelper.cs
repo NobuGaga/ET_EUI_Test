@@ -70,7 +70,7 @@ namespace ET
 
             // Battle Warning 碰撞 ID 暂时使用鱼 ID, 子弹 Lua 层写死 1
             if (colliderId == 1)
-                _colliderList.Add(new Line2D(ColliderConfig.CannonCamera, 2.6f, 3.35f));
+                _colliderList.Add(new Line2D(ColliderConfig.CannonCamera, 2.52f, 2.9f));
             // Battle Warning 其他没有配置的默认给个半径为 1 的球
             else if (_tempCircleColliderList.Count == 0)
                 _colliderList.Add(new Sphere(ColliderConfig.FishCamera, Vector3.zero, 1));

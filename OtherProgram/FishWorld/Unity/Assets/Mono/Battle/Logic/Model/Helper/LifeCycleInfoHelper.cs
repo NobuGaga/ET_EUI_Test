@@ -12,12 +12,12 @@ namespace ET
         /// <summary> 使用服务器数据初始化存活数据 </summary>
         /// <param name="liveTime">出生时间戳(毫秒)</param>
         /// <param name="remainTime">剩余存活时间(秒)</param>
-        public static void InitInfo(long unitId, long liveTime, uint remainTime)
+        public static void InitInfo(long unitId, long liveTime, int remainTime)
         {
             var unit = UnitMonoComponent.Instance.Get<FishMonoUnit>(unitId);
             var info = unit.LifeCycleInfo;
             info.SurvivalTime = (TimeHelper.ServerFrameTime() - liveTime) / 1000;
-            info.TotalLifeTime = (remainTime - liveTime) / 1000;
+            info.TotalLifeTime = (float)remainTime / 1000 + info.SurvivalTime;
             info.CurrentLifeTime = info.SurvivalTime / info.TotalLifeTime;
         }
 
@@ -27,12 +27,29 @@ namespace ET
                 return;
 
             if (lifeInfo.IsLifeTimeOut)
+            {
+                moveInfo.StopMove();
                 return;
+            }
             
             lifeInfo.SurvivalTime += (float)TimeHelper.ClinetDeltaFrameTime() / 1000;
             lifeInfo.CurrentLifeTime = lifeInfo.SurvivalTime / lifeInfo.TotalLifeTime;
             if (lifeInfo.IsLifeTimeOut)
                 moveInfo.StopMove();
+        }
+
+        public static float GetSurvivalTime(long unitId)
+        {
+            var unit = UnitMonoComponent.Instance.Get<FishMonoUnit>(unitId);
+            var info = unit.LifeCycleInfo;
+            return info.SurvivalTime;
+        }
+
+        public static float GetTotalLifeTime(long unitId)
+        {
+            var unit = UnitMonoComponent.Instance.Get<FishMonoUnit>(unitId);
+            var info = unit.LifeCycleInfo;
+            return info.TotalLifeTime;
         }
     }
 }

@@ -23,15 +23,6 @@ namespace ET
             return info;
         }
 
-        public static void PushPool(long unitId, FishMoveInfo info)
-        {
-            var unit = UnitMonoComponent.Instance.Get<FishMonoUnit>(unitId);
-            if (unit != null)
-                unit.FishMoveInfo = null;
-
-            MonoPool.Instance.Recycle(info);
-        }
-
         /// <summary> 使用服务器数据初始化移动数据 </summary>
         /// <param name="info">移动数据</param>
         /// <param name="roadId">鱼线表数据</param>

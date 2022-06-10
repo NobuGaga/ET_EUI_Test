@@ -14,6 +14,7 @@ namespace ET
             self.BulletId = 0;
             self.LastShootBulletTime = 0;
             self.ShootBulletCount = 0;
+            self.UnvalidBulletId = 0;
 
             self.UnitInfo = new UnitInfo();
 
@@ -97,18 +98,38 @@ namespace ET
             Scene currentScene = battleLogicComponent.CurrentScene;
             var self = battleLogicComponent.BulletLogicComponent;
 
+            // 自己发射子弹使用客户端生成子弹 ID 规则
             if (unitInfo.UnitId == BulletConfig.DefaultBulletUnitId)
             {
                 long unitId = self.GenerateBulletId();
                 unitInfo.UnitId = unitId;
+                self.ShootBulletCount++;
+                self.LastShootBulletTime = TimeHelper.ServerNow();
+            }
+            // 其他玩家发射的子弹 ID, 如果玩家离场后再进入同一个渔场
+            // 离场玩家的子弹还在渔场中, 而离场的玩家子弹 ID 被重置了
+            // 再次发射子弹时, 接收到的子弹 ID 有可能跟在场的子弹 ID 重复
+            else if (self.GetChild<Unit>(unitInfo.UnitId) != null)
+            {
+                long oldId = unitInfo.UnitId;
+                // 将原来的 ID 引用移到另一个 ID 区间, 修正值为 BulletConfig.BulletIdFix * 100
+                // 确保不会重复, 使用一个新的无效子弹 ID 计数器
+                // 当计数器超过一个区间, 则重置
+                var bulletIdFix = BulletConfig.BulletIdFix * 100;
+                long newId = self.UnvalidBulletId + bulletIdFix;
+
+                if (self.UnvalidBulletId > bulletIdFix)
+                    self.UnvalidBulletId = 0;
+
+                self.UnvalidBulletId++;
+
+                self.Replace(oldId, newId);
+                UnitMonoComponent.Instance.ReplaceBulletUnit(oldId, newId);
             }
 
             // 保持所有的战斗 Unit 都 Add 到 Current Scene 上, 因为 Unit 只是数据
             Unit unit = self.AddChildWithId<Unit, UnitInfo, CannonShootInfo>(unitInfo.UnitId, unitInfo,
                                                                              cannonShootInfo, true);
-
-            self.ShootBulletCount++;
-            self.LastShootBulletTime = TimeHelper.ServerNow();
 
             var publishData = AfterUnitCreate.Instance;
             publishData.CurrentScene = currentScene;
@@ -119,13 +140,25 @@ namespace ET
 
         public static void RemoveUnit(this BulletLogicComponent self, long unitId)
         {
+            bool isSelfBullet = false;
+            var unit = self.GetChild<Unit>(unitId);
+            if (unit != null)
+            {
+                var battleLogicComponent = BattleLogicComponent.Instance;
+                var fisheryComponent = battleLogicComponent.FisheryComponent;
+                int selfSeatId = fisheryComponent.GetSelfSeatId();
+                int seatId = unit.AttributeComponent.GetAsInt(NumericType.Pos);
+                isSelfBullet = seatId == selfSeatId;
+            }
+
             var publishData = RemoveBulletUnit.Instance;
             publishData.Set(BattleLogicComponent.Instance.CurrentScene, unitId);
             Game.EventSystem.PublishClass(publishData);
 
-            UnitMonoComponent.Instance.Remove(unitId);
+            if (isSelfBullet)
+                self.ShootBulletCount--;
 
-            self.ShootBulletCount--;
+            UnitMonoComponent.Instance.Remove(unitId);
             self.RemoveChild(unitId);
         }
 

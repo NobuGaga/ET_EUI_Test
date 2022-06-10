@@ -10,6 +10,9 @@ namespace ET
         /// <summary> 服务器传偏移值修正比例 </summary>
         public const ushort ServerOffsetScale = 100;
 
+        /// <summary> Boss 配置表 ID </summary>
+        public const int BossConfigId = 10101;
+
         /// <summary>
         /// 默认移动速度, 这里的速度都是通过乘以时间间隔实现的
         /// 实际是一个更新时间步长修正值

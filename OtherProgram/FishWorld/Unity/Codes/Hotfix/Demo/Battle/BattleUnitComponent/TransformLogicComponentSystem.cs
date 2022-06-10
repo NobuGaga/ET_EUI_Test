@@ -19,10 +19,7 @@ namespace ET
     {
         public override void Destroy(TransformComponent self)
         {
-            TransformInfo info = self.Info;
             self.Info = null;
-            TransformInfoHelper.PushPool(self.Parent.Id, info);
-
             self.NodeName = null;
         }
     }

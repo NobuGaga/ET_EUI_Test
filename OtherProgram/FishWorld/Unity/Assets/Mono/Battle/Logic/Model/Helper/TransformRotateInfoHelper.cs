@@ -23,15 +23,6 @@ namespace ET
             return info;
         }
 
-        public static void PushPool(long unitId, TransformRotateInfo info)
-        {
-            var unit = UnitMonoComponent.Instance.Get<FishMonoUnit>(unitId);
-            if (unit != null)
-                unit.TransformRotateInfo = null;
-
-            MonoPool.Instance.Recycle(info);
-        }
-
         public static void FixedUpdate(TransformInfo transformInfo, TransformRotateInfo rotateInfo)
         {
             int deltaTime = (int)TimeHelper.ClinetDeltaFrameTime();

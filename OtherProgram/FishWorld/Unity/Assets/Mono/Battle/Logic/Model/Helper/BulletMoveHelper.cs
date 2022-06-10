@@ -21,15 +21,6 @@ namespace ET
             return info;
         }
 
-        public static void PushPool(long unitId, BulletMoveInfo info)
-        {
-            var unit = UnitMonoComponent.Instance.Get<BulletMonoUnit>(unitId);
-            if (unit != null)
-                unit.BulletMoveInfo = null;
-
-            MonoPool.Instance.Recycle(info);
-        }
-
         public static void InitInfo(BulletMoveInfo bulletMoveInfo, CannonShootInfo cannonShootInfo)
         {
             bulletMoveInfo.CurrentLocalPos = cannonShootInfo.GetBulletStartPosition();

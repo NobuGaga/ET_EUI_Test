@@ -21,6 +21,7 @@ namespace ET
         public virtual void Dispose()
         {
             UnitId = 0;
+            MonoPool.Instance.Recycle(TransformInfo);
             TransformInfo = null;
 #if NOT_UNITY
         }

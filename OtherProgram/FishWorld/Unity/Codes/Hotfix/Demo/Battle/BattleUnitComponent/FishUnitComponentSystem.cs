@@ -10,6 +10,8 @@ namespace ET
         public override void Awake(FishUnitComponent self)
         {
             Unit unit = self.Parent as Unit;
+            // 先赋值, 这里的流程后面会用到 FishUnitComponent
+            unit.FishUnitComponent = self;
 
             // 先给 Mono 层数据结构初始化(但不附初始值), 有的值需要用时间轴赋值
             FishMoveInfo moveInfo = FishMoveInfoHelper.PopInfo(unit.UnitId);
@@ -30,7 +32,7 @@ namespace ET
             // 出生时间戳, 服务器发送毫秒
             long liveTime = attributeComponent[NumericType.LiveTime];
             // 剩余存活时间, 单位毫秒
-            uint remainTime = (uint)attributeComponent[NumericType.RemainTime];
+            int remainTime = attributeComponent.GetAsInt(NumericType.RemainTime);
             // 初始位置偏移值 XYZ, 在这里转换进行转换, 因为转换的修正值配置在 Model 层
             float offsetPosX = (float)attributeComponent[NumericType.PositionX] / FishConfig.ServerOffsetScale;
             float offsetPosY = (float)attributeComponent[NumericType.PositionY] / FishConfig.ServerOffsetScale;
@@ -42,6 +44,7 @@ namespace ET
 
             LifeCycleInfoHelper.InitInfo(unit.UnitId, liveTime, remainTime);
             TimeLineConfigInfoHelper.SetConfigId(unit.UnitId, timeLineConfigId);
+            TimeLineConfigInfoHelper.Synchronise(unit.UnitId);
 
             FishMoveInfoHelper.InitInfo(moveInfo, roadId, totalMoveTime, offsetPosX, offsetPosY, offsetPosZ, originConfigSpeed);
 
@@ -50,7 +53,7 @@ namespace ET
 
             // Battle TODO delete
             int fishGroupId = attributeComponent.GetAsInt(NumericType.GroupUid);
-            Log.Debug($"创建鱼 鱼组表 ID = { fishGroupId }, 基础表 ID = { unit.ConfigId }, 鱼线 ID = { roadId }, 时间轴 ID = { timeLineConfigId }");
+            Log.Debug($"创建鱼 鱼组表 ID = { fishGroupId }, 基础表 ID = { unit.ConfigId }, 鱼线 ID = { roadId }, 时间轴 ID = { timeLineConfigId }, unit Id = { unit.UnitId }");
         }
     }
 
@@ -59,18 +62,9 @@ namespace ET
     {
         public override void Destroy(FishUnitComponent self)
         {
-            long unitId = self.Parent.Id;
-            var moveInfo = self.MoveInfo;
             self.MoveInfo = null;
-            FishMoveInfoHelper.PushPool(unitId, moveInfo);
-
-            var screenInfo = self.ScreenInfo;
             self.ScreenInfo = null;
-            FishScreenInfoHelper.PushPool(unitId, screenInfo);
-
-            var rotateInfo = self.RotateInfo;
             self.RotateInfo = null;
-            TransformRotateInfoHelper.PushPool(unitId, rotateInfo);
         }
     }
 

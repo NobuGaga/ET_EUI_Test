@@ -40,12 +40,7 @@ namespace ET
     [ObjectSystem]
     public class BulletUnitComponentDestroySystem : DestroySystem<BulletUnitComponent>
     {
-        public override void Destroy(BulletUnitComponent self)
-        {
-            var info = self.Info;
-            self.Info = null;
-            BulletMoveHelper.PushPool(self.Parent.Id, info);
-        }
+        public override void Destroy(BulletUnitComponent self) => self.Info = null;
     }
 
     [FriendClass(typeof(Unit))]

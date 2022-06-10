@@ -58,6 +58,7 @@ namespace ET
         public override void Dispose()
         {
             base.Dispose();
+            MonoPool.Instance.Recycle(BulletMoveInfo);
             BulletMoveInfo = null;
         }
     }

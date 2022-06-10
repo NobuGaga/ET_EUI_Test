@@ -16,16 +16,27 @@ namespace ET
             // 子弹的移除都是本地客户端判定是否碰撞来进行
             BulletLogicComponent bulletLogicComponent = self.BulletLogicComponent;
             Unit bulletUnit = bulletLogicComponent.GetChild<Unit>(bulletUnitId);
+            long playerUnitId = 0;
+            // 数据已经没有了, 但视图资源还在, 先移除子弹资源
+            if (bulletUnit == null)
+            {
+                Log.Error($"BattleMonoComponent.Collide bullet unit id not exist. bulletUnitId = { bulletUnitId }");
+                UnitMonoComponent.Instance.RemoveUnvalidBulletUnit(bulletUnitId);
+                PublishEventCollide(currentScene, screenPosX, screenPosY, playerUnitId, fishUnitId);
+                return;
+            }
+
             var attributeComponent = bulletUnit.GetComponent<NumericComponent>();
             int seatId = attributeComponent.GetAsInt(NumericType.Pos);
             var fisheryComponent = self.FisheryComponent;
-            long playerUnitId = 0;
             // Battle Warning 有玩家退出房间 Current Scene 上的 FisheryComponent 组件会为空
             // 暂时将 playerUnitId 设置为 0
             if (fisheryComponent != null)
             {
                 Unit playerUnit = fisheryComponent.GetPlayerUnit(seatId);
-                playerUnitId = playerUnit.Id;
+                // Battle Warning 这个也会为空
+                if (playerUnit != null)
+                    playerUnitId = playerUnit.Id;
             }
 
             Unit selfPlayerUnit = UnitHelper.GetMyUnitFromCurrentScene(currentScene);
@@ -34,7 +45,11 @@ namespace ET
                 self.C2M_Hit(screenPosX, screenPosY, bulletUnitId, fishUnitId);
 
             bulletLogicComponent.RemoveUnit(bulletUnitId);
+            PublishEventCollide(currentScene, screenPosX, screenPosY, playerUnitId, fishUnitId);
+        }
 
+        private static void PublishEventCollide(Scene currentScene, float screenPosX, float screenPosY, long playerUnitId, long fishUnitId)
+        {
             var publishData = EventType.BulletCollideFish.Instance;
             publishData.CurrentScene = currentScene;
             publishData.ScreenPosX = screenPosX;

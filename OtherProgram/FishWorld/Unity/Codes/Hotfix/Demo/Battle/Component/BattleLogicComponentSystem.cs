@@ -101,12 +101,29 @@ namespace ET
             Unit unit = battleLogicComponent.UnitComponent.Get(unitId);
             var fishUnitComponent = unit.FishUnitComponent;
 
-            switch (info.Type)
+            switch (type)
             {
+                //case TimeLineNodeType.Rotate:
+                //    unit.Rotate(info);
+                //    break;
+                //case TimeLineNodeType.SpeedChange:
+                //    unit.SpeedChange(info).Coroutine();
+                //    break;
+                case TimeLineNodeType.ForwardCamera:
+                    var rotateInfo = fishUnitComponent.RotateInfo;
+                    rotateInfo.IsFowardMainCamera = !rotateInfo.IsFowardMainCamera;
+                    break;
                 case TimeLineNodeType.PauseFishLine:
                     var moveInfo = fishUnitComponent.MoveInfo;
                     moveInfo.IsPause = true;
                     ResumePathMove(unit, executeTime).Coroutine();
+                    break;
+                default:
+                    if (type < TimeLineNodeType.ReadyState)
+                        break;
+
+                    var battleUnit = UnitMonoComponent.Instance.Get(unitId);
+                    battleUnit.IsCanCollide = info.Type == TimeLineNodeType.ActiveState;
                     break;
             }
         }
@@ -126,7 +143,6 @@ namespace ET
 
     [FriendClass(typeof(BattleLogicComponent))]
     [FriendClass(typeof(Unit))]
-    [FriendClass(typeof(TransformComponent))]
     [FriendClass(typeof(FishUnitComponent))]
     public class ExecuteTimeLine_BattleLogicComponent : AEventClass<ExecuteTimeLine>
     {
@@ -143,10 +159,10 @@ namespace ET
             switch (type)
             {
                 case TimeLineNodeType.Rotate:
-                    Rotate(unit, info);
+                    unit.Rotate(info);
                     break;
                 case TimeLineNodeType.SpeedChange:
-                    SpeedChange(unit, info).Coroutine();
+                    unit.SpeedChange(info).Coroutine();
                     break;
                 case TimeLineNodeType.ForwardCamera:
                     var fishUnitComponent = unit.FishUnitComponent;
@@ -165,10 +181,17 @@ namespace ET
             // 播放动作在视图层获取 clip 时长
             if (info.IsAutoNext && info.ExecuteTime > 0 &&
                 type != TimeLineNodeType.PlayAnimate && type != TimeLineNodeType.PauseFishLine)
-                Execute(unitId, info).Coroutine();
+                unit.Execute(unitId, info).Coroutine();
         }
+    }
 
-        private async ETTask Execute(long unitId, TimeLineConfigInfo info)
+    [FriendClass(typeof(BattleLogicComponent))]
+    [FriendClass(typeof(Unit))]
+    [FriendClass(typeof(TransformComponent))]
+    [FriendClass(typeof(FishUnitComponent))]
+    public static class BattleLogicComponentSystem
+    {
+        internal static async ETTask Execute(this Unit self, long unitId, TimeLineConfigInfo info)
         {
             await TimerComponent.Instance.WaitAsync((long)(info.ExecuteTime * FishConfig.MilliSecond));
             var publicData = ExecuteTimeLine.Instance;
@@ -176,7 +199,7 @@ namespace ET
             Game.EventSystem.PublishClass(publicData);
         }
 
-        private void Rotate(Unit self, TimeLineConfigInfo timeLineInfo)
+        internal static void Rotate(this Unit self, TimeLineConfigInfo timeLineInfo)
         {
             var fishUnitComponent = self.FishUnitComponent;
             var moveInfo = fishUnitComponent.MoveInfo;
@@ -218,7 +241,7 @@ namespace ET
             transformComponent.Info.LocalRotation = localRotation;
         }
 
-        private async ETTask SpeedChange(Unit self, TimeLineConfigInfo timeLineInfo)
+        internal static async ETTask SpeedChange(this Unit self, TimeLineConfigInfo timeLineInfo)
         {
             var fishUnitComponent = self.FishUnitComponent;
             var moveInfo = fishUnitComponent.MoveInfo;

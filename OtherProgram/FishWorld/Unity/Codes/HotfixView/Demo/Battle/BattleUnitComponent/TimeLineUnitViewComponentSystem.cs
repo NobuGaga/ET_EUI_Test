@@ -8,12 +8,37 @@ namespace ET
     [FriendClass(typeof(FishUnitComponent))]
     public static class TimeLineUnitViewComponentSystem
     {
+        /// <summary> 重新进入渔场恢复时间轴相关表现 </summary>
+        internal static void InitTimeLine(this Unit self, TimeLineConfigInfo info)
+        {
+            switch (info.Type)
+            {
+                case TimeLineNodeType.PlayAnimate:
+                    float survivalTime = LifeCycleInfoHelper.GetSurvivalTime(self.UnitId);
+                    float totalLifeTime = LifeCycleInfoHelper.GetTotalLifeTime(self.UnitId);
+                    float triggerTime = totalLifeTime * info.LifeTime;
+                    float playTime = survivalTime - triggerTime;
+                    if (playTime < 0)
+                        playTime = 0;
+                    var clip = self.PlayAnimation(playTime, info);
+                    if (clip != null)
+                        info.ExecuteTime = clip.length;
+                    break;
+                //case TimeLineNodeType.PauseFishLine:
+                //    self.PauseFishLineMove(info).Coroutine();
+                //    break;
+            }
+
+            //if (info.IsAutoNext && info.ExecuteTime > 0)
+            //    Execute(self.UnitId, info).Coroutine();
+        }
+
         internal static void Execute(this Unit self, TimeLineConfigInfo info)
         {
             switch (info.Type)
             {
                 case TimeLineNodeType.PlayAnimate:
-                    var clip = self.PlayAnimation(info);
+                    var clip = self.PlayAnimation(0, info);
                     if (clip != null)
                         info.ExecuteTime = clip.length;
                     break;
@@ -32,26 +57,12 @@ namespace ET
             FishTimelineConfigCategory.Instance.PublishExecuteTimeLineEvent(unitId, info);
         }
 
-        private static AnimationClip PlayAnimation(this Unit self, TimeLineConfigInfo timeLineInfo)
+        private static AnimationClip PlayAnimation(this Unit self, float playTime, TimeLineConfigInfo timeLineInfo)
         {
             string motionName = timeLineInfo.Arguments[0];
             bool isLoop = false;
             if (int.TryParse(timeLineInfo.Arguments[1], out int loopFlag))
                 isLoop = loopFlag > 0;
-
-            var fishUnitComponent = self.FishUnitComponent;
-            var moveInfo = fishUnitComponent.MoveInfo;
-
-            // Battle Warning 暂时只当有一条主时间轴, 时间轴总时长跟鱼线时长一致
-            long currentTime = TimeHelper.ServerNow();
-            long startMoveTime = currentTime - moveInfo.MoveTime;
-
-            // Battle Warning 主时间轴触发时间暂时使用鱼生命周期开始时间(服务端没做, 需要服务器端记录主时间轴触发时间)
-            //long triggerTime = (long)(timeLineInfo.LifeTime * moveInfo.MoveDuration) + triggerTimeLineTime;
-            long triggerTime = (long)(timeLineInfo.LifeTime * moveInfo.MoveDuration) + startMoveTime;
-
-            // 已播放时长
-            float playTime = (float)(currentTime - triggerTime) / FishConfig.MilliSecond;
 
             return self.PlayAnimation(motionName, playTime, isLoop);
         }

@@ -36,18 +36,24 @@ namespace ET
             var args = obj as KillFish;
             var unitComponent = BattleLogicComponent.Instance.UnitComponent;
             long fishUnitId = args.Message.FishId;
+            var battleMonoUnit = UnitMonoComponent.Instance.Get(fishUnitId);
+            if (battleMonoUnit != null)
+                battleMonoUnit.IsCanCollide = false;
+
             var fishUnit = unitComponent.GetChild<Unit>(fishUnitId);
+            if (fishUnit == null || fishUnit.IsDisposed)
+                return;
+
             var fishUnitComponent = fishUnit.FishUnitComponent;
             fishUnitComponent.MoveInfo.IsPause = true;
-            var battleMonoUnit = UnitMonoComponent.Instance.Get(fishUnitId);
-            battleMonoUnit.IsCanCollide = false;
-            fishUnit.PlayAnimation(MotionTypeHelper.Get(MotionType.Die), 0, false);
-            RemoveUnit(unitComponent, fishUnitId).Coroutine();
+
+            var clip = fishUnit.PlayAnimation(MotionTypeHelper.Get(MotionType.Die), 0, false);
+            RemoveUnit(unitComponent, fishUnitId, clip != null ? clip.length : 0.5f).Coroutine();
         }
 
-        private async ETTask RemoveUnit(UnitComponent unitComponent, long fishUnitId)
+        private async ETTask RemoveUnit(UnitComponent unitComponent, long fishUnitId, float time)
         {
-            await TimerComponent.Instance.WaitAsync(417);
+            await TimerComponent.Instance.WaitAsync((long)(time * FishConfig.MilliSecond));
             unitComponent.Remove(fishUnitId);
         }
     }

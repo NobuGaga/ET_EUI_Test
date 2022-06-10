@@ -82,8 +82,12 @@ namespace ET
             base.Dispose();
             MonoPool.Instance.Recycle(LifeCycleInfo);
             LifeCycleInfo = null;
+            MonoPool.Instance.Recycle(FishMoveInfo);
             FishMoveInfo = null;
+            MonoPool.Instance.Recycle(FishScreenInfo);
             FishScreenInfo = null;
+            MonoPool.Instance.Recycle(TransformRotateInfo);
+            TransformRotateInfo = null;
             MonoPool.Instance.Recycle(TimeLineMonoInfo);
             TimeLineMonoInfo = null;
 #if !NOT_UNITY

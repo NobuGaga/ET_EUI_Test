@@ -25,7 +25,12 @@ namespace ET
             FishUnitComponent fishUnitComponent = unit.FishUnitComponent;
             if (fishUnitComponent.MoveInfo.IsMoveEnd)
             {
-                self.RemoveChild(unit.Id);
+                ref var unitType = ref unit.Type;
+                if (unitType == UnitType.Fish)
+                    UnitMonoComponent.Instance.Remove(unit.UnitId);
+
+                self.TypeUnits.Remove(unitType, unit);
+                unit.Dispose();
                 return null;
             }
 
@@ -64,6 +69,32 @@ namespace ET
                 return;
 
             battleLogicComponent.Argument_Integer = score;
+            battleLogicComponent.Result_Unit = fishUnit;
+        }
+
+        public static Unit GetBossUnit(this UnitComponent self)
+        {
+            HashSet<Unit> fishUnitList = self.GetFishUnitList();
+            if (fishUnitList.Count <= 0)
+                return null;
+
+            var battleLogicComponent = BattleLogicComponent.Instance;
+            battleLogicComponent.Result_Unit = null;
+
+            ForeachHelper.Foreach(fishUnitList, self.FindBossUnit);
+
+            return battleLogicComponent.Result_Unit;
+        }
+
+        public static void FindBossUnit(Unit fishUnit)
+        {
+            if (!fishUnit.FishUnitComponent.ScreenInfo.IsInScreen)
+                return;
+
+            if (fishUnit.ConfigId != FishConfig.BossConfigId)
+                return;
+
+            var battleLogicComponent = BattleLogicComponent.Instance;
             battleLogicComponent.Result_Unit = fishUnit;
         }
     }

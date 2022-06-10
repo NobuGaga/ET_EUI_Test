@@ -16,14 +16,5 @@ namespace ET
             unit.FishScreenInfo = info;
             return info;
         }
-
-        public static void PushPool(long unitId, FishScreenInfo info)
-        {
-            var unit = UnitMonoComponent.Instance.Get<FishMonoUnit>(unitId);
-            if (unit != null)
-                unit.FishScreenInfo = null;
-
-            MonoPool.Instance.Recycle(info);
-        }
     }
 }

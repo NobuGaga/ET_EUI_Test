@@ -135,6 +135,19 @@ namespace ET
     }
 
     [FriendClass(typeof(BattleLogicComponent))]
+    public class InitTimeLine_BattleViewComponent : AEventClass<InitTimeLine>
+    {
+        protected override void Run(object obj)
+        {
+            var args = obj as InitTimeLine;
+            var battleLogicComponent = BattleLogicComponent.Instance;
+            Unit fishUnit = battleLogicComponent.UnitComponent.Get(args.UnitId);
+            if (fishUnit != null && !fishUnit.IsDisposed)
+                fishUnit.InitTimeLine(args.Info);
+        }
+    }
+
+    [FriendClass(typeof(BattleLogicComponent))]
     public class ExecuteTimeLine_BattleViewComponent : AEventClass<ExecuteTimeLine>
     {
         protected override void Run(object obj)
@@ -152,17 +165,25 @@ namespace ET
         /// <summary> 预设预加载实例化 </summary>
         public static async ETTask PreLoadAndInstantiateObject(this BattleViewComponent self)
         {
-            string assetName = "fish_10101";
-            string assetBundlePath = string.Format(FishConfig.FishAssetBundlePathFormat, assetName);
-            var objectPoolComponent = self.GetComponent<ObjectPoolComponent>();
+            // Boss 资源 ID
+            string redId = "fish_10101";
+            var assetBundleData = UnitConfigCategory.Instance.GetAssetBundleData(redId);
+            string assetBundlePath = assetBundleData.Path;
+            string clipBundlePath = assetBundleData.ClipPath;
 
-            var gameObject = await ObjectInstantiateHelper.LoadAsset(assetBundlePath, assetName) as GameObject;
+            var gameObject = await ObjectInstantiateHelper.LoadAsset(assetBundlePath, redId) as GameObject;
             gameObject = UnityEngine.Object.Instantiate(gameObject);
             gameObject.transform.parent = ReferenceHelper.FishRootNode.transform;
             gameObject.transform.localPosition = FishConfig.RemovePoint;
             gameObject.name = FishConfig.DefaultName;
 
+            var objectPoolComponent = self.GetComponent<ObjectPoolComponent>();
             objectPoolComponent?.PushObject(assetBundlePath, gameObject);
+
+            // Boss 动作资源
+            Scene currentScene = BattleLogicComponent.Instance.CurrentScene;
+            var ResourcesLoaderComponent = currentScene.GetComponent<ResourcesLoaderComponent>();
+            await ResourcesLoaderComponent.LoadAsync(clipBundlePath);
         }
     }
 }

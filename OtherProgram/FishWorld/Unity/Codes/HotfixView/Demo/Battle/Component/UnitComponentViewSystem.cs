@@ -13,6 +13,12 @@ namespace ET
             var args = obj as RemoveUnit;
             var unitComponent = BattleLogicComponent.Instance.UnitComponent;
             Unit unit = unitComponent.Get(args.UnitId);
+            if (unit == null)
+            {
+                TransformMonoHelper.Remove(args.UnitId);
+                return;
+            }
+
             if (unit.Type != UnitType.Fish)
                 return;
 

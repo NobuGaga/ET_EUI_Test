@@ -31,17 +31,40 @@ namespace ET
             return Add<BulletMonoUnit>(unitId);
         }
 
+        public void ReplaceBulletUnit(long oldId, long newId)
+        {
+            if (!unitMap.ContainsKey(oldId) || unitMap.ContainsKey(newId))
+                return;
+
+            unitMap.Add(newId, unitMap[oldId]);
+            unitMap.Remove(oldId);
+
+            for (int index = 0; index < BulletUnitIdList.Count; index++)
+            {
+                if (BulletUnitIdList[index] == oldId)
+                {
+                    BulletUnitIdList.RemoveAt(index);
+                    break;
+                }
+            }
+            BulletUnitIdList.Add(newId);
+        }
+
         private T Add<T>(long unitId) where T : BattleMonoUnit
         {
+            T unit;
             if (unitMap.ContainsKey(unitId))
             {
                 Log.Error($"UnitMonoComponent unitMap already add unit, id = { unitId }");
-                return null;
+                unit = unitMap[unitId] as T;
+            }
+            else
+            {
+                unit = MonoPool.Instance.Fetch(typeof(T)) as T;
+                unitMap.Add(unitId, unit);
             }
 
-            var unit = MonoPool.Instance.Fetch(typeof(T)) as T;
             unit.UnitId = unitId;
-            unitMap.Add(unitId, unit);
             return unit;
         }
 
@@ -92,6 +115,24 @@ namespace ET
             
             FishUnitIdList.RemoveAt(index);
             PushPool(unitId, unitMap[unitId]);
+        }
+
+        /// <summary> 移除残留子弹 </summary>
+        public void RemoveUnvalidBulletUnit(long unitId)
+        {
+            if (!unitMap.ContainsKey(unitId))
+                return;
+
+            var bulletMonoUnit = unitMap[unitId] as BulletMonoUnit;
+#if !NOT_UNITY
+
+            var transform = bulletMonoUnit.Transform;
+            transform.localPosition = new UnityEngine.Vector3(10000, 0, 0);
+
+            if (Define.IsEditor)
+                transform.gameObject.name = "bullet_die_node";
+#endif
+            Remove(unitId);
         }
 
         public void PushPool(long unitId, BattleMonoUnit unit)

@@ -16,14 +16,5 @@ namespace ET
             unit.TransformInfo = info;
             return info;
         }
-
-        public static void PushPool(long unitId, TransformInfo info)
-        {
-            var unit = UnitMonoComponent.Instance.Get(unitId);
-            if (unit != null)
-                unit.TransformInfo = null;
-
-            MonoPool.Instance.Recycle(info);
-        }
     }
 }

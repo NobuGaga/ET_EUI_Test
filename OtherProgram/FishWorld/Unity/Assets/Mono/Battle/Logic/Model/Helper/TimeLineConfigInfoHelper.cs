@@ -140,7 +140,10 @@ namespace ET
                     moveInfo.MoveTime -= (int)(nodeInfo.ExecuteTime * 1000);
 
                 // 超过当前时刻的节点不执行, ExecuteTime = 0
-                if (nodeInfo.ExecuteTime > 0 && totalLifeTime * nodeInfo.LifeTime + nodeInfo.ExecuteTime < survivalTime)
+                // TimeLineNodeType.ForwardCamera 5 朝向摄像机直接同步
+                // TimeLineNodeType.ReadyState 21 时间轴状态同步最小标记
+                if (nodeInfo.ExecuteTime > 0 && totalLifeTime * nodeInfo.LifeTime + nodeInfo.ExecuteTime < survivalTime &&
+                    nodeInfo.Type != 5 && nodeInfo.Type < 21)
                     continue;
 
                 // 剩余执行时长
